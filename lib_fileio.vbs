@@ -279,6 +279,12 @@ function createDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval wor
 	createLnk lnkPath, targetFile, args, workDir, icon, descr
 end function
 
+'создает €рлычок на рабочем столе
+function createAllUsersDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr)
+	lnkPath=WshShell.SpecialFolders("AllUsersDesktop") & "\" & lnkName & ".lnk"
+	createLnk lnkPath, targetFile, args, workDir, icon, descr
+end function
+
 'контролирует наличие €рлычка (если add==true, то добавл€ет или корректирует, иначе провер€ет чтоб такого €рлычка не было)
 function ctrlDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr, byVal add)
 	lnkPath=WshShell.SpecialFolders("Desktop") & "\" & lnkName & ".lnk"

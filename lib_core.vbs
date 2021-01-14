@@ -1,7 +1,13 @@
 'Библиотечка с маленькими полезными функциями, которые обязательно пригодятся
 'без этого ну никак не обойтись
 Option Explicit
-Const coreLibVer="2.5"
+Const coreLibVer="2.8"
+'ver 2.8
+' - isProcRunning вынесена в lib_procs
+'ver 2.7
+' + добавлен объект objWmi
+'ver 2.6
+' + добавлена переменные Platform, Systemdrive
 'ver 2.5
 ' ! скорректирована функция launchpad, которая перепускала скрипт от непревилегированного
 '   пользователя. Была ошибка работы на Win10: теперь имя создаваемой задчи включает %username%,
@@ -15,15 +21,20 @@ Const coreLibVer="2.5"
 '   launchpad
 ' + Добавлен объект objReg для работы с реестром через WMI (также можно работать ч-з wshShell)
 
-Dim objFSO : Set objFSO = CreateObject("Scripting.FileSystemObject")
 Dim WshShell : Set WshShell = WScript.CreateObject("WScript.Shell")
-dim objReg: Set objReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
+Dim objFSO : Set objFSO = CreateObject("Scripting.FileSystemObject")
+Dim objReg : Set objReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
+Dim objWmi : Set objWmi = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+
 Dim WorkDir : WorkDir =	WshShell.ExpandEnvironmentStrings("%TEMP%") & "\"
+Dim WindowsDir : WindowsDir = objFSO.GetSpecialFolder(0)
+
 
 Dim ComputerName : ComputerName = wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
 Dim UserName : UserName = wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
 Dim UserProfile : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
 Dim Platform : Platform = wshShell.ExpandEnvironmentStrings( "%PROCESSOR_ARCHITECTURE%" )
+Dim SystemDrive : SystemDrive = wshShell.ExpandEnvironmentStrings( "%SYSTEMDRIVE%" )
 
 Dim DEBUGMODE : DEBUGMODE = 0
 
@@ -92,12 +103,16 @@ Sub Msg(ByVal text)
 
 	if (isObject(logFile)) then
 		'если есть лог файл - выводим в него
+		on error resume next
 		logFile.WriteLine(logtext)
+		on error goto 0
 	elseif not isnull (logFile) then
 		Dim logFileObj
+		on error resume next
 		Set logFileObj = objFSO.OpenTextFile(logFile, 8, True)
 		logFileObj.WriteLine(logtext)
 		logFileObj.close
+		on error goto 0
 	end if
 End Sub
 
@@ -151,6 +166,16 @@ Sub Halt(ByVal text)
 	WScript.Quit()
 End Sub
 
+
+'останов программы если ошибка выполнения
+Sub HaltIfError()
+	If Err.Number <> 0 Then 
+		Halt "HALT: Runtime error!" & vbCrLf &_ 
+			"Err code: " & Err.Number & vbCrLf &_ 
+			"Description: " & Err.Description & vbCrLf &_ 
+			"Source: " & Err.Source 
+	end if
+End Sub
 
 function getOsCaption()
 	dim objWMIService : Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
@@ -292,12 +317,19 @@ end function
 
 'получить содержимое файла
 Function GetFile(ByVal FileName)
-	GetFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(FileName).ReadAll
+	if (objFSO.FileExists(FileName)) then
+		GetFile = objFSO.OpenTextFile(FileName).ReadAll
+	else
+		GetFile = ""
+	end if
 End Function
 
 'переписать содержимое файла
 Function WriteFile(ByVal FileName, ByVal Contents)
+	On Error Resume Next
  	WriteFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(FileName, 2, True).Write(Contents)
+	HaltIfError
+	On Error Goto 0
 End Function
 
 
@@ -611,7 +643,7 @@ sub privelegeMe()
 				Msg " - forking priveleged process ..."
 				dim objShell: Set objShell = CreateObject("Shell.Application")
 				objShell.ShellExecute "cscript.exe", Chr(34) & WScript.ScriptFullName & Chr(34) & " privelege_me_forked", , "runas", 1 
-				Halt ( "Parent process exiting due to un priveleged state" )
+				Halt ( "Parent process exiting due to unpriveleged state" )
 			end if
 		End if
 	else
@@ -679,29 +711,4 @@ Function GetOS
       		GetOS = "Windows Server 2008"
         End If
 	Next
-End Function
-
-'Проверяет работает ли процесс под пользователем
-Function isProcRunning(procName,procUser)
-	dim strNameOfUser
-	dim colProcesses
-	dim objProcess
-	dim Return
-	on error resume next
-	Set colProcesses = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2").ExecQuery("Select * from Win32_Process where name like """&procName&"""")
-	isProcRunning=False
-	if not isNull(colProcesses) then
-		For Each objProcess in colProcesses
-			Return = objProcess.GetOwner(strNameOfUser)
-			If Return = 0 Then
-				msg "Process " & objProcess.Name & " is owned by " & "\" & strNameOfUser & "."
-				if strNameOfUser = procUser then
-					isProcRunning=True
-				end if
-			else 
-				msg "Could not get owner info for process " & objProcess.Name & " // Error = " & Return
-			end if
-		Next
-	end if
-	on error goto 0
 End Function

@@ -350,6 +350,25 @@ Function conffile_set(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal 
 	end if
 end Function
 
+
+'исправить значение в INI файл
+'возвращает признак произведенных в файле изменений
+Function conffile_fix(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Value, ByVal Comment)
+	if CheckFileTypeDescr(FType) then
+		if (Value=conffile_get(FPath,FType,Section,Key,"value not found marker")) then
+			conffile_fix=false
+		else
+			conffile_set FPath,FType,Section,Key,Value,Comment
+			conffile_fix=true
+		end if
+	else
+		conffile_fix=false
+	end if
+end Function
+
+
+
+
 'вставляет переменную после нужной строки
 Function textfile_set_after(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Value, ByVal Comment, ByVal after)
 	if CheckFileTypeDescr(FType) then
