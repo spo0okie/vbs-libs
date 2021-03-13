@@ -249,6 +249,7 @@ Dim slaveFName,Subfolder,File
 	masterDirCheck=true
 end function
 
+
 'создает ярлычок
 function createLnk(byVal lnkPath, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr)
 
@@ -300,6 +301,33 @@ function ctrlDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workD
 	end if
 end function
 
+
+'сравнивает два файла по размеру и дате
+function compareFilesDateSize(byVal strFile1, byVal strFile2)
+	compareFilesDateSize=false
+        if (not objFSO.fileExists(strFile1)) then
+		Msg ("Compare fail - file not exist: " & strFile1)
+		exit function
+	end if
+
+        if (not objFSO.fileExists(strFile2)) then
+		Msg ("Compare fail - file not exist: " & strFile2)
+		exit function
+	end if
+
+	dim objFile1,objFile2
+	set objFile1=objFSO.getFile(strFile1)
+	set objFile2=objFSO.getFile(strFile2)
+	if (not((objFile1.size = objFile2.size) and (objFile1.dateLastModified = objFile2.dateLastModified))) then
+		Msg ("Comparison of " & strFile.Name & " in " & master & " -> " & slave & " DIFF: date/size mistmatch!")
+		exit function
+	end if
+
+	compareFilesDateSize=true
+end function
+
+
+
 'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв (сравнение файлов по размеру)
 function dirMasterSlaveCompare(byVal master, byVal slave)
 	Set objMaster = objFSO.GetFolder(master)
@@ -334,6 +362,11 @@ end function
 
 'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв (сравнение файлов по размеру)
 function dirMasterSlaveCopy(byVal master, byVal slave)
+	If (not objFSO.FolderExists(master)) then
+		dirMasterSlaveCopy=false
+		exit function
+	end if
+
 	Set objMaster = objFSO.GetFolder(master)
 	CheckDir slave
 	dirMasterSlaveCopy=false
@@ -342,8 +375,8 @@ function dirMasterSlaveCopy(byVal master, byVal slave)
 	    	secFileName = slave & "\" & strFile.Name
 	        if (objFSO.fileExists(secFileName)) then
 			set secFile=objFSO.getFile(secFileName)
-			if (not secFile.size = strFile.size) then
-				Msg ("Comparison of " & strFile.Name & " in " & master & " -> " & slave & " failed: size mistmatch!")
+			if (not((secFile.size = strFile.size) and (secFile.dateLastModified = strFile.dateLastModified))) then
+				Msg ("Comparison of " & strFile.Name & " in " & master & " -> " & slave & " failed: size/date mistmatch!")
 				safeCopy master & "\" & strFile.Name, slave
 				dirMasterSlaveCopy=true
 			end if
@@ -355,6 +388,83 @@ function dirMasterSlaveCopy(byVal master, byVal slave)
 	For Each strDir In objMaster.SubFolders
 		if (dirMasterSlaveCopy(strDir.path, slave & "\" & strDir.Name)) then
 			dirMasterSlaveCopy=true
+		end if
+	Next
+end function
+
+
+
+'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв 
+'(сравнение файлов по размеру и дате)
+'все лишнее что есть на слейве но нет на мастере - удаляет
+'если в мастере встретится файл .sync-skip-dir то вся папка пропускается
+'если в мастере встретится файл .sync-skip-local-files то файлы перечисленные 
+'в нем пропускаются из синхронизации
+function dirMasterSlaveSync(byVal master, byVal slave)
+	dim objMaster: Set objMaster = objFSO.GetFolder(master)
+	CheckDir slave
+	dirMasterSlaveSync = false
+	dim objSlave: Set objSlave = objFSO.GetFolder(slave)
+	dim ignoreLocalFiles: Set ignoreLocalFiles = CreateObject("Scripting.Dictionary")
+	ignoreLocalFiles.Add ".sync-skip-dir",0
+	ignoreLocalFiles.Add ".sync-skip-local-files",0
+
+	if objFSO.fileExists(master & "\.sync-skip-dir") then
+		Msg "Skipping " & slave & "because of flag file in it"
+		exit function
+	end if
+
+	if objFSO.fileExists(master & "\.sync-skip-local-files") then
+		Set file = objFSO.OpenTextFile (master & "\.sync-skip-local-files", 1)
+		Do Until file.AtEndOfStream
+			line = file.Readline
+			ignoreLocalFiles.Add line,0
+		Loop
+		Msg "Skipping " & slave & "because of flag file in it"
+	end if
+
+	'прямая проходка (копирование с мастера на слейв)
+	For Each objFile In objMaster.Files
+		if (not ignoreLocalFiles.Exists(objFile.Name)) then
+		    	secFileName = slave & "\" & objFile.Name
+		        if (objFSO.fileExists(secFileName)) then
+				set secFile=objFSO.getFile(secFileName)
+				if (not((secFile.size = objFile.size) and (secFile.dateLastModified = objFile.dateLastModified))) then
+					Msg ("Comparison of " & objFile.Name & " in " & master & " -> " & slave & " failed: date/size mistmatch!")
+					safeCopy master & "\" & objFile.Name, slave
+					dirMasterSlaveSync=true
+				end if
+			else
+				safeCopy master & "\" & objFile.Name, slave
+				dirMasterSlaveSync=true
+			end if
+		end if
+	Next	
+
+	'обратная проходка (удаление на слейве того чего нет на мастере)
+	For Each objFile In objSlave.Files
+	    	secFileName = master & "\" & objFile.Name
+	        if (not objFSO.fileExists(secFileName)) and not ignoreLocalFiles.Exists(objFile.Name) then
+			Msg ("Comparison of " & objFile.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
+			objFSO.DeleteFile(slave & "\" & objFile.Name)
+			dirMasterSlaveSync=true
+		end if
+	Next	
+
+	'прямая проходка по подпапкам
+	For Each strDir In objMaster.SubFolders
+		if (dirMasterSlaveSync(strDir.path, slave & "\" & strDir.Name)) then
+			dirMasterSlaveSync=true
+		end if
+	Next
+
+	'обратная проходка по подпапкам
+	For Each strDir In objSlave.SubFolders
+	    	secDirName = master & "\" & strDir.Name
+	        if (not objFSO.folderExists(secDirName)) then
+			Msg ("Comparison of " & strDir.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
+			objFSO.DeleteFolder slave & "\" & strDir.Name ,true
+			dirMasterSlaveSync=true
 		end if
 	Next
 end function

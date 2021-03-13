@@ -35,6 +35,7 @@ Dim UserName : UserName = wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
 Dim UserProfile : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
 Dim Platform : Platform = wshShell.ExpandEnvironmentStrings( "%PROCESSOR_ARCHITECTURE%" )
 Dim SystemDrive : SystemDrive = wshShell.ExpandEnvironmentStrings( "%SYSTEMDRIVE%" )
+Dim SystemRoot : SystemRoot = wshShell.ExpandEnvironmentStrings( "%SYSTEMROOT%" )
 
 Dim DEBUGMODE : DEBUGMODE = 0
 
@@ -84,9 +85,27 @@ function Min(a,b)
 end function
 
 
+Sub LogMsg(ByVal logtext)
+	if (isObject(logFile)) then
+		'если есть лог файл - выводим в него
+		on error resume next
+		logFile.Write(logtext)
+		on error goto 0
+	elseif not isnull (logFile) then
+		Dim logFileObj
+		on error resume next
+		Set logFileObj = objFSO.OpenTextFile(logFile, 8, True)
+		logFileObj.Write(logtext)
+		logFileObj.close
+		on error goto 0
+	end if
+End Sub
+
+
 'делает вывод в консоль (если мы в консоли) и в логфайл (если он объ€влен)
 Sub Msg(ByVal text)
 	dim logtext
+
 	if (text="") then 'если строка пуста то в лог пишем просто пустую строку без даты/времени
 		logtext=""
 	elseif (text="-") then 'разделитель (и в консоль и в лог)
@@ -101,20 +120,34 @@ Sub Msg(ByVal text)
 		wscript.echo(text)
 	End if
 
-	if (isObject(logFile)) then
-		'если есть лог файл - выводим в него
-		on error resume next
-		logFile.WriteLine(logtext)
-		on error goto 0
-	elseif not isnull (logFile) then
-		Dim logFileObj
-		on error resume next
-		Set logFileObj = objFSO.OpenTextFile(logFile, 8, True)
-		logFileObj.WriteLine(logtext)
-		logFileObj.close
-		on error goto 0
-	end if
+	LogMsg logtext & vbCrLf
 End Sub
+
+
+'делает вывод в консоль (если мы в консоли) и в логфайл (если он объ€влен)
+'Ѕез перевода строки
+Sub Msg_(ByVal text)
+
+	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
+		'если мы работаем в консольном режиме - выводим в консоль
+		wscript.stdout.write(text)
+	End if
+
+	LogMsg Date&" "&Time&" "&text
+End Sub
+
+'делает вывод в консоль (если мы в консоли) и в логфайл (если он объ€влен)
+'Ѕез перевода строки и временной отметки в лог
+Sub Msg__(ByVal text)
+
+	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
+		'если мы работаем в консольном режиме - выводим в консоль
+		wscript.stdout.write(text)
+	End if
+
+	LogMsg text
+End Sub
+
 
 'if debugmode=1 the writes dubug info to the specified
 'file and if running under cscript also writes it to screen.
@@ -163,7 +196,7 @@ end Sub
 'останов программы с ошибкой
 Sub Halt(ByVal text)
 	Msg(text)
-	WScript.Quit()
+	WScript.Quit(10)
 End Sub
 
 
@@ -332,6 +365,15 @@ Function WriteFile(ByVal FileName, ByVal Contents)
 	On Error Goto 0
 End Function
 
+'получить целочисленное содержимое файла
+Function GetIntFile(ByVal FileName)
+	GetIntFile = 0
+	if (objFSO.FileExists(FileName)) then
+		On Error Resume Next
+			GetIntFile=CInt(Trim(objFSO.OpenTextFile(FileName).ReadLine))
+		On Error Goto 0		
+	end if
+End Function
 
 
 
@@ -632,6 +674,11 @@ end sub
 
 'запускает текущий скрипт от привилегированного пользовател€, если текущий процесс не такой
 sub privelegeMe()
+	Msg "Running as " & Username
+	if (right(Username,1)="$") then
+		Msg "Launchpad not working under SYSTEM user"
+		exit sub
+	end if
 	if UACTurnedOn then
 		if (UserPerms("Elevated")) Then
 			Msg "Priveleged mode check passed - running priveleged process"
@@ -679,7 +726,11 @@ end function
 
 'провер€ет пингуетс€ ли хост
 function HostPings(host)
-	HostPings = WshShell.Run("ping -n 1 " & host, 0, True)
+	if (WshShell.Run("ping -n 1 " & host, 0, True) = 0) then
+		HostPings = true	
+	else	
+		HostPings = false
+	end if
 end function
 
 

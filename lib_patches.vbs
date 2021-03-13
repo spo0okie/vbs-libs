@@ -459,6 +459,34 @@ sub patchCopyDir(ByVal Patch)
 
 End Sub
 
+sub patchSyncDir(ByVal Patch)
+'Патчер - Синхронизирует слейв директорию так чтобы она соответствовала мастер директории
+'добавляет новые/измененные файлы, удаляет старые
+'patch_vis_view_jar.add "copy_dir",			"\\RTS-DEVELOP\dfs\install\_Scripts\TC\azimutclient_template\"
+'patch_vis_view_jar.add "copy_to",			"c:\Siemens\Teamcenter\OTW10\rac"
+
+	if (not patchStructCk(Patch,"copy_dir") or not patchStructCk(Patch,"copy_to")) then
+		Msg "SKIP: patch incorrect"
+		exit sub
+	end if
+
+	if not patchAppliance(Patch) then
+		exit sub
+	end if
+
+	if (not objFSO.FolderExists(patch("copy_dir"))) Then
+		Msg "SKIP: " & patch("copy_dir") & " not found. Nothing to do"
+		exit sub
+	else
+		changes=dirMasterSlaveSync(patch("copy_dir"), patch("copy_to"))
+		if(not(getDict("run_after_patch",Patch,false)=false) and changes=true) then
+			msg "Changes made to " & patch("copy_to") & ". Running patch_after script "
+			safeRun getDict("run_after_patch",Patch,false)
+		end if
+	end if
+
+End Sub
+
 sub patchCopyFile(ByVal Patch)
 'Патчер - Копирует директорию
 'patch_otw_vis.add "replace_file",	"c:\Siemens\Teamcenter\OTW10\rac\plugins\SingleEmbeddedViewer.jar"
@@ -497,9 +525,7 @@ sub patchCopyFile(ByVal Patch)
 End Sub
 
 sub patchFontInstall(ByVal Patch)
-'Патчер - Копирует правильный файл на место неправильного, если они разные (по размеру)
-'patch_otw_vis.add "replace_file",	"c:\Siemens\Teamcenter\OTW10\rac\plugins\SingleEmbeddedViewer.jar"
-'patch_otw_vis.add "with_file",	"c:\Siemens\Visualization\Program\SingleEmbeddedViewer.jar "
+'Патчер - Копирует шрифты из папки from_dir в папку C:\windows\fonts и регистрирует их
 
 	if (not patchStructCk(Patch,"from_dir")) then
 		Msg "SKIP: patch incorrect"
@@ -509,19 +535,45 @@ sub patchFontInstall(ByVal Patch)
 	if not patchAppliance(Patch) then
 		exit sub
 	end if
-
+	'если исходная папка есть
 	if (not objFSO.FolderExists(patch("from_dir"))) Then
 		Msg "SKIP: " & patch("from_dir") & " not found. Nothing to do"
 		exit sub
 	else
-		msg "File " & patch("from_dir") & " found."
-		safeRun "%comspec% /C COPY /Y """ & patch("from_dir") & "*.ttf"" """ & WshShell.ExpandEnvironmentStrings("%windir%") & "\fonts\" & """"
-		safeRun "%comspec% /C COPY /Y """ & patch("from_dir") & "*.fon"" """ & WshShell.ExpandEnvironmentStrings("%windir%") & "\fonts\" & """"
-		safeRun "%comspec% /C COPY /Y """ & patch("from_dir") & "*.otf"" """ & WshShell.ExpandEnvironmentStrings("%windir%") & "\fonts\" & """"
-		safeRun fontreg
-		msg "done"
+		dim objMaster,objSlave,objShellApp,objFont
+		strMaster=Patch("from_dir")
+		Set objShellApp = CreateObject("Shell.Application")
+		Set objSlave=objShellApp.Namespace( &H14 )
+		Set objMaster = objFSO.GetFolder(strMaster)
+		strSlave=objSlave.Self.Path
+		'Set objSlave = objFSO.GetFolder(strSlave)
+		'перебираем все файлы
+		For Each objFile In objMaster.Files
+			'Msg "Checking "&objFile.Name&"..."
+			'если длина больше 4х и это нужно расширение и в патче объявлено наименование этого шрифта
+			if ( _
+				(len(objFile.Name)>4) _
+				AND _
+				(_
+					lcase(right(objFile.Name,4))=".ttf"_
+					OR _
+					lcase(right(objFile.Name,4))=".fon"_
+					OR _
+					lcase(right(objFile.Name,4))=".otf"_
+				)_
+			) then
+				if (Patch.Exists(objFile.Name)) then
+					'если идентичного файла нет в целевой папке
+				        if (not compareFilesDateSize(strMaster & "\" &objFile.Name , strSlave & "\" & objFile.Name)) then
+						safeCopy strMaster & "\" & objFile.Name, strSlave
+					end if
+					regCheck "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts\" & patch(objFile.Name), "REG_SZ", objFile.Name
+				else
+					msg "Not font name for "&objFile.Name
+				end if
+			end if
+		next
 	end if
-
 End Sub
 
 '
