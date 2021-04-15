@@ -270,7 +270,14 @@ function createLnk(byVal lnkPath, byVal targetFile, byVal args, byval workDir, b
 	lnk.IconLocation = icon
 	lnk.WindowStyle = "1"
 	lnk.WorkingDirectory = workDir
+	on error resume next
 	lnk.Save
+	if err.number<>0 then
+		Msg "Error while saving Shortcut " & lnkPath
+		createLnk = false
+	end if
+	on error goto 0
+
 	Set lnk = Nothing	
 end function
 
@@ -397,15 +404,12 @@ end function
 'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв 
 '(сравнение файлов по размеру и дате)
 'все лишнее что есть на слейве но нет на мастере - удаляет
-'если в мастере встретится файл .sync-skip-dir то вся папка пропускается
-'если в мастере встретится файл .sync-skip-local-files то файлы перечисленные 
-'в нем пропускаются из синхронизации
 function dirMasterSlaveSync(byVal master, byVal slave)
-	dim objMaster: Set objMaster = objFSO.GetFolder(master)
+	Set objMaster = objFSO.GetFolder(master)
 	CheckDir slave
-	dirMasterSlaveSync = false
-	dim objSlave: Set objSlave = objFSO.GetFolder(slave)
-	dim ignoreLocalFiles: Set ignoreLocalFiles = CreateObject("Scripting.Dictionary")
+	dirMasterSlaveSync=false
+	Set objSlave = objFSO.GetFolder(slave)
+	Set ignoreLocalFiles = CreateObject("Scripting.Dictionary")
 	ignoreLocalFiles.Add ".sync-skip-dir",0
 	ignoreLocalFiles.Add ".sync-skip-local-files",0
 
@@ -440,7 +444,6 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 			end if
 		end if
 	Next	
-
 	'обратная проходка (удаление на слейве того чего нет на мастере)
 	For Each objFile In objSlave.Files
 	    	secFileName = master & "\" & objFile.Name

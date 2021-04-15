@@ -390,7 +390,7 @@ Function regRead(ByVal Path)
 	RegRead = WshShell.RegRead (Path)
 	if err.number<>0 then
 		Msg "Error while Reading " & Path
-		RegRead = false
+		regRead = false
 	end if
 	on error goto 0
 End Function
@@ -398,13 +398,25 @@ End Function
 'пишет в реестр
 sub regWrite (ByVal Path, ByVal varType, ByVal varVal)
 	Msg "Writing " & Path & "=" & varVal & "(" & varType & ") ... "
+	on error resume next
 	WshShell.RegWrite Path, varVal, varType
+	if err.number<>0 then
+		Msg "Error while Writing " & Path
+		regWrite = false
+	end if
+	on error goto 0
 End Sub
 
 'удаляет путь в реестре
 sub regDelete (ByVal Path)
 	Msg "Deleting " & Path & " ... "
+	on error resume next
 	WshShell.RegDelete Path
+	if err.number<>0 then
+		Msg "Error while Deleting " & Path
+		regDelete = false
+	end if
+	on error goto 0
 End Sub
 
 'сверяет содержимое с переданными параметрами и корректирует реестр
@@ -567,7 +579,7 @@ Function UACTurnedOn ()
 			UACTurnedOn = true
 		End If
 	else
-		wscript.echo err.Number
+		Msg err.Number
 		UACTurnedOn = false
 	end if
 End Function
