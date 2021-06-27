@@ -505,7 +505,8 @@ sub patchCopyFile(ByVal Patch)
 		if (not objFSO.FileExists(patch("replace_file"))) Then
 			'файла нет - просто копируем
 			msg "File " & patch("replace_file") & " not found. Patching ... "
-			safeRun "%comspec% /C COPY /Y """ & patch("with_file") & """ """ & patch("replace_file") & """"
+			'safeRun "%comspec% /C COPY /Y """ & patch("with_file") & """ """ & patch("replace_file") & """"
+			safeCopy patch("with_file") , patch("replace_file")
 			msg "done"
 		else
 			'файл есть, надо сравнить
@@ -513,7 +514,9 @@ sub patchCopyFile(ByVal Patch)
 			dim f2 : set f2=objFSO.GetFile(patch("replace_file"))
 			if (f1.size<>f2.size) then
 				msg "File " & patch("replace_file") & " has different size. Patching ... "
-				safeRun "%comspec% /C COPY /Y """ & patch("with_file") & """ """ & patch("replace_file") & """"
+				'safeRun "%comspec% /C COPY /Y """ & patch("with_file") & """ """ & patch("replace_file") & """"
+				safeCopy patch("with_file") , patch("replace_file")
+
 				msg "done"
 			else
 				msg "File " & patch("replace_file") & " same size. Nothing to do."

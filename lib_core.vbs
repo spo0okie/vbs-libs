@@ -210,6 +210,16 @@ Sub HaltIfError()
 	end if
 End Sub
 
+'останов программы если ошибка выполнения
+Sub MsgIfError()
+	If Err.Number <> 0 Then 
+		Msg "ERR: Runtime error!" & vbCrLf &_ 
+			"Err code: " & Err.Number & vbCrLf &_ 
+			"Description: " & Err.Description & vbCrLf &_ 
+			"Source: " & Err.Source 
+	end if
+End Sub
+
 function getOsCaption()
 	dim objWMIService : Set objWMIService = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
 	dim oss : Set oss = objWMIService.ExecQuery ("Select * from Win32_OperatingSystem")
@@ -687,14 +697,14 @@ end sub
 'запускает текущий скрипт от привилегированного пользователя, если текущий процесс не такой
 sub privelegeMe()
 	Msg "Running as " & Username
-	if (right(Username,1)="$") then
-		Msg "Launchpad not working under SYSTEM user"
-		exit sub
-	end if
 	if UACTurnedOn then
 		if (UserPerms("Elevated")) Then
 			Msg "Priveleged mode check passed - running priveleged process"
 		Else
+			if (right(Username,1)="$") then
+				Msg "Launchpad not working under SYSTEM user. Ignoring"
+				exit sub
+			end if
 			Msg "Priveleged mode check failed"
 			if arg("privelege_me_forked") then
 				Halt ( "Child process failed to achieve elevated state" )
