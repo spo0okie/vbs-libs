@@ -16,7 +16,7 @@ Function xCopyFile(ByVal fromf, ByVal tof)
 	debugMsg "Running " & command
 	'on error resume next
 		'Err.Clear
-		'xCopyFile=wshShell.run(command,0,true)
+		xCopyFile=wshShell.run(command,0,true)
 		'Err.Clear
 	'on error goto 0
 	debugMsg "Complete"

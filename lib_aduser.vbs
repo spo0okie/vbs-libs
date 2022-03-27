@@ -23,14 +23,32 @@ Dim objSysInfo : Set objSysInfo = CreateObject("ADSystemInfo")
 Dim strUserDN : strUserDN = Replace(objSysInfo.userName, "/", "\/")
 Dim strComputerDN : strComputerDN = Replace(objSysInfo.computerName, "/", "\/")
 
+Dim objUser
+Dim objComputer
 ' Bind to the user and computer objects with the LDAP provider.
-' Используем пути через GC:// что означает Глобальный Каталог 
-' (изначально было LDAP:// и жутко тормозило на RODC)
-Dim objUser : Set objUser = GetObject("GC://" & strUserDN)
-Dim objComputer : Set objComputer = GetObject("GC://" & strComputerDN)
+Set objUser = getADObject (objSysInfo.userName)
+Set objComputer = getADObject (objSysInfo.computerName)
 
-
-
+'Получаем объект из АД сначала через ГК, если не выщло то через ЛДАП
+Function getADObject(ByVal strObjectDN)
+	'Добавляем обратные слэши для экранирования
+	strObjectDN = Replace(strObjectDN, "/", "\/")
+	' Используем пути через GC:// что означает Глобальный Каталог 
+	' (изначально было LDAP:// и жутко тормозило на RODC)
+	' Кое где выскакивали ошибки "К указанному домену невозможно подключиться"
+	' кто бы знал почему, но предположим, что проблема в GC
+	dim objResult
+	objResult=Null
+	On Error Resume Next
+		Set objResult = GetObject("GC://" & strObjectDN)
+		If Err Then
+			Msg("Got err accessing GC://" & strObjectDN)
+			Msg("Switchin to LDAP://" & strObjectDN)
+			Set objResult = GetObject("LDAP://" & strObjectDN)
+		End If
+	On Error Goto 0 
+	Set getADObject = objResult
+End Function
 
 ' Function to test for group membership.
 ' objADObject is a user or computer object.
@@ -82,12 +100,7 @@ Sub LoadGroups(ByVal objPriADObject, ByVal objSubADObject)
 	'если нашлась одна (строка)
 	If (TypeName(colstrGroups) = "String") Then
 		DebugMsg "Loadgroups:" & colStrGroups
-	        ' Escape any forward slash characters, "/", with the backslash
-		' escape character. All other characters that should be escaped are.
-		' Экранируем слэши
-		colstrGroups = Replace(colstrGroups, "/", "\/")
-		' грузим объект группы из LDAP (GC)
-		Set objGroup = GetObject("GC://" & colstrGroups)
+		Set objGroup = getADObject (colstrGroups)
 		' если мы эту группу еще не загружали в словарь - грузим
 		If (objGroupList.Exists(objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName) = False) Then
 			objGroupList.Add objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName, True
@@ -99,12 +112,7 @@ Sub LoadGroups(ByVal objPriADObject, ByVal objSubADObject)
 	' видимо в любом противном случае получается массив.
 	For j = 0 To UBound(colstrGroups)
 		DebugMsg "Loadgroups:" & colStrGroups(j)
-		' Escape any forward slash characters, "/", with the backslash
-		' escape character. All other characters that should be escaped are.
-		' экранируем слэши
-		colstrGroups(j) = Replace(colstrGroups(j), "/", "\/")
-		' грузим объект группы из LDAP (GC)
-		Set objGroup = GetObject("GC://" & colstrGroups(j))
+		Set objGroup = getADObject (colstrGroups(j))
 		' если мы эту группу еще не загружали в словарь - грузим
 		If (objGroupList.Exists(objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName) = False) Then
 			objGroupList.Add objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName, True

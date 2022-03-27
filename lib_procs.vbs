@@ -37,10 +37,10 @@ Function isProcRunning(procName)
 	dim Return
 	on error resume next
 	Set colProcesses = objWmi.ExecQuery("Select * from Win32_Process where name like """&procName&"""")
-	isUserProcRunning=False
+	isProcRunning=False
 	if not isNull(colProcesses) then
 		For Each objProcess in colProcesses
-			isUserProcRunning=True
+			isProcRunning=True
 			exit function
 		Next
 	end if
