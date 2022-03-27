@@ -67,19 +67,24 @@ End Function
 Function killProc(byVal procName, byVal Timeout)
 'Authors: Denis St-Pierre and Rob van der Woude
 'Purpose: Kills a process and waits until it is truly dead
-    Dim boolRunning, colProcesses, objProcess
-    boolRunning = False
+	Dim boolRunning, colProcesses, objProcess
+	boolRunning = False
 
-    Set colProcesses = objWmi.ExecQuery( "Select * From Win32_Process", , 48 )
-    For Each objProcess in colProcesses
-        If LCase( procName ) = LCase( objProcess.Name ) Then
-            ' Confirm that the process was actually running
-            boolRunning = True
-            ' Get exact case for the actual process name
-            procName  = objProcess.Name
-            ' Kill all instances of the process
-            objProcess.Terminate()
-		Msg_ "Waiting for " & procName & " to stop ..."
+	Set colProcesses = objWmi.ExecQuery( "Select * From Win32_Process", , 48 )
+	For Each objProcess in colProcesses
+		If LCase( procName ) = LCase( objProcess.Name ) Then
+		' Confirm that the process was actually running
+		boolRunning = True
+		' Get exact case for the actual process name
+		procName  = objProcess.Name
+		' Kill all instances of the process
+		'иногда тут вылетает ошибка SWbemObjectEx not found
+		'так и не понял что это значит. Ниже обсуждение аналогичной ошибки
+		'https://social.technet.microsoft.com/Forums/ie/en-US/57d80534-0777-43e4-bbeb-1b858c79ba16/terminate-process-by-owner-on-local-or-remote-computer?forum=ITCG
+		on error resume next
+			objProcess.Terminate()
+		on error goto 0
+		Msg_ "Waiting " & Timeout & "s for " & procName & " to stop ..."
         End If
     Next
 
@@ -118,8 +123,22 @@ Function killProc(byVal procName, byVal Timeout)
     End If
 End function
 
+'Kill -9
+Function killProc9(byVal procName, byVal Timeout)
+	dim attempt
+	for attempt=1 to 4
+		if not killProc(procName,round(Timeout/4)) then
+			Msg "Kill attempt " & attempt
+			safeRun "taskkill /IM " & procName & " /F"
+		else
+			killProc9=true
+			exit function
+		end if
+	next
+	killProc9=killProc(procName,2)
+end function
 
-
+                
 Function GetCurrentProcessID()
     With GetObject("winmgmts:root\cimv2:win32_process.Handle='" &_
         CreateObject("WScript.Shell").Exec("rundll32 kernel32,Sleep").ProcessId & "'")
@@ -135,7 +154,9 @@ End Function
 
 'Очищает PID файл
 Function ClearPidFile(ByVal FileName)
-	objFSO.DeleteFile(FileName)
+	if objFSO.fileExists(FileName) then
+		objFSO.DeleteFile(FileName)
+	end if
 End Function
 
 'Проверяет наличие PID файла

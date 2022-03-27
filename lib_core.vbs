@@ -1,36 +1,40 @@
 'Библиотечка с маленькими полезными функциями, которые обязательно пригодятся
 'без этого ну никак не обойтись
 Option Explicit
-Const coreLibVer="2.8"
-'ver 2.8
-' - isProcRunning вынесена в lib_procs
-'ver 2.7
-' + добавлен объект objWmi
-'ver 2.6
-' + добавлена переменные Platform, Systemdrive
-'ver 2.5
-' ! скорректирована функция launchpad, которая перепускала скрипт от непревилегированного
-'   пользователя. Была ошибка работы на Win10: теперь имя создаваемой задчи включает %username%,
-'   т.к. есть подозрения, что ошибка была вызвана тем, что созданная задача от одного пользователя
-'   мешала созданию такой же от другого изза совпадения имен и отсутствия доступа.
+Const coreLibVer="2.11"
+'v2.11 * unset_me перенесено в ядро, т.к. теперь используется и для реестра и для INI
+'v2.10   computerName теперь содержит полное имя компьютера
+'        старое усеченное до 15зн NETBIOS имя теперь лежит в compName
+'v2.9    launchPad учитывает исходные аргументы скрипта
+'v2.8    isProcRunning вынесена в lib_procs
+'v2.7  + добавлен объект objWmi
+'v2.6  + добавлена переменные Platform, Systemdrive
+'v2.5  ! скорректирована функция launchpad, которая перепускала скрипт от непревилегированного
+'        пользователя. Была ошибка работы на Win10: теперь имя создаваемой задчи включает %username%,
+'        т.к. есть подозрения, что ошибка была вызвана тем, что созданная задача от одного пользователя
+'        мешала созданию такой же от другого изза совпадения имен и отсутствия доступа.
+'v2.4  * Функция Msg теперь обрабатывает глобальную переменную LogFile и как Обьект и как строку
+'        Если обьявлен объект, то пишем прямо в него, если строка - то открываем файл, пишем и закрываем
+'        Это решает проблему с уже занятым лог файлом, когда происходит перезапуск скрипта через 
+'        launchpad
+'      + Добавлен объект objReg для работы с реестром через WMI (также можно работать ч-з wshShell)
 
-'ver 2.4:
-' * Функция Msg теперь обрабатывает глобальную переменную LogFile и как Обьект и как строку
-'   Если обьявлен объект, то пишем прямо в него, если строка - то открываем файл, пишем и закрываем
-'   Это решает проблему с уже занятым лог файлом, когда происходит перезапуск скрипта через 
-'   launchpad
-' + Добавлен объект objReg для работы с реестром через WMI (также можно работать ч-з wshShell)
+const unset_me=		"#UNSET_me#" 'это значение ставить в переменные которые надо убрать
 
-Dim WshShell : Set WshShell = WScript.CreateObject("WScript.Shell")
-Dim objFSO : Set objFSO = CreateObject("Scripting.FileSystemObject")
-Dim objReg : Set objReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
-Dim objWmi : Set objWmi = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+Dim wshShell	: Set wshShell = WScript.CreateObject("WScript.Shell")
+Dim objUserEnv	: Set objUserEnv = wshShell.Environment("USER")
+Dim objSystemEnv: Set objSystemEnv = wshShell.Environment("SYSTEM")
+Dim objProcessEnv:Set objSystemEnv = wshShell.Environment("PROCESS")
+Dim objVolatileEnv:Set objSystemEnv = wshShell.Environment("VOLATILE")
+Dim objShell	: Set objShell = CreateObject("Shell.Application")
+Dim objFSO	: Set objFSO = CreateObject("Scripting.FileSystemObject")
+Dim objReg	: Set objReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
+Dim objWmi	: Set objWmi = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
 
 Dim WorkDir : WorkDir =	WshShell.ExpandEnvironmentStrings("%TEMP%") & "\"
 Dim WindowsDir : WindowsDir = objFSO.GetSpecialFolder(0)
 
-
-Dim ComputerName : ComputerName = wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
+Dim CompName : ComputerName = wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
 Dim UserName : UserName = wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
 Dim UserProfile : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
 Dim Platform : Platform = wshShell.ExpandEnvironmentStrings( "%PROCESSOR_ARCHITECTURE%" )
@@ -60,6 +64,9 @@ Const REG_BINARY    = 3
 Const REG_DWORD     = 4
 Const REG_MULTI_SZ  = 7
 
+'Полное имя получить - не такая уже тривиальная задача. в основном все способы возвращают 15значное NETBIOS имя
+Dim Computername
+objReg.GetStringValue HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Services\TCPIP\Parameters", "HostName", ComputerName
 
 Dim SessionName: SessionName = wshShell.ExpandEnvironmentStrings( "%SESSIONNAME%" )
 if ( SessionName = "%SESSIONNAME%" ) then
@@ -86,12 +93,22 @@ end function
 
 
 Sub LogMsg(ByVal logtext)
+
+	dim logType
+	logType="undefined"
+	on error resume next
+	logType= TypeName(logFile)
+	on error goto 0
+
+	if logType = "undefined" then
+		exit sub
+	end if
 	if (isObject(logFile)) then
 		'если есть лог файл - выводим в него
 		on error resume next
 		logFile.Write(logtext)
 		on error goto 0
-	elseif not isnull (logFile) then
+	else
 		Dim logFileObj
 		on error resume next
 		Set logFileObj = objFSO.OpenTextFile(logFile, 8, True)
@@ -163,24 +180,26 @@ End Sub
 'it can be useful for debugging if your machine's
 'default script engine is set to wscript
 Sub ForceCScript
+	dim strCurrScriptHost, strExecCmdLine
 	strCurrScriptHost=lcase(right(wscript.fullname,len(wscript.fullname)-len(wscript.path)-1))
 	if strCurrScriptHost<>"cscript.exe" then
-		set objFSO=CreateObject("Scripting.FileSystemObject")
-		Set objShell = CreateObject("WScript.Shell")
-		Set objArgs = WScript.Arguments
 		strExecCmdLine=wscript.path & "\cscript.exe //nologo " & objfso.getfile(wscript.scriptfullname).shortpath
-		For argctr = 0 to objArgs.Count - 1
-			strExecArg=objArgs(argctr)
-			if instr(strExecArg," ")>0 then strExecArg=chr(34) & strExecArg & chr(34)
-			strExecAllArgs=strExecAllArgs & " " & strExecArg
-		Next
-		objShell.run strExecCmdLine & strExecAllArgs,1,false
-		set objFSO = nothing
-		Set objShell = nothing
-		Set objArgs = nothing
+		wshShell.run strExecCmdLine & getArgsStr,1,false
 		wscript.quit
 	end if
 End Sub
+
+
+'предваряет строку str сиволами symbol до длины maxlen
+function stringPrependTo (str,symbol,maxLen)
+	dim testString
+	testString = str
+	do while (Len(testString)<maxLen)
+		testString=symbol+testString
+	loop
+	stringPrependTo=testString
+end function
+
 
 'allows for a pause at the end of execution
 'currently used only for debugging
@@ -191,7 +210,14 @@ Sub Pause
 	strtmp=objStdin.readline
 end Sub
 
-
+'удалить переменную
+Function unset(ByRef val)
+    If isObject(val) Then
+        set val = Nothing
+    Else
+        val = null
+    End If
+End Function
 
 'останов программы с ошибкой
 Sub Halt(ByVal text)
@@ -200,15 +226,21 @@ Sub Halt(ByVal text)
 End Sub
 
 
-'останов программы если ошибка выполнения
-Sub HaltIfError()
+'останов программы с ошибкой если ошибка выполнения
+Sub HaltTextIfError(ByVal text)
 	If Err.Number <> 0 Then 
-		Halt "HALT: Runtime error!" & vbCrLf &_ 
+		Halt "HALT: "& text & vbCrLf &_ 
 			"Err code: " & Err.Number & vbCrLf &_ 
 			"Description: " & Err.Description & vbCrLf &_ 
 			"Source: " & Err.Source 
 	end if
 End Sub
+
+'останов программы если ошибка выполнения
+Sub HaltIfError()
+	HaltTextIfError "Runtime error!"
+End Sub
+
 
 'останов программы если ошибка выполнения
 Sub MsgIfError()
@@ -371,7 +403,7 @@ End Function
 Function WriteFile(ByVal FileName, ByVal Contents)
 	On Error Resume Next
  	WriteFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(FileName, 2, True).Write(Contents)
-	HaltIfError
+	HaltTextIfError "Error writing file " & FileName
 	On Error Goto 0
 End Function
 
@@ -379,13 +411,42 @@ End Function
 Function GetIntFile(ByVal FileName)
 	GetIntFile = 0
 	if (objFSO.FileExists(FileName)) then
+		dim strData
 		On Error Resume Next
-			GetIntFile=CInt(Trim(objFSO.OpenTextFile(FileName).ReadLine))
+			strData=objFSO.OpenTextFile(FileName).ReadLine
 		On Error Goto 0		
+		if err.number<>0 then
+			Msg "Error while Reading " & FileName
+			exit function
+		end if
+
+		On Error Resume Next
+			GetIntFile=CLng(Trim(strData))	
+		On Error Goto 0		
+		if err.number<>0 then
+			Msg "Error while parsing integer [" & strData & "]"
+			exit function
+		end if
+		
+	else    
+		Msg(FileName & " not found")
 	end if
 End Function
 
 
+'строка аргументов
+Function getArgsStr()
+	getArgsStr=""
+	if (WScript.Arguments.Count=0) then
+		exit function
+	end if
+	dim i
+	redim arrArgs(WScript.Arguments.Count-1)
+	For i = 0 To WScript.Arguments.Count-1
+		arrArgs(i) = WScript.Arguments(i)
+	Next
+	getArgsStr=" " & join(arrArgs," ")
+End Function
 
 
 
@@ -423,7 +484,10 @@ sub regDelete (ByVal Path)
 	on error resume next
 	WshShell.RegDelete Path
 	if err.number<>0 then
-		Msg "Error while Deleting " & Path
+		Msg "Error while Deleting " & Path & vbCrLf &_
+			"Err code: " & Err.Number & vbCrLf &_ 
+			"Description: " & Err.Description & vbCrLf &_ 
+			"Source: " & Err.Source 
 		regDelete = false
 	end if
 	on error goto 0
@@ -461,9 +525,9 @@ function regExists (ByVal strKey)
     		else    'strKey is a registry valuename
         		regExists=false
     		end if
-    		err.clear
+    	err.clear
 	else
-    		regExists=true
+    	regExists=true
 	end if
 	on error goto 0
 end function
@@ -478,12 +542,38 @@ Sub regCleanFolder(hive, path)
 	'Msg "2"
   	If Not IsNull(arrSubKeys) Then
     		For Each subkey In arrSubKeys
-			Msg "Deleting reg folder " & path & "\" & subkey & "..."
+				Msg "Deleting reg folder " & path & "\" & subkey & "..."
       			oReg.DeleteKey hive, path & "\" & subkey
     		Next
 	else
 		Msg "Empty"
   	End If
+End Sub
+
+
+Sub regDeleteRecursive(RegPath)
+	'удаляем принципиально папки
+	if not (right(RegPath,1) = "\") then
+		regPath=regPath & "\"
+	end if
+
+	if (not regExists (RegPath)) then
+		Msg "Folder " & RegPath & " not exist (no need to delete)"
+		exit sub
+	end if
+	
+	Msg "Deleting reg folder " & RegPath & "..."
+	dim arrSubKeys, subkey
+	arrSubkeys=RegEnumKeys(RegPath)
+  	If Not IsNull(arrSubKeys) Then
+    		For Each subkey In arrSubKeys
+				'Msg "Deleting reg folder " & path & "\" & subkey & "..."
+      			call regDeleteRecursive(RegPath & subkey & "\")
+    		Next
+	else
+		Msg "No subfolders"
+  	End If
+	regDelete RegPath
 End Sub
 
 'simple function to provide an
@@ -577,7 +667,10 @@ Function UserPerms (PermissionQuery)
 
 	CmdToRun = "%comspec% /c %systemroot%\system32\whoami.exe /all | %systemroot%\system32\findstr /I /C:""" & CheckFor & """"
 
-	If WshShell.Run(CmdToRun, 0, true) = 0 Then UserPerms = True
+	DebugMsg ("Checking " & PermissionQuery & " permissions ...")
+	DebugMsg ("Running " & CmdToRun & " ...")
+	If wshShell.Run(CmdToRun, 0, true) = 0 Then UserPerms = True
+	DebugMsg ("Checking " & PermissionQuery & " permissions complete")
 End Function
 
 'проверка включен ли UAC
@@ -628,37 +721,27 @@ function launchPad (ByVal strAppPath)
 	const ActionTypeExecutable = 0
 	const FlagTaskCreate = 2
 	const LogonTypeInteractive = 3
-	Dim strTaskName
-	strTaskName = "Launch_As_" & UserName & "_unelevated_"  & objFSO.GetBaseName(strAppPath)
-	Dim service
+
+	Dim strTaskName, rootFolder, service, taskDefinition, triggers, trigger, Action, NewTask
+	strTaskName = "Launch_As_" & UserName & "_unelevated_" & objFSO.GetBaseName(strAppPath)
 	Set service = CreateObject("Schedule.Service")
 	call service.Connect()
-	Dim rootFolder
 	Set rootFolder = service.GetFolder("\")
 
 	On Error Resume Next
 		call rootFolder.DeleteTask(strTaskName, 0)
-	Err.Clear
+		Err.Clear
 	On Error goto 0
 
-	Dim taskDefinition
 	Set taskDefinition = service.NewTask(0)
-
-	Dim triggers
 	Set triggers = taskDefinition.Triggers
-
-	Dim trigger
 	Set trigger = triggers.Create(TriggerTypeRegistration)
-
-	Dim Action
 	Set Action = taskDefinition.Actions.Create( ActionTypeExecutable )
 	Action.Path = strAppPath
 
 	Msg "Task definition created. About to submit the task..."
 	Msg "> " & strTaskName & ", taskDefinition, " & FlagTaskCreate & ",,, "& LogonTypeInteractive
 
-	Dim NewTask
-	
 	call rootFolder.RegisterTaskDefinition(strTaskName, taskDefinition, FlagTaskCreate,,,LogonTypeInteractive,NewTask)
 
 	if isObject(NewTask) then
@@ -672,7 +755,8 @@ end function
 sub unPrivelegeMe()
 	if UACTurnedOn then
 		if (UserPerms("Elevated")) Then
-			launchPad Wscript.ScriptFullName
+			'тут надо обработать NOLAUNCHPAD в параметрах для запрета бесконечной рекурсии
+			launchPad Wscript.ScriptFullName & getArgsStr & " unprivelege_me_forked"
 			Msg Wscript.ScriptFullName
 			Halt ( "Parent process exiting due to priveleged state" )
 		Else
@@ -688,7 +772,7 @@ sub forceUnPrivelegeMe()
 	if arg("privelege_me_forked") then
 		Msg "Unpriveleged child process detected"
 	else
-		launchPad Wscript.ScriptFullName&" unprivelege_me_forked"
+		launchPad Wscript.ScriptFullName & getArgsStr & " unprivelege_me_forked"
 		Msg Wscript.ScriptFullName&" unprivelege_me_forked"
 		Halt ( "Parent process exiting due to priveleged state" )
 	End if
@@ -710,8 +794,9 @@ sub privelegeMe()
 				Halt ( "Child process failed to achieve elevated state" )
 			else
 				Msg " - forking priveleged process ..."
-				dim objShell: Set objShell = CreateObject("Shell.Application")
-				objShell.ShellExecute "cscript.exe", Chr(34) & WScript.ScriptFullName & Chr(34) & " privelege_me_forked", , "runas", 1 
+				dim shellCmd : shellCmd = Chr(34) & WScript.ScriptFullName & Chr(34) & getArgsStr & " privelege_me_forked"
+				debugMsg "Running " & shellcmd & " ... "
+				objShell.ShellExecute "cscript.exe", shellCmd , , "runas", 1 
 				Halt ( "Parent process exiting due to unpriveleged state" )
 			end if
 		End if
@@ -785,3 +870,169 @@ Function GetOS
         End If
 	Next
 End Function
+
+'-----------------------------------------------------------------------------------
+'ENVIRONMENT VARIABLES
+
+
+function EnvironmentVariableName (ByVal setString)
+	dim eqPos
+	eqPos=instr(1,setString,"=",vbTextCompare)
+	if (eqPos = 0) then
+		EnvironmentVariableName=setString
+	else
+		EnvironmentVariableName=Left(setString,eqPos-1)
+	end if
+end function
+
+'проверяет установлена ли переменная в нужном окружении и устанавливает если нужно (или удаляет) 
+'System		– системные переменные_среды, 
+'User		– переменные_среды пользователя
+'Volatile	– временные_переменные (туда пишутся всякая архитектура процессора и прочая шняга)
+'Process	– переменные_среды текущего процесса
+function EnvironmentVariableCorrect (ByVal Environment, ByVal varName, ByVal varVal)
+	'это несколько устаревший и костыльный способ, более того не учитывает тип окружения, только SYSTEM
+	'if (varVal<>unset_me) then
+	'	regcheck "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\"&varName,"REG_SZ", varVal
+	'else
+	'	regcheck "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\"&varName,"REG_SZ", false
+	'end if
+	Dim objEnvironment,index
+	Set objEnvironment = wshShell.Environment(Environment)
+	EnvironmentVariableCorrect=false
+	if (varVal<>unset_me) then
+		Msg "Checking if " & Environment & " variable " & varName & " is set to " & varVal
+		if (objEnvironment(varName) = varVal) then
+			Msg " - yes"
+		else
+			objEnvironment(varName) = varVal
+			EnvironmentVariableCorrect=true
+			Msg " - No. Fixed"
+		end if
+	else
+		Msg "Checking if " & Environment & " variable " & varName & " is unset "
+		varName=UCase(varName)
+		For Each index In objEnvironment
+			'DebugMsg UCase(EnvironmentVariableName(index)) &" vs "& varName
+			if UCase(EnvironmentVariableName(index)) = varName then
+				objEnvironment.Remove(varName)
+				EnvironmentVariableCorrect=true
+				Msg " - No. Fixing"
+				exit For
+			end if
+		Next 
+		if (EnvironmentVariableCorrect = false) then
+			Msg " - Yes"
+		end if
+	end if
+	
+end Function
+
+sub EnvironmentVariableSet (ByVal Environment, ByVal varName, ByVal varVal)
+	Dim objEnvironment
+	Set objEnvironment = wshShell.Environment(Environment)
+	objEnvironment(varName)=varVal
+	unset(objEnvironment)
+End Sub
+
+function EnvironmentVariableGet (ByVal Environment, ByVal varName)
+	Dim objEnvironment
+	Set objEnvironment = wshShell.Environment(Environment)
+	EnvironmentVariableGe = objEnvironment(varName)
+	unset(objEnvironment)
+end function
+
+'удаляет определение переменной в каком-либо окружении
+function EnvironmentVariableUnset (ByVal Environment, ByVal varName)
+	Dim objEnvironment,index
+	Set objEnvironment = wshShell.Environment(Environment)
+	EnvironmentVariableUnset=false
+	varName=Ucase(varName)
+	For Each index In objEnvironment
+		if UCase(EnvironmentVariableName(index)) = varName then
+			objEnvironment.Remove(varName)
+			EnvironmentVariableUnset=true
+			exit For
+		end if
+	Next 
+	unset(objEnvironment)
+End function
+
+
+sub EnvVarCorrectNow (ByVal varName, ByVal varVal)
+	call EnvVarCorrect(varName, varVal)
+end sub
+
+sub EnvVarCorrect (ByVal varName, ByVal varVal)
+	if (EnvironmentVariableCorrect ("SYSTEM",varName, varVal)) then
+		call EnvironmentVariableCorrect ("PROCESS",varName, varVal)
+		call EnvironmentVariableCorrect ("VOLATILE",varName, varVal)
+	end if
+end sub
+
+sub EnvUsrVarCorrect (ByVal varName, ByVal varVal)
+	if (EnvironmentVariableCorrect ("USER",varName, varVal)) then
+		call EnvironmentVariableCorrect ("PROCESS",varName, varVal)
+		call EnvironmentVariableCorrect ("VOLATILE",varName, varVal)
+	end if
+end sub
+
+
+function EnvVarCheck(ByVal varName, ByVal varVal)
+	Msg "Checking environment variable " & varName & " ... "
+	on error resume next
+	dim current
+	current = WshShell.ExpandEnvironmentStrings(varName)
+	if err.number <> 0 then
+		Msg "Error expanding variable " & varName
+		if (varVal=unset_me) then
+			EnvVarCheck=true
+		else
+			EnvVarCheck=false
+		end if
+	else
+		if (LCase(current)<>LCase(varVal)) then
+			EnvVarCheck=false
+			Msg(varName & " set to """ & current & """ instead of """ & varVal & """")
+		else
+			EnvVarCheck=true
+		End if
+	end if
+end function
+
+
+function EnvPathCorrect(ByVal testPath)
+'проверяет наличие переданного пути в переменной PATH, добавляет если нет
+	dim dirs,found,i
+
+	Msg "Checking path variable for " & testPath & " presence ... "
+	EnvPathCorrect=false
+
+	testPath=unquotePath(trim(testPath))
+	dirs=split(EnvironmentVariableGet ("SYSTEM", "PATH"),";")
+	found=false
+
+	for i=0 to ubound(dirs)
+		if UCase(trim(dirs(i)))=UCase(testPath) then
+			found=true
+		end if
+	next
+
+	if found then
+		msg " - found"
+	else
+		msg " - not found. Adding"
+		ReDim Preserve dirs(UBound(dirs) + 1)
+		dirs(UBound(dirs)) = testPath
+	end if
+
+	if (not found) then
+		msg " - saving changes..."
+		call EnvironmentVariableSet ("SYSTEM","PATH", join(dirs,";"))
+		call EnvironmentVariableSet ("PROCESS","PATH", join(dirs,";"))
+		call EnvironmentVariableSet ("VOLATILE","PATH", join(dirs,";"))
+		EnvPathCorrect=true
+		msg " - done"
+	end if
+
+end function

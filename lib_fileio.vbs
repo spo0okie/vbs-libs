@@ -1,12 +1,45 @@
 'FILE ROUTINE ----------------------------------------------------------
+'option explicit
+
+'Копирование файла
+Function xCopyFile(ByVal fromf, ByVal tof)
+	'/C	Игнорирует ошибки.
+	'/f	Отображает имена исходных и целевых файлов при копировании.
+	'/i	Если Source является каталогом или содержит подстановочные знаки, а назначение не существует, команда xcopy предполагает, 
+	'	что в поле назначение указано имя каталога и создается новый каталог. Затем команда xcopy копирует все указанные файлы в новый каталог. 
+	'	По умолчанию команда xcopy предложит указать, является ли назначение файлом или каталогом.
+	'/r	Копирует файлы, которые доступны только для чтения.
+	'/h	Копирует файлы с атрибутами скрытых и системных файлов. По умолчанию команда xcopy не копирует скрытые или системные файлы.
+	'/y	Подавляет запрос на подтверждение перезаписи существующего целевого файла.
+	'/z	Выполняет копирование по сети в перезапускаемом режиме.
+	dim command: command="%windir%\system32\XCOPY.exe /Y /C /F /R /H /I /Z /E """ & fromf & """ """ & tof & """"
+	debugMsg "Running " & command
+	'on error resume next
+		'Err.Clear
+		'xCopyFile=wshShell.run(command,0,true)
+		'Err.Clear
+	'on error goto 0
+	debugMsg "Complete"
+End Function
 
 'Копирование файла
 Sub safeCopy(ByVal fromf, ByVal tof)
-	on error resume next
-	dim ret : ret=wshShell.run("%windir%\system32\XCOPY.exe /Y /C /F /R /H /I /Z """ & fromf & """ """ & tof & """",0,true)
-	msg "Copying " & fromf & " to " & tof & " - return code: " & ret
-	on error goto 0
+	msg_ "Copying " & fromf & " to " & tof 
+	dim ret : ret=xCopyFile(fromf,tof)
+	msg__ " - return code: " & ret & vbCrLf
+	'safeCopy=ret
 End sub
+
+'Удаление файла, если он есть
+Sub safeDelete(ByVal FName)
+	msg_ "Deleting " & Fname & " ..."
+	if objFSO.fileExists(Fname) then
+		objFSO.deleteFile(Fname)
+		msg__ " complete"
+	else
+		msg__ " not exists"
+	end if 
+End Sub
 
 
 'возвращает путь к файлу без имени файла
@@ -72,7 +105,7 @@ Sub CheckDir(ByVal ckPath)
 		dim tmp, dirs, i
 		dirs = split(GetPathDirs(ckPath),"\")
 		tmp = GetPathRoot(ckPath)
-		msg ("Got " & tmp)
+		'msg ("Got " & tmp)
 		for i = 0 to Ubound(dirs)
 			if (len(dirs(i))>0) then
 				tmp = tmp & dirs(i) & "\"
@@ -326,7 +359,7 @@ function compareFilesDateSize(byVal strFile1, byVal strFile2)
 	set objFile1=objFSO.getFile(strFile1)
 	set objFile2=objFSO.getFile(strFile2)
 	if (not((objFile1.size = objFile2.size) and (objFile1.dateLastModified = objFile2.dateLastModified))) then
-		Msg ("Comparison of " & strFile.Name & " in " & master & " -> " & slave & " DIFF: date/size mistmatch!")
+		Msg ("Comparison of " & strFile1 & " vs " & strFile2 & " DIFF: date/size mistmatch!")
 		exit function
 	end if
 
@@ -400,33 +433,121 @@ function dirMasterSlaveCopy(byVal master, byVal slave)
 end function
 
 
+'все что есть в мастере - переносит в слейв
+function dirMasterSlaveMove(byVal master, byVal slave)
+	Msg "Moving " & master & " -> " & slave
+	If (not objFSO.FolderExists(master)) then
+		dirMasterSlaveMove=false
+		exit function
+	end if
+	dim objMaster, objSlave, objFile, objDir
+
+	Set objMaster = objFSO.GetFolder(master)
+	CheckDir slave
+
+	dirMasterSlaveMove=true
+	'Msg ("Moving files in " & master)
+	For Each objFile In objMaster.Files
+		if (xCopyFile(master & "\" & objFile.Name, slave) = 0) then
+			'если копирование прошло успешно - удаляем исходный файл
+			objFSO.DeleteFile(master & "\" & objFile.Name)
+		else
+			msg("Error moving " & master & "\" & objFile.Name & " -> " & slave )
+			dirMasterSlaveMove=false
+		end if
+	Next	
+
+	'Msg ("Moving folders in " & master)
+	For Each objDir In objMaster.SubFolders
+		'msg("trying to move " & objDir.Path)
+		if (dirMasterSlaveMove(objDir.Path , slave & "\" & objDir.Name) = false) then
+			'тут я словил удивительнейший глюк, на который потратил несколько часов но так и не победил
+			'обращаться к переменной objDir после рекурсивного вызова функции нельзя - vbScript вылетает с ошибкой "путь не найден"
+			'подозреваю что под путем имеется в виду поля объекта через точку, но это не точно. Для дальнейшего расследования
+			'надо бы написать var_dump и посмотреть что там внутри objDir после выхода.
+			'в общем на текущий момент следующее обращение только после повторной инициализации (следующая итерация цикла)
+			'msg("wow! " & objDir.Name & " moved")
+			'msg("Error moving " & master & "\" & objDir.Name & "->" & slave & "\" & objDir.Name)
+			dirMasterSlaveMove=false
+		end if
+	Next
+	
+	'если в процессе были ошибки - выходим
+	if (not dirMasterSlaveMove) then
+		exit function
+	end if
+
+	'проверяем что все удалено из директории
+	set objMaster = objFSO.GetFolder(master)
+	For Each objFile In objMaster.Files
+		Msg("Err: file " & objFile.Name & " found in " & master & " after move ")
+		dirMasterSlaveMove=false
+		exit function
+	Next
+	For Each objDir In objMaster.SubFolders
+		Msg("Err: file " & objDir.Name & " found in " & master & " after move ")
+		dirMasterSlaveMove=false
+		exit function
+	Next
+
+	'Если дошли до сюда не вылетев - значит в папке пусто. удаляем ее
+	objFSO.DeleteFolder(master)
+	'Msg "Moving " & master & " -> " & slave & " done."
+	
+end function
+
+
 
 'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв 
 '(сравнение файлов по размеру и дате)
 'все лишнее что есть на слейве но нет на мастере - удаляет
+'возвращает признак того, что были сделаны изменения
 function dirMasterSlaveSync(byVal master, byVal slave)
+	dim objMaster,_
+		objSlave,_
+		ignoreLocalFiles,_
+		keepLocalFiles,_
+		objFile,_
+		objDir,_
+		secFile,_
+		secFileName,_
+		secDirname,_
+		strDir
 	Set objMaster = objFSO.GetFolder(master)
-	CheckDir slave
 	dirMasterSlaveSync=false
-	Set objSlave = objFSO.GetFolder(slave)
+	'удалять файлы на слейве, которых нет на мастере
+	keepLocalFiles=false
+	'файлы-флаги, которые не нужные на слейве
 	Set ignoreLocalFiles = CreateObject("Scripting.Dictionary")
 	ignoreLocalFiles.Add ".sync-skip-dir",0
 	ignoreLocalFiles.Add ".sync-skip-local-files",0
+	ignoreLocalFiles.Add ".sync-keep-slave-files",0
 
+	DebugMsg "Comparing " & master & " vs " & slave & " ..."
 	if objFSO.fileExists(master & "\.sync-skip-dir") then
-		Msg "Skipping " & slave & "because of flag file in it"
+		Msg "Skipping " & slave & " because of flag file in it"
+		unset(ignoreLocalFiles)
+		unset(objMaster)
 		exit function
 	end if
 
 	if objFSO.fileExists(master & "\.sync-skip-local-files") then
+		dim file
 		Set file = objFSO.OpenTextFile (master & "\.sync-skip-local-files", 1)
 		Do Until file.AtEndOfStream
 			line = file.Readline
 			ignoreLocalFiles.Add line,0
 		Loop
-		Msg "Skipping " & slave & "because of flag file in it"
+		unset(file)
+		Msg "Skipping " & slave & " because of flag file in it"
 	end if
 
+	keepLocalFiles=objFSO.fileExists(master & "\.sync-keep-slave-files") 
+
+	CheckDir slave
+	Set objSlave = objFSO.GetFolder(slave)
+
+	DebugMsg "dirMasterSlaveSync forward files passage"
 	'прямая проходка (копирование с мастера на слейв)
 	For Each objFile In objMaster.Files
 		if (not ignoreLocalFiles.Exists(objFile.Name)) then
@@ -435,25 +556,32 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 				set secFile=objFSO.getFile(secFileName)
 				if (not((secFile.size = objFile.size) and (secFile.dateLastModified = objFile.dateLastModified))) then
 					Msg ("Comparison of " & objFile.Name & " in " & master & " -> " & slave & " failed: date/size mistmatch!")
-					safeCopy master & "\" & objFile.Name, slave
+					call safeCopy(master & "\" & objFile.Name, slave)
+					DebugMsg "dirMasterSlaveSync safeCopy.complete"
 					dirMasterSlaveSync=true
 				end if
+				unset(secFile)
 			else
 				safeCopy master & "\" & objFile.Name, slave
 				dirMasterSlaveSync=true
 			end if
 		end if
 	Next	
+	
+	DebugMsg "dirMasterSlaveSync backward files passage"
 	'обратная проходка (удаление на слейве того чего нет на мастере)
-	For Each objFile In objSlave.Files
-	    	secFileName = master & "\" & objFile.Name
-	        if (not objFSO.fileExists(secFileName)) and not ignoreLocalFiles.Exists(objFile.Name) then
-			Msg ("Comparison of " & objFile.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
-			objFSO.DeleteFile(slave & "\" & objFile.Name)
-			dirMasterSlaveSync=true
-		end if
-	Next	
+	if not keepLocalFiles then
+		For Each objFile In objSlave.Files
+		    	secFileName = master & "\" & objFile.Name
+	    	    if (not objFSO.fileExists(secFileName)) and not ignoreLocalFiles.Exists(objFile.Name) then
+				Msg ("Comparison of " & objFile.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
+				objFSO.DeleteFile(slave & "\" & objFile.Name)
+				dirMasterSlaveSync=true
+			end if
+		Next
+	end if
 
+	DebugMsg "dirMasterSlaveSync forward dirs passage"
 	'прямая проходка по подпапкам
 	For Each strDir In objMaster.SubFolders
 		if (dirMasterSlaveSync(strDir.path, slave & "\" & strDir.Name)) then
@@ -461,13 +589,22 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 		end if
 	Next
 
+	DebugMsg "dirMasterSlaveSync backward files passage"
 	'обратная проходка по подпапкам
-	For Each strDir In objSlave.SubFolders
-	    	secDirName = master & "\" & strDir.Name
-	        if (not objFSO.folderExists(secDirName)) then
-			Msg ("Comparison of " & strDir.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
-			objFSO.DeleteFolder slave & "\" & strDir.Name ,true
-			dirMasterSlaveSync=true
-		end if
-	Next
+	if not keepLocalFiles then
+		For Each strDir In objSlave.SubFolders
+		    	secDirName = master & "\" & strDir.Name
+	    	    if (not objFSO.folderExists(secDirName)) then
+				Msg ("Comparison of " & strDir.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
+				objFSO.DeleteFolder slave & "\" & strDir.Name ,true
+				dirMasterSlaveSync=true
+			end if
+		Next
+	end if
+	'DebugMsg "dirMasterSlaveSync reuturning " & 
+	unset(ignoreLocalFiles)
+	unset(objMaster)
+	unset(objSlave)
+	unset(objDir)
+	unset(objFile)
 end function

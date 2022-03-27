@@ -18,7 +18,6 @@
 
 
 
-
 'возвращает начало камента в строке (ComDelims - массив символов начала камента)
 'или конец строки+1 если нет камента
 function CommentAt(byVal INIString, byVal ComDelims, byVal Cst, byVal Cend, byVal CaSense)
@@ -166,11 +165,11 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 	Dim testSec, testVar, testVal, jobSec, jobVar, jobDone
 
 	'Get contents of the INI file As a string
-	'wscript.echo "reading file : "&FileName
+	DebugMsg "reading file : "&FileName
 	INIContents = GetFile(FileName)
 	CrLf=GetFileCrLf(INIContents,defCrLf)
 	INIStrings = Split (INIContents, CrLf)
-	'wscript.echo "found lines : "&ubound(INIStrings)
+	DebugMsg "found lines : "&ubound(INIStrings)
 
 	CurSection=""		'на начало файла секции нет (может и не будет до конца файла)
 	jobDone=false		'работа не сделана
@@ -191,11 +190,11 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 			testVar=UCase(testVar)
 		end if
 		if Len(testSec)>0 then
-			'wscript.echo "Section detected: " & testSec
+			DebugMsg "Section detected: " & testSec & " vs " & jobSec
 			if CurSection=jobSec then	'кончилась секция в которой мы искали переменную
 				if req="write" and not jobDone then 'в той секции надо было записать переменную, а ее не было
 					'допишем в конец предыдущей секции
-					'wscript.echo "INSERTING BEFORE SECTION :" &i
+					DebugMsg "INSERTING BEFORE SECTION :" &i
 					INIStrings(i)=	commentLine(Comment,ComDelims,CrLf)& _
 									declareVariable(KeyName,eq,Value)&_
 									CrLf & INIStrings(i)
@@ -205,17 +204,23 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 			CurSection=testSec
 		elseif len(testVar)>0 then
 			testVal=GetVariableVal(UsefulPart,eq)
-			'wscript.echo "Variable detected: " & testVar & " => " & testVal
+			DebugMsg "Variable detected: " & testVar & " => " & testVal
 			if CurSection=jobSec and testVar=jobVar then
 			'мы нашли свою переменную
 				if req="write" then 'запись
 					'рисуем камент об изменении файла 'комментируем текущую линию 'пишем свою
 					if testVal<>Value then
-						'wscript.echo "CHANGING CURRENT :" &i
+						DebugMsg "CHANGING CURRENT :" &i
 						INIStrings(i)=	commentLine(Comment,ComDelims,CrLf)& _
 										commentLine(INIStrings(i),ComDelims,CrLf)& _
 										declareVariable(KeyName,eq,Value)
 					end if
+					jobDone=true
+				elseif req="delete" then 'удаление значения 'комментируем текущую линию 
+						DebugMsg "CHANGING CURRENT :" &i
+						INIStrings(i)=	commentLine(Comment,ComDelims,CrLf)& _
+										commentLine(INIStrings(i),ComDelims,"")
+				
 					jobDone=true
 				else 'чтение
 					parseINIString=testVal
@@ -237,7 +242,7 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 			parseINIString=Value
 		end if
 	end if
-	if req="write" then 'запись
+	if req="write" or req="delete" then 'запись
 		if jobDone then WriteFile FileName, Join(INIStrings,CrLf)
 		parseINIString=jobDone
 	end if
@@ -343,8 +348,14 @@ end Function
 
 'записать значение в INI файл
 Function conffile_set(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Value, ByVal Comment)
+	dim mode
+	if Value=unset_me then
+		mode="delete"
+	else
+		mode="write"
+	end if
 	if CheckFileTypeDescr(FType) then
-		conffile_set=parseINIString(FPath, FType("eq"), FType("secL"), FType("secR"), FType("ComDelims"), FType("Cst"), FType("Cend"), FType("CaSense"), FType("defCrLf"), Section, Key, Value, "write", Comment)
+		conffile_set=parseINIString(FPath, FType("eq"), FType("secL"), FType("secR"), FType("ComDelims"), FType("Cst"), FType("Cend"), FType("CaSense"), FType("defCrLf"), Section, Key, Value, mode, Comment)
 	else
 		conffile_set=false
 	end if

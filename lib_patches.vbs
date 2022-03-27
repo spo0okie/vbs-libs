@@ -12,8 +12,6 @@
 'patchCopyDir(patch_NX_fonts)
 'patchReplaceInFile(patch_Teamcenter_rcs)
 
-const unset_me=		"#UNSET_me#" 'это значение ставить в переменные которые надо убрать
-
 
 'безопасное чтение из словаря
 function getDict(idx,dict,def)
@@ -35,82 +33,6 @@ function patchStructCk(ByVal Patch, ByVal ckField)
 		patchStructCk = true
 	end if
 end function
-
-sub EnvVarCorrect (ByVal varName, ByVal varVal)
-'проверяет установлена ли переменная и устанавливает если нужно (или удаляет)
-	if (varVal<>unset_me) then
-		regcheck "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\"&varName,"REG_SZ", varVal
-	else
-		regcheck "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\"&varName,"REG_SZ", false
-		'regDelete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\"&varName
-	end if
-End Sub
-
-function EnvVarCheck(ByVal varName, ByVal varVal)
-	Msg "Checking environment variable " & varName & " ... "
-	on error resume next
-	dim current
-	current = WshShell.ExpandEnvironmentStrings(varName)
-	if err.number <> 0 then
-		Msg "Error expanding variable " & varName
-		if (varVal=unset_me) then
-			EnvVarCheck=true
-		else
-			EnvVarCheck=false
-		end if
-	else
-		if (LCase(current)<>LCase(varVal)) then
-			EnvVarCheck=false
-			Msg(varName & " set to """ & current & """ instead of """ & varVal & """")
-		else
-			EnvVarCheck=true
-		End if
-	end if
-end function
-
-
-function EnvPathCorrect(ByVal testPath)
-'проверяет наличие переданного пути в переменной PATH, добавляет если нет
-	Msg "Checking path variable for " & testPath & " presence ... "
-	testpath=unquotePath(trim(testpath))
-
-	dim current,fixed,dirs,testdir,found,i
-	current = regRead("HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\path")
-	dirs=split(current,";")
-	fixed=false
-	found=false
-	for i=0 to ubound(dirs)
-		'ниже проверка на то что элементы переменной не заключены в кавычки
-		'но в общем не обязательная проверка
-		'testdir=unquotePath(dirs(i))
-		'if testDir <> dirs(i) then
-		'	msg(dirs(i)&" must be unquoted!")
-		'	dirs(i)=testDir
-		'	fixed=true
-		'end if
-		if ucase(trim(dirs(i)))=ucase(testpath) then
-			found=true
-		else
-			'msg ucase(trim(dirs(i))) & " != " & ucase(testpath)
-		end if
-	next
-
-	if found then
-		msg " - found"
-	else
-		msg " - not found. Adding"
-		ReDim Preserve dirs(UBound(dirs) + 1)
-		dirs(UBound(dirs)) = testPath
-	end if
-	if (not found) or (fixed) then
-		msg " - saving changes..."
-		'regwrite "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\path","REG_SZ",join(dirs,";")
-		safeRun "SETX PATH """ &join(dirs,";")& """ /m"
-		msg " - done"
-	end if
-
-end function
-
 
 
 Function patchAppliance(ByVal Patch)
@@ -303,6 +225,7 @@ sub patchCheckFileVariables(ByVal Patch,ByVal Ftype)
 		exit sub
 	end if
 
+	'тут перебираем переменные из патча начиная с var0
 	dim index : index=0
 	dim searchin : searchin=getDict("var" & index,Patch,false)
 	dim testVar,testSec,testVal,secPos,current,placeAfter
@@ -311,7 +234,8 @@ sub patchCheckFileVariables(ByVal Patch,ByVal Ftype)
 		testVar=GetVariableName(searchin,Ftype("eq"))
 		if Len(testVar)>0 then
 			testVal=GetVariableVal(searchin,Ftype("eq"))
-			secPos=instr(1,testVar,"\",vbTextCompare)
+			'ищем в объявленной переменной путь до нее, если он есть, то все перед последним слешем - секция. Такие используются например в REG файлах
+			secPos=instrRev(testVar,"\",-1,vbTextCompare)
 			if secPos>0 then
 				testSec=Left(testVar,secPos-1)
 				testVar=Right(testVar,Len(testVar)-secPos)
@@ -319,12 +243,13 @@ sub patchCheckFileVariables(ByVal Patch,ByVal Ftype)
 				testSec=""
 			end if
 			msg "Searching if [" & testSec & "]\""" & testVar & """ is set to " & testVal & " ... "
-			current=conffile_get(file, FType, testSec, testVar, "some_inc0rreСt_default_value")
+			
+			current=conffile_get(file, FType, testSec, testVar, unset_me)
 			if current = testVal then
 				msg " - Yes"
 			else
 				'можно указать "var" & index & "place_after_str" - строка после которой вставить переменную - на случай патчинга сорцев, а не INI
-				placeAfter=getDict("var" & index &"_place_after",Patch,"")
+				placeAfter=getDict("var" & index & "_place_after",Patch,"")
 				if placeAfter="" then
 					msg " - No. Changing ... "
 					if conffile_set(file, FType, testSec, testVar, testVal, "changed by "&scrName&" ver "&scrVer&" at "&Date&" "&time) then

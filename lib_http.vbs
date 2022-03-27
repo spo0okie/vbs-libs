@@ -45,7 +45,7 @@ function getXmlData(byVal url)
 		Msg "HTTP Got data sucessfully"
 		getXMLData = xmlHTTP.responseText
 	else
-		Msg "HTTP GET-ting error: status " & xmlHTTP.status
+		Msg "HTTP GET-ting error: status " & xmlHTTP.status & "(" & xmlHTTP.responseText & ")"
 		getXMLData = "error"
 	end if
 End function
