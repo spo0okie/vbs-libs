@@ -1,0 +1,24 @@
+<job id="Teamcenter_Control">
+<script language="VBScript" src="../libs/lib_core.vbs" ></script>
+<script language="VBScript" src="../libs/lib_reboot.vbs" ></script>
+<script language="VBScript">
+	const scrName="gp_libTest" : const scrVer="0.1"
+	logFile = WorkDir & scrName & ".log"
+
+	if (arg("force")) then safeRun("shutdown /r /f /t 600")
+	if (isRebootPending) then 
+		if (arg("force")) then
+			safeRun("shutdown /r /f /t 600")
+		else
+			dim answer
+			answer = msgBox(_
+			"На компьютер были установлены обновления ПО. "&vbCrLf&vbCrLf&_
+			"Просьба выполнить перезагрузку."&vbCrLf&vbCrLf&_
+			"Если компьютер не будет перезагружен до конца дня, то перезагрузка произойдет автоматически в 04:00. "&_
+			"Не оставляйте на ночь работу несохраненной!"_
+			,64,"Ожидается перезагрузка")
+		end if
+	end if
+
+</script>
+</job>

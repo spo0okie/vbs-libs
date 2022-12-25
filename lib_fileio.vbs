@@ -36,6 +36,9 @@ Sub safeDelete(ByVal FName)
 	if objFSO.fileExists(Fname) then
 		objFSO.deleteFile(Fname)
 		msg__ " complete"
+	elseif  objFSO.folderExists(Fname) then
+		objFSO.deleteFolder Fname, true
+		msg__ " complete"
 	else
 		msg__ " not exists"
 	end if 

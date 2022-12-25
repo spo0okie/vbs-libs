@@ -1,7 +1,9 @@
 'Ѕиблиотечка с маленькими полезными функци€ми, которые об€зательно пригод€тс€
 'без этого ну никак не обойтись
 Option Explicit
-Const coreLibVer="2.11"
+Const coreLibVer="2.13"
+'v2.13 + ComputerDomain (читаетс€ из реестра также как ComputerName)
+'v2.12 * regDeleteRecursive и другие функции реестра принимают корень и в полном
 'v2.11 * unset_me перенесено в €дро, т.к. теперь используетс€ и дл€ реестра и дл€ INI
 'v2.10   computerName теперь содержит полное им€ компьютера
 '        старое усеченное до 15зн NETBIOS им€ теперь лежит в compName
@@ -18,6 +20,7 @@ Const coreLibVer="2.11"
 '        Ёто решает проблему с уже зан€тым лог файлом, когда происходит перезапуск скрипта через 
 '        launchpad
 '      + ƒобавлен объект objReg дл€ работы с реестром через WMI (также можно работать ч-з wshShell)
+
 
 const unset_me=		"#UNSET_me#" 'это значение ставить в переменные которые надо убрать
 
@@ -36,6 +39,10 @@ Dim WindowsDir : WindowsDir = objFSO.GetSpecialFolder(0)
 
 Dim CompName : ComputerName = wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
 Dim UserName : UserName = wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
+Dim UserDomain : UserDomain = wshShell.ExpandEnvironmentStrings( "%USERDOMAIN%" )
+'ѕолное им€ получить - не така€ уже тривиальна€ задача. в основном все способы возвращают 15значное NETBIOS им€
+Dim Computername : Computername=wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\HostName")
+Dim ComputerDomain : ComputerDomain = wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain")
 Dim UserProfile : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
 Dim Platform : Platform = wshShell.ExpandEnvironmentStrings( "%PROCESSOR_ARCHITECTURE%" )
 Dim SystemDrive : SystemDrive = wshShell.ExpandEnvironmentStrings( "%SYSTEMDRIVE%" )
@@ -64,19 +71,18 @@ Const REG_BINARY    = 3
 Const REG_DWORD     = 4
 Const REG_MULTI_SZ  = 7
 
-'ѕолное им€ получить - не така€ уже тривиальна€ задача. в основном все способы возвращают 15значное NETBIOS им€
-Dim Computername
-objReg.GetStringValue HKEY_LOCAL_MACHINE, "SYSTEM\CurrentControlSet\Services\TCPIP\Parameters", "HostName", ComputerName
 
 Dim SessionName: SessionName = wshShell.ExpandEnvironmentStrings( "%SESSIONNAME%" )
 if ( SessionName = "%SESSIONNAME%" ) then
 	Dim arrSubkeys
 	Dim counter
 	objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys
-	If Not IsNull(arrSubKeys) Then
-		counter=arrSubKeys(0)
-		objReg.GetStringValue HKEY_CURRENT_USER, "Volatile Environment\" & counter, "SESSIONNAME", SessionName
-		SessionName=SessionName & " "
+	If IsArray(arrSubKeys) then
+		if Ubound(arrSubKeys)>0 Then
+			counter=arrSubKeys(0)
+			objReg.GetStringValue HKEY_CURRENT_USER, "Volatile Environment\" & counter, "SESSIONNAME", SessionName
+			SessionName=SessionName & " "
+		End If
 	End If
 End if
 
@@ -221,15 +227,22 @@ End Function
 
 'останов программы с ошибкой
 Sub Halt(ByVal text)
-	Msg(text)
+	Msg("HALT: "&text)
 	WScript.Quit(10)
+End Sub
+
+'останов программы с ошибкой если соблюдено условие
+Sub HaltIf(ByVal condition,ByVal text)
+	if (condition) then
+		Halt(text)
+	end if
 End Sub
 
 
 'останов программы с ошибкой если ошибка выполнени€
 Sub HaltTextIfError(ByVal text)
 	If Err.Number <> 0 Then 
-		Halt "HALT: "& text & vbCrLf &_ 
+		Halt text & vbCrLf &_ 
 			"Err code: " & Err.Number & vbCrLf &_ 
 			"Description: " & Err.Description & vbCrLf &_ 
 			"Source: " & Err.Source 
@@ -298,6 +311,15 @@ function exitCode(ByVal cmd)
 	exitCode = ret
 End function
 
+function execStdout(ByVal cmd)
+	msg "Running: " & cmd
+	on error resume next
+	dim ret : set ret=wshShell.exec(cmd)
+	on error goto 0
+	execStdout = ret.StdOut.ReadAll()
+End function
+
+
 'заключает путь в кавычки если в нем есть пробелы
 function quotePath(ByVal Path)
 	quotePath=Path
@@ -351,7 +373,7 @@ function argName(ByVal argument)
 'возвращает им€ аргумента из пары аргумент:значение
 	dim tokens
 	tokens=Split(argument,":")
-	argName=tokens(0)
+	argName=LCase(tokens(0))
 	'msg "argName: Return "& LCase(tokens(0)) & " from " & argument
 end function
 
@@ -389,6 +411,19 @@ function arg(ByVal needle)
 	arg=false
 end function
 
+'вывести список аргументов, разделенных строкой glue
+function argList(ByVal glue)
+	dim i,list
+	list=""
+
+	for i = 0 to WScript.Arguments.Count-1
+		if (i>0) then 
+			list=list&glue
+		end if
+		list=list&WScript.Arguments(i)
+	next
+	argList=list
+end function
 
 'получить содержимое файла
 Function GetFile(ByVal FileName)
@@ -635,11 +670,11 @@ End Function
 Function SetHive(RegKey)
 	dim strHive
 	strHive=left(RegKey,instr(RegKey,"\"))
-	if strHive="HKCR\" or strHive="HKR\" then SetHive=HKEY_CLASSES_ROOT
-	if strHive="HKCU\" then SetHive=HKEY_CURRENT_USER
-	if strHive="HKCC\" then SetHive=HKEY_CURRENT_CONFIG
-	if strHive="HKLM\" then SetHive=HKEY_LOCAL_MACHINE
-	if strHive="HKU\" then SetHive=HKEY_USERS
+	if strHive="HKCR\" or strHive="HKR\" or strHive="HKEY_CLASSES_ROOT\" then SetHive=HKEY_CLASSES_ROOT
+	if strHive="HKCU\" or strHive="HKEY_CURRENT_USER\" then SetHive=HKEY_CURRENT_USER
+	if strHive="HKCC\" or strHive="HKEY_CURRENT_CONFIG\" then SetHive=HKEY_CURRENT_CONFIG
+	if strHive="HKLM\" or strHive="HKEY_LOCAL_MACHINE\" then SetHive=HKEY_LOCAL_MACHINE
+	if strHive="HKU\"  or strHive="HKEY_USERS\" then SetHive=HKEY_USERS
 End Function
 
 
