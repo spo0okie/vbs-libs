@@ -1,3 +1,4 @@
+option Explicit
 '-----------------------------------------------------------------------
 'INI FILES LIBRARY           -------------------------------------------
 '-----------------------------------------------------------------------
@@ -15,7 +16,6 @@
 'req		: read\write
 
 'реальные определени€ типов файлов дл€ библиотеки наход€тс€ в конце файла
-
 
 
 'возвращает начало камента в строке (ComDelims - массив символов начала камента)
@@ -139,7 +139,7 @@ function GetFileCrLf(INIContents,default)
 			GetFileCrLf=default 'по умолчанию
 		end if
 	else ' не нашли ни cr ни lf
-		wscript.echo "GetFileCrLf: Newline symbol not detected, using default"
+		wscript.echo "GetFileCrLf: Newline symbol not detected, using default: "&default
 		GetFileCrLf=default 'по умолчанию
 	end if
 end function
@@ -169,7 +169,7 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 	INIContents = GetFile(FileName)
 	CrLf=GetFileCrLf(INIContents,defCrLf)
 	INIStrings = Split (INIContents, CrLf)
-	DebugMsg "found lines : "&ubound(INIStrings)
+	DebugMsg "found lines : "&ubound(INIStrings)&CrLf
 
 	CurSection=""		'на начало файла секции нет (может и не будет до конца файла)
 	jobDone=false		'работа не сделана
@@ -211,8 +211,8 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 					'рисуем камент об изменении файла 'комментируем текущую линию 'пишем свою
 					if testVal<>Value then
 						DebugMsg "CHANGING CURRENT :" &i
-						INIStrings(i)=	commentLine(Comment,ComDelims,CrLf)& _
-										commentLine(INIStrings(i),ComDelims,CrLf)& _
+						INIStrings(i)=	commentLine(INIStrings(i),ComDelims,CrLf)& _
+										commentLine(Comment,ComDelims,CrLf)& _
 										declareVariable(KeyName,eq,Value)
 					end if
 					jobDone=true
@@ -231,12 +231,21 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 	next
 	if not jobDone then	'переменную не нашли
 		if req="write" then 'запись
-			i=i-1
-			'wscript.echo "INSERTING AFTER SECTION :" &i
-			INIStrings(i)=	INIStrings(i)&commentLine(Comment,ComDelims,CrLf)& _
-							declareSectionName(CurSection, Section, secL, secR)& _
+			'добавл€ем еще одну сроку
+			redim preserve INIStrings(UBound(INIStrings)+1)
+			if (UBound(INIStrings) > i+1) then
+				dim j:	for j=UBound(INIStrings) to i+1
+					DebugMsg(j)
+					INIStrings(j)=INIStrings(j-1)
+				next
+			end if
+			'i=i-1
+			DebugMsg "Inserting in string " &i
+			INIStrings(i)=	declareSectionName(CurSection, Section, secL, secR)& _
 							optionalCrLf(declareSectionName(CurSection, Section, secL, secR),CrLf)&_
-							declareVariable(KeyName,eq,Value)&CrLf
+							commentLine(Comment,ComDelims,CrLf)& _
+							declareVariable(KeyName,eq,Value) '&CrLf
+			DebugMsg INIStrings(i)
 			jobDone=true
 		else 'чтение
 			parseINIString=Value
@@ -322,6 +331,7 @@ Function CheckFileTypeDescr(ByVal FType)
 	'Cst, Cend	: сиволы начала и конца блока каментов /* */ <!-- --!> Ќ≈ ќЅ–јЅј“џ¬јё“—я (оставлено на будущее)
 	'CaSense	: чувствительность переменныхи секций к регистру true\false
 	'defCrLf	: ѕеренос строки по умолчанию (используем такой, если не поймем какой в файле уже используетс€)
+	'Msg typeName (FType)
 	CheckFileTypeDescr=true
 	dim flds,fld
 	flds=array("eq","secL","secR","ComDelims","Cst","Cend","CaSense","defCrLf")
@@ -444,3 +454,14 @@ dim ftype_tc_ini : set ftype_tc_ini = CreateObject("Scripting.Dictionary")
 	ftype_tc_ini.add "Cend",	""
 	ftype_tc_ini.add "CaSense",true
 	ftype_tc_ini.add "defCrLf",vbCrLf
+
+'файл .ini
+dim ftype_ini : set ftype_ini = CreateObject("Scripting.Dictionary")
+	ftype_ini.add "eq",		"="
+	ftype_ini.add "secL",	"["
+	ftype_ini.add "secR",	"]"
+	ftype_ini.add "ComDelims",array("#")
+	ftype_ini.add "Cst",	""
+	ftype_ini.add "Cend",	""
+	ftype_ini.add "CaSense",true
+	ftype_ini.add "defCrLf",vbCrLf

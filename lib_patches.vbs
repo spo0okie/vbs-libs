@@ -1,3 +1,4 @@
+option Explicit
 '-----------------------------------------------------------------------
 'PATCHES ROUTINE             -------------------------------------------
 '-----------------------------------------------------------------------
@@ -242,27 +243,27 @@ sub patchCheckFileVariables(ByVal Patch,ByVal Ftype)
 			else
 				testSec=""
 			end if
-			msg "Searching if [" & testSec & "]\""" & testVar & """ is set to " & testVal & " ... "
+			msg_ "Searching if [" & testSec & "]\""" & testVar & """ is set to " & testVal & " ... "
 			
 			current=conffile_get(file, FType, testSec, testVar, unset_me)
 			if current = testVal then
-				msg " - Yes"
+				msg_n "- Yes"
 			else
 				'можно указать "var" & index & "place_after_str" - строка после которой вставить переменную - на случай патчинга сорцев, а не INI
 				placeAfter=getDict("var" & index & "_place_after",Patch,"")
 				if placeAfter="" then
-					msg " - No. Changing ... "
+					msg__ "- No. Changing ... "
 					if conffile_set(file, FType, testSec, testVar, testVal, "changed by "&scrName&" ver "&scrVer&" at "&Date&" "&time) then
-						msg " - Success"
+						msg_n "- Success"
 					else
-						msg " - No luck"
+						msg_n "- No luck"
 					end If
 				else
-					msg " - No. Changing (ins)... "
+					msg__ "- No. Changing (ins)... "
 					if textfile_set_after(file, FType, testSec, testVar, testVal, "added by "&scrName&" ver "&scrVer&" at "&Date&" "&time,placeAfter) then
-						msg " - Success "
+						msg_n "- Success "
 					else
-						msg " - No luck"
+						msg_n "- No luck"
 					end If
 				end if
 			end if

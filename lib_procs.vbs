@@ -164,14 +164,14 @@ End Function
 Function CheckPidFile(ByVal FileName)
 	dim pid
 	pid=GetIntFile(FileName)
-	msg "Got pid " & pid & " from " & FileName
+	msg_ "Got pid " & pid & " from " & FileName
 	if pid>0 then
 		if isPidProcRunning(pid) then
-			Msg "It is alive"
+			Msg_n " - It is alive"
 			CheckPidFile=pid
 			Exit Function
 		else
-			Msg "It is dead"
+			Msg_n " - It is dead"
 		end if
 	end if
 	CheckPidFile=0	

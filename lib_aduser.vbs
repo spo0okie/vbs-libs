@@ -12,42 +12,41 @@
 'он нужен для того чтобы сократить количество запросов к ЛДАП, т.к. для полного списка групп приходится долго
 'обходить все дерево вложенных групп. И дапы избежать повторной подобной операции при проверке другой группы
 'у польщзователя - мы сразу все кэшируем
+Option explicit
 Dim objGroupList: Set objGroupList = CreateObject("Scripting.Dictionary")
 objGroupList.CompareMode = vbTextCompare 'это означает про при поиске в словаре регистр не будет иметь значения
 
 Dim objSysInfo : Set objSysInfo = CreateObject("ADSystemInfo")
-
 'Сразу проинициализируем все переменные, раз либу подключили - значит пригодится
 ' Escape any forward slash characters, "/", with the backslash
 ' escape character. All other characters that should be escaped are.
+on error resume next
 Dim strUserDN : strUserDN = Replace(objSysInfo.userName, "/", "\/")
 Dim strComputerDN : strComputerDN = Replace(objSysInfo.computerName, "/", "\/")
+on error goto 0
 
-Dim objUser
-Dim objComputer
 ' Bind to the user and computer objects with the LDAP provider.
-Set objUser = getADObject (objSysInfo.userName)
-Set objComputer = getADObject (objSysInfo.computerName)
+Dim objUser : if (Len(strUserDN)) then Set objUser = getADObject (strUserDN)
+Dim objComputer : if (Len(strComputerDN)) then Set objComputer = getADObject (strComputerDN)
 
 'Получаем объект из АД сначала через ГК, если не выщло то через ЛДАП
 Function getADObject(ByVal strObjectDN)
+	'MsgBox "GetAdObject: " & strObjectDN
 	'Добавляем обратные слэши для экранирования
 	strObjectDN = Replace(strObjectDN, "/", "\/")
 	' Используем пути через GC:// что означает Глобальный Каталог 
 	' (изначально было LDAP:// и жутко тормозило на RODC)
 	' Кое где выскакивали ошибки "К указанному домену невозможно подключиться"
 	' кто бы знал почему, но предположим, что проблема в GC
-	dim objResult
-	objResult=Null
 	On Error Resume Next
-		Set objResult = GetObject("GC://" & strObjectDN)
+		Set getADObject = GetObject("GC://" & strObjectDN)
 		If Err Then
 			Msg("Got err accessing GC://" & strObjectDN)
 			Msg("Switchin to LDAP://" & strObjectDN)
-			Set objResult = GetObject("LDAP://" & strObjectDN)
+			Set getADObject = GetObject("LDAP://" & strObjectDN)
 		End If
 	On Error Goto 0 
-	Set getADObject = objResult
+	'Set getADObject = objResult
 End Function
 
 ' Function to test for group membership.

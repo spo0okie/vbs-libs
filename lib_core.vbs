@@ -162,13 +162,23 @@ End Sub
 'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
 'Без перевода строки и временной отметки в лог
 Sub Msg__(ByVal text)
-
 	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
 		'если мы работаем в консольном режиме - выводим в консоль
 		wscript.stdout.write(text)
 	End if
 
 	LogMsg text
+End Sub
+
+'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
+'С переводом строки, но без временной отметки в лог
+Sub Msg_n(ByVal text)
+	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
+		'если мы работаем в консольном режиме - выводим в консоль
+		wscript.echo(text)
+	End if
+
+	LogMsg text & vbCrLf
 End Sub
 
 
@@ -180,6 +190,26 @@ Sub DebugMsg(strDebugInfo)
 	Msg "[debug]: "& strDebugInfo
 End Sub 
 
+
+Sub MsgIf (ByVal Text, ByVal Condition)
+	if not Condition Then exit sub
+	Msg Text
+End Sub
+
+Sub MsgIf_ (ByVal Text, ByVal Condition)
+	if not Condition Then exit sub
+	Msg_ Text
+End Sub
+
+Sub MsgIf__ (ByVal Text, ByVal Condition)
+	if not Condition Then exit sub
+	Msg__ Text
+End Sub
+
+Sub MsgIf_n (ByVal Text, ByVal Condition)
+	if not Condition Then exit sub
+	Msg_n Text
+End Sub
 
 
 'this sub forces execution under cscript
@@ -210,10 +240,14 @@ end function
 'allows for a pause at the end of execution
 'currently used only for debugging
 Sub Pause
-	set objStdin=wscript.stdin
-	set objStdout=wscript.stdout
-	objStdout.write "Press ENTER to continue..."
-	strtmp=objStdin.readline
+	wscript.stdout.write "Press [ENTER] to continue..."
+	wscript.stdin.readline
+end Sub
+
+Sub enterToExit
+	wscript.stdout.write "Press [ENTER] to exit..."
+	wscript.stdin.readline
+	wscript.Quit
 end Sub
 
 'удалить переменную
@@ -280,18 +314,27 @@ end function
 
 'запуск внешней программы с обработкой кода выхода
 Sub safeRun(ByVal cmd)
-	msg "Running: " & cmd
+	msg_ "Running: " & cmd
 	on error resume next
 	dim ret : ret=wshShell.run(cmd,1,true)
-	msg " - return code: "&ret
+	msg_n " - return code: "&ret
+	on error goto 0
+End sub
+
+'запуск внешней программы с обработкой кода выхода
+Sub safeRunSilent(ByVal cmd)
+	debugMsg "Running: " & cmd
+	on error resume next
+	dim ret : ret=wshShell.run(cmd,0,true)
+	debugMsg " - return code: "&ret
 	on error goto 0
 End sub
 
 Sub safeFork(ByVal cmd)
-	msg "Running: " & cmd
+	msg_ "Running: " & cmd
 	on error resume next
 	dim ret : ret=wshShell.run(cmd,1,false)
-	msg " - return code: "&ret
+	msg_n " - return code: "&ret
 	on error goto 0
 End sub
 
@@ -303,16 +346,16 @@ Sub safeExec(ByVal cmd, ByVal params, ByVal path)
 End sub
 
 function exitCode(ByVal cmd)
-	msg "Running: " & cmd
+	msg_ "Running: " & cmd
 	on error resume next
 	dim ret : ret=wshShell.run(cmd,1,true)
-	msg " - return code: "&ret
+	msg_n " - return code: "&ret
 	on error goto 0
 	exitCode = ret
 End function
 
 function execStdout(ByVal cmd)
-	msg "Running: " & cmd
+	debugMsg "Running: " & cmd
 	on error resume next
 	dim ret : set ret=wshShell.exec(cmd)
 	on error goto 0
@@ -427,10 +470,16 @@ end function
 
 'получить содержимое файла
 Function GetFile(ByVal FileName)
+	'default
+	GetFile = ""
 	if (objFSO.FileExists(FileName)) then
-		GetFile = objFSO.OpenTextFile(FileName).ReadAll
-	else
-		GetFile = ""
+		dim f : set f=objFSO.OpenTextFile(FileName,1) '1=ForReading
+		'проверяем что указатель файла не находится в его конце 
+		'иначе при чтении пустого файла будет вылетать ошибка "input past end of file"
+		If Not f.AtEndOfStream Then 
+			GetFile = f.ReadAll
+		end if
+		f.close
 	end if
 End Function
 
@@ -491,11 +540,11 @@ End Function
 'REGISTRY ROUTINE ------------------------------------------------------
 'читает реестр
 Function regRead(ByVal Path)
-	Msg "Reading " & Path & " ... "
+	debugMsg "Reading " & Path & " ... "
 	on error resume next
 	RegRead = WshShell.RegRead (Path)
 	if err.number<>0 then
-		Msg "Error while Reading " & Path
+		debugMsg "Error while Reading " & Path
 		regRead = false
 	end if
 	on error goto 0
@@ -503,11 +552,11 @@ End Function
 
 'пишет в реестр
 sub regWrite (ByVal Path, ByVal varType, ByVal varVal)
-	Msg "Writing " & Path & "=" & varVal & "(" & varType & ") ... "
+	debugMsg "Writing " & Path & "=" & varVal & "(" & varType & ") ... "
 	on error resume next
 	WshShell.RegWrite Path, varVal, varType
 	if err.number<>0 then
-		Msg "Error while Writing " & Path
+		debugMsg "Error while Writing " & Path
 		regWrite = false
 	end if
 	on error goto 0
@@ -515,11 +564,11 @@ End Sub
 
 'удаляет путь в реестре
 sub regDelete (ByVal Path)
-	Msg "Deleting " & Path & " ... "
+	debugMsg "Deleting " & Path & " ... "
 	on error resume next
 	WshShell.RegDelete Path
 	if err.number<>0 then
-		Msg "Error while Deleting " & Path & vbCrLf &_
+		debugMsg "Error while Deleting " & Path & vbCrLf &_
 			"Err code: " & Err.Number & vbCrLf &_ 
 			"Description: " & Err.Description & vbCrLf &_ 
 			"Source: " & Err.Source 
@@ -547,15 +596,15 @@ End Sub
 function regExists (ByVal strKey)
 	dim ssig: ssig="Unable to open registry key"
 	on error resume next
-	Msg "Searchin "&strKey
+	debugMsg "Searchin "&strKey
 	dim present: present = WshShell.RegRead(strKey)
 	if err.number<>0 then
-		Msg "Got some error on "&strKey
+		debugMsg "Got some error on "&strKey
 	    	if right(strKey,1)="\" then    'strKey is a registry key
         		if instr(1,err.description,ssig,1)<>0 then
-		 		regExists=true
+					regExists=true
         		else
-            			regExists=false
+            		regExists=false
         		end if
     		else    'strKey is a registry valuename
         		regExists=false
