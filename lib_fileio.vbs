@@ -1,3 +1,7 @@
+'хз какие тут версии. Сразу не завел ща уже какой смысл
+'2023-04-20
+'	dirMasterSlaveSync + игнор директорий через файл .sync-skip-local-files
+'			   ! фикс с копированием пустых директорий
 'FILE ROUTINE ----------------------------------------------------------
 'option explicit
 
@@ -12,21 +16,17 @@ Function xCopyFile(ByVal fromf, ByVal tof)
 	'/h	Копирует файлы с атрибутами скрытых и системных файлов. По умолчанию команда xcopy не копирует скрытые или системные файлы.
 	'/y	Подавляет запрос на подтверждение перезаписи существующего целевого файла.
 	'/z	Выполняет копирование по сети в перезапускаемом режиме.
-	dim command: command="%windir%\system32\XCOPY.exe /Y /C /F /R /H /I /Z /E """ & fromf & """ """ & tof & """"
-	debugMsg "Running " & command
-	'on error resume next
-		'Err.Clear
-		xCopyFile=wshShell.run(command,0,true)
-		'Err.Clear
-	'on error goto 0
-	debugMsg "Complete"
+	dim command: command="%windir%\system32\XCOPY.exe /Y /C /F /R /H /I /Z """ & fromf & """ """ & tof & """"
+	debugMsg_ "Running " & command
+	xCopyFile=wshShell.run(command,0,true)
+	debugMsg_n " - complete"
 End Function
 
 'Копирование файла
 Sub safeCopy(ByVal fromf, ByVal tof)
 	msg_ "Copying " & fromf & " to " & tof 
 	dim ret : ret=xCopyFile(fromf,tof)
-	msg__ " - return code: " & ret & vbCrLf
+	msg_n " - return code: " & ret
 	'safeCopy=ret
 End sub
 
@@ -35,12 +35,12 @@ Sub safeDelete(ByVal FName)
 	msg_ "Deleting " & Fname & " ..."
 	if objFSO.fileExists(Fname) then
 		objFSO.deleteFile(Fname)
-		msg__ " complete"
+		msg_n " complete"
 	elseif  objFSO.folderExists(Fname) then
 		objFSO.deleteFolder Fname, true
-		msg__ " complete"
+		msg_n " complete"
 	else
-		msg__ " not exists"
+		msg_n " not exists"
 	end if 
 End Sub
 
@@ -522,10 +522,11 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 	keepLocalFiles=false
 	'файлы-флаги, которые не нужные на слейве
 	Set ignoreLocalFiles = CreateObject("Scripting.Dictionary")
-	ignoreLocalFiles.Add ".sync-skip-dir",0
-	ignoreLocalFiles.Add ".sync-skip-local-files",0
-	ignoreLocalFiles.Add ".sync-keep-slave-files",0
+	ignoreLocalFiles.Add ".sync-skip-dir",true
+	ignoreLocalFiles.Add ".sync-skip-local-files",true
+	ignoreLocalFiles.Add ".sync-keep-slave-files",true
 
+	'проверяем необходимость полностью пропустить синхронизацию папки
 	DebugMsg "Comparing " & master & " vs " & slave & " ..."
 	if objFSO.fileExists(master & "\.sync-skip-dir") then
 		Msg "Skipping " & slave & " because of flag file in it"
@@ -534,23 +535,36 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 		exit function
 	end if
 
+	'проверяем наличие файла-списка с исключениями вложенных в нее файлов
 	if objFSO.fileExists(master & "\.sync-skip-local-files") then
 		dim file
 		Set file = objFSO.OpenTextFile (master & "\.sync-skip-local-files", 1)
 		Do Until file.AtEndOfStream
 			line = file.Readline
-			ignoreLocalFiles.Add line,0
+			ignoreLocalFiles.Add line,true
 		Loop
 		unset(file)
-		Msg "Skipping " & slave & " because of flag file in it"
+		Msg "Got exclusions for " & slave & " because of exclusions list file in it"
+		if DEBUGMODE then
+			dim i,arrItems
+			arrItems=ignoreLocalFiles.Keys
+			For i = 0 To ignoreLocalFiles.count - 1
+			    debugMsg arrItems(i)
+			Next
+		end if
 	end if
 
+	'признак того, что файлы в слейве не будут удаляться если их нет на мастере
 	keepLocalFiles=objFSO.fileExists(master & "\.sync-keep-slave-files") 
 
+
+	'----- Конец инициализации - работаем
+
+	'проверяем папку
 	CheckDir slave
 	Set objSlave = objFSO.GetFolder(slave)
 
-	DebugMsg "dirMasterSlaveSync forward files passage"
+	DebugMsg "dirMasterSlaveSync forward files passage (" & master & ")"
 	'прямая проходка (копирование с мастера на слейв)
 	For Each objFile In objMaster.Files
 		if (not ignoreLocalFiles.Exists(objFile.Name)) then
@@ -565,18 +579,18 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 				end if
 				unset(secFile)
 			else
-				safeCopy master & "\" & objFile.Name, slave
+				call safeCopy (master & "\" & objFile.Name, slave)
 				dirMasterSlaveSync=true
 			end if
 		end if
 	Next	
 	
-	DebugMsg "dirMasterSlaveSync backward files passage"
+	DebugMsg "dirMasterSlaveSync backward files passage (" & master & ")"
 	'обратная проходка (удаление на слейве того чего нет на мастере)
 	if not keepLocalFiles then
 		For Each objFile In objSlave.Files
 		    	secFileName = master & "\" & objFile.Name
-	    	    if (not objFSO.fileExists(secFileName)) and not ignoreLocalFiles.Exists(objFile.Name) then
+			if (not objFSO.fileExists(secFileName)) and not ignoreLocalFiles.Exists(objFile.Name) then
 				Msg ("Comparison of " & objFile.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
 				objFSO.DeleteFile(slave & "\" & objFile.Name)
 				dirMasterSlaveSync=true
@@ -584,27 +598,31 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 		Next
 	end if
 
-	DebugMsg "dirMasterSlaveSync forward dirs passage"
+	DebugMsg "dirMasterSlaveSync forward dirs passage (" & master & ")"
 	'прямая проходка по подпапкам
-	For Each strDir In objMaster.SubFolders
-		if (dirMasterSlaveSync(strDir.path, slave & "\" & strDir.Name)) then
-			dirMasterSlaveSync=true
+	For Each objDir In objMaster.SubFolders
+		DebugMsg "Testing " & objDir.Name
+		if (not ignoreLocalFiles.Exists(objDir.Name)) then
+			DebugMsg "Testing passed " & objDir.Name
+			if (dirMasterSlaveSync(objDir.path, slave & "\" & objDir.Name)) then dirMasterSlaveSync=true
+		else
+			DebugMsg "Testing failed " & objDir.Name
 		end if
 	Next
 
-	DebugMsg "dirMasterSlaveSync backward files passage"
+	DebugMsg "dirMasterSlaveSync backward dirs passage (" & master & ")"
 	'обратная проходка по подпапкам
 	if not keepLocalFiles then
-		For Each strDir In objSlave.SubFolders
-		    	secDirName = master & "\" & strDir.Name
-	    	    if (not objFSO.folderExists(secDirName)) then
-				Msg ("Comparison of " & strDir.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
-				objFSO.DeleteFolder slave & "\" & strDir.Name ,true
+		For Each objDir In objSlave.SubFolders
+			secDirName = master & "\" & objDir.Name
+			if (not objFSO.folderExists(secDirName)) then
+				Msg ("Comparison of " & objDir.Name & " in " & master & " -> " & slave & " failed: removed from master repo")
+				objFSO.DeleteFolder slave & "\" & objDir.Name ,true
 				dirMasterSlaveSync=true
 			end if
 		Next
 	end if
-	'DebugMsg "dirMasterSlaveSync reuturning " & 
+	DebugMsg "dirMasterSlaveSync complete (" & master & ")"
 	unset(ignoreLocalFiles)
 	unset(objMaster)
 	unset(objSlave)

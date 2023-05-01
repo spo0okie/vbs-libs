@@ -390,7 +390,7 @@ sub patchSyncDir(ByVal Patch)
 'добавл€ет новые/измененные файлы, удал€ет старые
 'patch_vis_view_jar.add "copy_dir",			"\\RTS-DEVELOP\dfs\install\_Scripts\TC\azimutclient_template\"
 'patch_vis_view_jar.add "copy_to",			"c:\Siemens\Teamcenter\OTW10\rac"
-
+	dim changes
 	if (not patchStructCk(Patch,"copy_dir") or not patchStructCk(Patch,"copy_to")) then
 		Msg "SKIP: patch incorrect"
 		exit sub

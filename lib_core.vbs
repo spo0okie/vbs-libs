@@ -185,9 +185,23 @@ End Sub
 'if debugmode=1 the writes dubug info to the specified
 'file and if running under cscript also writes it to screen.
 Sub DebugMsg(strDebugInfo)
-	if not DEBUGMODE=1 then exit sub
-	
+	if not DEBUGMODE=1 then exit sub	
 	Msg "[debug]: "& strDebugInfo
+End Sub 
+
+Sub DebugMsg_(strDebugInfo)
+	if not DEBUGMODE=1 then exit sub	
+	Msg_ "[debug]: "& strDebugInfo
+End Sub 
+
+Sub DebugMsg__(strDebugInfo)
+	if not DEBUGMODE=1 then exit sub	
+	Msg__ "[debug]: "& strDebugInfo
+End Sub 
+
+Sub DebugMsg_n(strDebugInfo)
+	if not DEBUGMODE=1 then exit sub	
+	Msg_n "[debug]: "& strDebugInfo
 End Sub 
 
 
