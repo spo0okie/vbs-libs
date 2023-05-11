@@ -65,7 +65,7 @@ end function
 ' где цифры до точки - дата в местном часовом поясе, а после плюса (или теоретически минуса - смещение).
 ' т.е. распарсиваем строку на предмет даты-времени, потом вычитаем смещение в минутах и получаем дату в UTC
 function timeWmiToVbs(byVal wmiTime)
-	msg "Parsing " & wmiTime
+	debugMsg "timeWmiToVbs: Parsing " & wmiTime
 	'wscript.echo logonTime
 	dim strYear,strMon,strDay,strHour,strMin,strSec,strShift
 	dim plusPos,minusPos,shiftPos,sLogonDate,dLogonDate,uLogonDate
