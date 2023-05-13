@@ -1,7 +1,8 @@
 'Ѕиблиотечка с маленькими полезными функци€ми, которые об€зательно пригод€тс€
 'без этого ну никак не обойтись
 Option Explicit
-Const coreLibVer="2.13"
+Const coreLibVer="2.14"
+'v2.14 ! launchpad переделан немного. в него теперь передаетс€ скрипт с аргументами, а wscript/cscript, а все остальное в аргументы
 'v2.13 + ComputerDomain (читаетс€ из реестра также как ComputerName)
 'v2.12 * regDeleteRecursive и другие функции реестра принимают корень и в полном
 'v2.11 * unset_me перенесено в €дро, т.к. теперь используетс€ и дл€ реестра и дл€ INI
@@ -835,7 +836,8 @@ function launchPad (ByVal strAppPath)
 	Set triggers = taskDefinition.Triggers
 	Set trigger = triggers.Create(TriggerTypeRegistration)
 	Set Action = taskDefinition.Actions.Create( ActionTypeExecutable )
-	Action.Path = strAppPath
+	Action.Path = WScript.FullName
+	Action.Arguments = strAppPath
 
 	Msg "Task definition created. About to submit the task..."
 	Msg "> " & strTaskName & ", taskDefinition, " & FlagTaskCreate & ",,, "& LogonTypeInteractive
