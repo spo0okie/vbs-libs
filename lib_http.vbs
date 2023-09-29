@@ -1,4 +1,5 @@
 'Библиотека HTTP REST запросов
+option explicit
 
 'Set xmlHTTP = CreateObject("Microsoft.XMLHTTP")
 Dim  xmlHTTP: Set xmlHTTP = CreateObject("Msxml2.ServerXMLHTTP")
@@ -69,14 +70,18 @@ End function
 
 'получает значение поля ID из XML ответа сервера или -1 если ID не найден
 function getXmlResponseID(byVal Response)
-	getXmlResponseID=-1
-
 	dim doc: Set doc = CreateObject("MSXML2.DOMDocument") 
 	doc.loadXML(Response)
+	dim nodes, node
 	Set nodes = doc.getElementsByTagName("id")
 	for each node in nodes
 		getXmlResponseID=node.text
 	next
+	if (Len(getXmlResponseID)) then
+		getXmlResponseID=CInt(getXmlResponseID)
+	else
+		getXmlResponseID=-1
+	end if
 end function
 
 function countXmlItems(byVal data, byVal token)
@@ -112,7 +117,7 @@ end function
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' eF8QkxNNcgfjz48lnKI8v/9gmBazdQMQ67DUe1MsKISg
+'' SIG '' yqArAAcmvmXNt5AumMR4pfBNTXvqgc2MA2pS9PNp7W+g
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -163,14 +168,14 @@ end function
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIL6DFSoZnnPY
-'' SIG '' VjdxUBcQENR3XN1ugdCtPwlcIQFQKe2iMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAKxaWxRYgYZ2RMcsrct3spY4MvSa/dQO
-'' SIG '' iL6Ofw69vlaIQS+CrOeJt5TFimEb6zOqcGOhVxkQXFCO
-'' SIG '' sVv8RuMl1Ct/WvBH8VgZJooeWHDwca0TT1ryVBHgDM9E
-'' SIG '' WQT/KV1Qerbb8NjhsYKNxEJuT5R6h/9fCy6Y2ooR1euo
-'' SIG '' 9br/+y3e9D2K0/95gpa5VPkeOtPnyPj89qY9EKKYRv1N
-'' SIG '' dlk5BDZc/chi809lBpgPvxkVDbze6YhnwZyd9RNeh6Mo
-'' SIG '' ETasi0bd6WfwIv1RkbRKwULepIn0Q/qTm5SkFpw9Q44B
-'' SIG '' N4XrIv/BslBxiezmOziXIZL6wfrcxUDTx/jcIil5fNM3iag=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIEMd3Fs+dT5U
+'' SIG '' eKOcRfRsksqXRu36ngSVHdOFKtXIASDSMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBAJfJxjkC3naSBM+92RnXLYdCWsyj8w4H
+'' SIG '' V2bRr/fbgPB5UMGEdwNBcEZKa7YPA5MRq/kZ7XtE4Uxl
+'' SIG '' /7P9KBtHVe1GV1xZz8abMoL4x7s+gVH/sMbmTMvpt6mI
+'' SIG '' 8j5r33ueyXDYMs2YtZN7SVIgE6sRkWWHJQ2PVrvhaupA
+'' SIG '' xJqEFfttW2BHkNfUrK6qTy4bGVFO0L+Yr5QwTM5Fedh+
+'' SIG '' UXS4El3iJ4QgtKpbc/ft0gnMfRAQ3n6cd3IwFCNe6d6m
+'' SIG '' huqL+DgZFtaaD5fMPNjScu8/ymwg3ttVWVkposElXDJj
+'' SIG '' uIr73An1wsxNCMulPDjiO1U/3uVuQpTggoUuvmx4lHj2mNc=
 '' SIG '' End signature block

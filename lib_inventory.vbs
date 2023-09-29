@@ -1,8 +1,10 @@
+option explicit
+
 'обновлеят запись компьютера в БД, если в качестве compID передано -1, то создает новую
 'возвращает ID созданной/обновленной записи
 function invUpdateComp(byVal compID, byVal domainID, byVal name, byVal OS, byVal hw, byVal sw, byVal ip, byVal mac)
-	datetime = Replace(timeGetUtcTimestamp,"/","-")
-	data=_
+	'datetime = Replace(timeGetUtcTimestamp,"/","-")
+	dim data : data=_
 	"domain_id="&domainID&_
 	"&name="&Url.Encode(name)&_
 	"&os="&Url.Encode(OS)&_
@@ -10,19 +12,20 @@ function invUpdateComp(byVal compID, byVal domainID, byVal name, byVal OS, byVal
 	"&raw_soft="&Url.Encode(sw)&_
 	"&raw_version="&Url.Encode(scrVer)&_
 	"&ip="&Url.Encode(ip)&_
-	"&mac="&Url.Encode(mac)&_
-	"&updated_at="&Url.Encode(datetime)
+	"&mac="&Url.Encode(mac) '&_
+	'"&updated_at="&Url.Encode(datetime)
 
 	'сохраняем данные в отдельный файлик. На случай если с сервером связаться не удастся
 	writeFile WorkDir & scrName & ".dat", data
 
+	dim res
 	if (compID>-1) then
 		res=putXmlData(inventory_apihost & "/web/api/comps/"&compID,data)
 	else
 		res=postXmlData(inventory_apihost & "/web/api/comps",data)
 	end if
 
-	id = getXmlResponseID(res)
+	dim id : id = getXmlResponseID(res)
 
 	if (id > -1) then
 		Msg "Got actual compID " & id & "; Database updated"
@@ -52,19 +55,44 @@ function invIsProductLicensedForUser(byVal productId, byVal userLogin)
 	invIsProductLicensedForUser=countXmlItems(getXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&user_login="&userLogin),"descr")
 end function
 
+'возвращает ID компьютера по домену, имени или -1 если не найден
+function invGetCompId(byVal domain, byVal name)
+	dim compData
+	compData=getXMLData(inventory_apihost&"/web/api/comps/"&domain&"/"&name)
+	invGetCompId=getXmlResponseID(compData)
+	debugMsg "Got CompID="&invGetCompId&" from "&inventory_apihost&"/web/api/comps/"&domain&"/"&name
+end function
+
+'возвращает ID этого компьютера
 function invGetMyCompId()
-	invGetMyCompId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/comps/"&computerDomain&"."&computerName))
+	invGetMyCompId=invGetCompId(computerDomain,computerName)
 end function
 
 function invGetMyUserId()
 	invGetMyUserId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/users/view?login="&userName))
 end function
+
+
+'возвращает ID домена по имени или -1 если домен не найден
+function invGetDomainId(byVal domain)
+	invGetDomainId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/domains/"&domain))
+	debugMsg "Got DomainID="&invGetDomainId&" from "&inventory_apihost&"/web/api/domains/"&domain	
+end function
+
+'возвращает ID компьютера по ID или -1 если не найден 
+'для валидации сохраненного ID - проверка что ID есть в БД
+function invChkCompId(byVal id)
+	invChkCompId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/comps/"&id))
+	debugMsg "Got CompID="&invChkCompId&" from "&inventory_apihost&"/web/api/comps/"&id
+end function
+
+
 '' SIG '' Begin signature block
 '' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' d2AOsj6xIP8E31Gj+Wer6o1AGIfLFeL7eIHm9ypA/1mg
+'' SIG '' E7vhOqaphZ5GtbiXaAeF83+F17tm4HyHcK01He6fFo+g
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -115,14 +143,14 @@ end function
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFFHcm2oRH0n
-'' SIG '' Be//Et42zPbRyaCG0BGspaR+qAkF0Iz9MA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAIUkjpzipJehoTkVAWHdufvviyoO4h14
-'' SIG '' cFFmKrDjTiOcHZiJTBKsSj07wfCoYe34hUIy6i2p19TL
-'' SIG '' LNXP5Xw+qy+C1mAXM1WefCd+BFtG1F7H6xr9ui/m1nCz
-'' SIG '' Jy67mj86RwdgL3AbsqQkpSbV0uUZ/A+VlrQKNl5ZkwwZ
-'' SIG '' eCS9MfbXYxA5KKd4GZDoAnxK9aH6Dqf3ggLB8snclxZb
-'' SIG '' NWnZ56NbWUi1L+UFOUZNQkf+YshxEaFy0E1W1Ue4xYeT
-'' SIG '' /R0u8EVzCkHHlEGlhXZiRsyW56uHrPPDAjbGw7Re0WTH
-'' SIG '' +KfISRhT1JenEGoYqAD9ig96DW+eY4G4ctOOLZc3ErWX7oY=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIF0eD3lptgz9
+'' SIG '' BKXxiLcEmYlduC1/OlXQlz0zypcE/anvMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBAEdGhS/HMl1gqm8SRTKh8w9ytjY2WUCk
+'' SIG '' fxkt/ZnLFV6X6Cogg+c/4pm1IWKsjnocDMdGQVvxopW6
+'' SIG '' keeRUM21kXXucrm2QSP2zMElzrg8DwhyW2wCpl2BNdHw
+'' SIG '' OnoRod8wIlpkSuZyHr9pBbqR6srEug2lLRv0BjlOYAP8
+'' SIG '' klwPPW1TrULa02qy+hLhDdfCUuP+7mEqavyn5vi0yljz
+'' SIG '' QVMOCXei/vhPZCHvcFXQvNr303UCQfM9wIOnZgfex9o3
+'' SIG '' NgOiy97xBQzVIuv9Af0/Xy3BLTlg8w23FkRO3PyL+QTl
+'' SIG '' 0Q4q6SqJV1fkaghGFJAvOugQGDPidL40CZbafWsNpYBCHhM=
 '' SIG '' End signature block
