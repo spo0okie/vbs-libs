@@ -84,7 +84,7 @@ function timeWmiToVbs(byVal wmiTime)
 	shiftPos=max(plusPos,minusPos)
 	'msg shiftPos
 	'переводим в число и меняем знак, т.к нам надо его компенсировать и перейти в UTC
-	shift=-1*CInt(mid(wmiTime,shiftPos,Len(wmiTime)-shiftPos+1))
+	shift=-1*CLng(mid(wmiTime,shiftPos,Len(wmiTime)-shiftPos+1))
 
 	'wscript.echo sLogonDate & " " & shift
 	'смещаем на нужное количество минут время входа
@@ -153,7 +153,7 @@ end function
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' lLRIxbCZ0P7wktw/23tCfWBa+jBnFbH3u0uvazSnzymg
+'' SIG '' 7tQSyXoyefT7vxmghssUeBIzTbLme4bFWzo8pMn1a2Cg
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -204,14 +204,14 @@ end function
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIBNHTB2u9E4j
-'' SIG '' bQAYmPEX6YOv/efrAFlHE7zbIW97ZepMMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAIfmU8DBEbRfV0+cCp4DR1kpZcGgYclo
-'' SIG '' mm2emTLWxaaBFJvRa1D61tJqiYfDhKgzpoyME8R18eiW
-'' SIG '' gEMXn/gfsVpbUltg3kW7E1OiwJ6XDOxKuQQ9LDG+WhqC
-'' SIG '' lNBcHPQArqVQWCnd5f1aHtdrDSnn4ZbZLGfAgfzpqVaf
-'' SIG '' R8H18z5Xv1+KQYr+uNXkKtWa2qR1ks/JNtdLiBKxss8K
-'' SIG '' XRT+A5TJDP+5d/tkqhY+TzAPMCX6veKkbx7thJ9o74xt
-'' SIG '' JpCpynrWEg/t8X9jbMut8ljkycz+nkFk1jBFjyTlOcJ3
-'' SIG '' wjZf8ay2pcFRpsVb/1wYToJEK+7IxUV7V9R8PYa9ftf2IKg=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJEt1T2gGR73
+'' SIG '' a8VcSuIJ0BrZWYkvjZojPSXxKpLwe3zBMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBAGK8aKBtiUHA5JAho4FG8+hDuLdkek/g
+'' SIG '' x+L7l5Q00ynJgx6soeGdPsBBt5DuP1WmzljRPIB88+wx
+'' SIG '' d8+JMihHlZePkqobfHmXdtnCLDtmGQJ/H1uTdbcEyYey
+'' SIG '' 9kZ1CYeWwZ2PD24Girdd0nvuTVPK0l8ZES2hEr2Ol/36
+'' SIG '' DSoGfkwJ0Di5IbPEoq8x8ZrVSZoWNR3CiG0r0q+S7GhP
+'' SIG '' 1cztjWi2AstYnrRz9aVA2wjk/WExvOJFLuFFSFLtjois
+'' SIG '' Zy7I/BxKh0/7s+29s6Qh5KhFrOVyIYBjZykf5OHm1qj/
+'' SIG '' 5vm+3RoLEX3kJ8+3PRVN0JaxwwfZ/7ELyI3lRoJ8/dG8KlU=
 '' SIG '' End signature block

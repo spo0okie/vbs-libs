@@ -1,11 +1,44 @@
 option explicit
 
+const inventoryCompIDRegStorage="HKEY_LOCAL_MACHINE\SOFTWARE\Reviakin\Inventory\compID"
+
+dim inventory_user: inventory_user=""
+dim inventory_password: inventory_password=""
+
+function fetchCurrentCompId()
+	dim savedCompID
+	savedCompID=regRead(inventoryCompIDRegStorage)
+
+	if (Len(savedCompID)>0) then
+		savedCompID=CLng(savedCompID)
+	else
+		savedCompId=-1
+	end if
+
+	if (savedCompID > 0) then
+		msg "INFO: saved CompID found ("&savedCompID&"). Checking in database..."
+		compID=invChkCompId(savedCompID)
+	else
+		compID=-1
+	end if
+
+
+	if (compID > 0) then
+		msg "INFO: got CompID=" & compID
+	else
+		msg "INFO: no valid saved CompID. Searching in database..."
+		compID=invGetMyCompId
+		msg compID
+	end if
+	fetchCurrentCOmpId=compID
+end function
+
+
 'обновлеят запись компьютера в БД, если в качестве compID передано -1, то создает новую
 'возвращает ID созданной/обновленной записи
-function invUpdateComp(byVal compID, byVal domainID, byVal name, byVal OS, byVal hw, byVal sw, byVal ip, byVal mac)
+function invUpdateComp(byVal name, byVal OS, byVal hw, byVal sw, byVal ip, byVal mac)
 	'datetime = Replace(timeGetUtcTimestamp,"/","-")
 	dim data : data=_
-	"domain_id="&domainID&_
 	"&name="&Url.Encode(name)&_
 	"&os="&Url.Encode(OS)&_
 	"&raw_hw="&Url.Encode(hw)&_
@@ -18,11 +51,13 @@ function invUpdateComp(byVal compID, byVal domainID, byVal name, byVal OS, byVal
 	'сохраняем данные в отдельный файлик. На случай если с сервером связаться не удастся
 	writeFile WorkDir & scrName & ".dat", data
 
-	dim res
+	dim res,compID
+	compID=fetchCurrentCompID
+	
 	if (compID>-1) then
-		res=putXmlData(inventory_apihost & "/web/api/comps/"&compID,data)
+		res=putAuthXmlData(inventory_apihost & "/web/api/comps/"&compID, data, inventory_user, inventory_password)
 	else
-		res=postXmlData(inventory_apihost & "/web/api/comps",data)
+		res=postAuthXmlData(inventory_apihost & "/web/api/comps", data, inventory_user, inventory_password)
 	end if
 
 	dim id : id = getXmlResponseID(res)
@@ -38,51 +73,102 @@ function invUpdateComp(byVal compID, byVal domainID, byVal name, byVal OS, byVal
 	invUpdateComp = id	
 end function
 
+'отправляет данные на сервер
+function invSendCompData(data)
+	dim res : res=postAuthXmlData(inventory_apihost & "/web/api/comps/push", data, inventory_user, inventory_password)
 
-'возвращает элементы групп лицензий (типов лицензий)
-function invGetProductLicGroups(byVal productId, byVal compName, byVal userLogin)
-	invGetProductLicGroups=getXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&user_login="&userLogin&"&comp_name="&compName)
+	dim id : id = getXmlResponseID(res)
+
+	if (id > -1) then
+		Msg "Got actual compID " & id & "; Database updated"
+	else
+		Msg "ERR: failed send data to database: " & vbCrLf &_
+			"data=" & data & vbCrLf &_
+			"response=" & res
+	end if
+	invSendCompData = id
 end function
 
 
+'обновлеят запись компьютера в БД, если в качестве compID передано -1, то создает новую
+'возвращает ID созданной/обновленной записи
+function invPushComp(byVal name, byVal OS, byVal hw, byVal sw, byVal ip, byVal mac)
+	'datetime = Replace(timeGetUtcTimestamp,"/","-")
+	dim data : data=_
+	"&name="&Url.Encode(name)&_
+	"&os="&Url.Encode(OS)&_
+	"&raw_hw="&Url.Encode(hw)&_
+	"&raw_soft="&Url.Encode(sw)&_
+	"&raw_version="&Url.Encode(scrVer)&_
+	"&ip="&Url.Encode(ip)&_
+	"&mac="&Url.Encode(mac) '&_
+	'"&updated_at="&Url.Encode(datetime)
+
+	dim savedCompID : savedCompID=regRead(inventoryCompIDRegStorage)
+
+	if (Len(savedCompID)>0) then
+		data=data&"id=savedCompID"
+	end if
+
+	'сохраняем данные в отдельный файлик. На случай если с сервером связаться не удастся
+	writeFile WorkDir & scrName & ".dat", data
+
+	invPushComp = invSendCompData (data)
+end function
+
+function invAuthorizedAccess()
+	invAuthorizedAccess=false
+	if (Len(inventory_user) > 0 and Len(inventory_password) > 0) then
+		invAuthorizedAccess=true
+	end if
+end function
+
+
+'возвращает элементы групп лицензий (типов лицензий)
+function invGetProductLicGroups(byVal productId, byVal compName, byVal userLogin)
+	invGetProductLicGroups=getAuthXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&user_login="&userLogin&"&comp_name="&compName, inventory_user, inventory_password)
+end function
+
 'лицензирован ли продукт на ОС
 function invIsProductLicensedOnComp(byVal productId, byVal compName)
-	invIsProductLicensedOnComp=countXmlItems(getXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&comp_name="&compName),"descr")
+	invIsProductLicensedOnComp=countXmlItems(getAuthXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&comp_name="&compName, inventory_user, inventory_password),"descr")
 end function
 
 'лицензирован ли продукт для пользователя
 function invIsProductLicensedForUser(byVal productId, byVal userLogin)
-	invIsProductLicensedForUser=countXmlItems(getXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&user_login="&userLogin),"descr")
+	invIsProductLicensedForUser=countXmlItems(getAuthXmlData(inventory_apihost & "/web/api/lic-groups/search?product_id="&productId&"&user_login="&userLogin, inventory_user, inventory_password),"descr")
 end function
 
 'возвращает ID компьютера по домену, имени или -1 если не найден
 function invGetCompId(byVal domain, byVal name)
 	dim compData
-	compData=getXMLData(inventory_apihost&"/web/api/comps/"&domain&"/"&name)
+	compData=getAuthXMLData(inventory_apihost&"/web/api/comps/search?name="&name&"."&domain, inventory_user, inventory_password)
 	invGetCompId=getXmlResponseID(compData)
-	debugMsg "Got CompID="&invGetCompId&" from "&inventory_apihost&"/web/api/comps/"&domain&"/"&name
+	debugMsg "Got CompID="&invGetCompId&" from "&inventory_apihost&"/web/api/comps/search?name="&name&"."&domain
 end function
 
 'возвращает ID этого компьютера
 function invGetMyCompId()
+	debugMsg computerDomain & "\" & computerName
 	invGetMyCompId=invGetCompId(computerDomain,computerName)
 end function
 
+'возвращает ID этого пользователя
 function invGetMyUserId()
-	invGetMyUserId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/users/view?login="&userName))
+	invGetMyUserId=getXmlResponseID(getAuthXMLData(inventory_apihost&"/web/api/users/search?login="&userName, inventory_user, inventory_password))
 end function
 
 
 'возвращает ID домена по имени или -1 если домен не найден
 function invGetDomainId(byVal domain)
-	invGetDomainId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/domains/"&domain))
+	invGetDomainId=getXmlResponseID(getAuthXMLData(inventory_apihost&"/web/api/domains/"&domain, inventory_user, inventory_password))
 	debugMsg "Got DomainID="&invGetDomainId&" from "&inventory_apihost&"/web/api/domains/"&domain	
 end function
 
 'возвращает ID компьютера по ID или -1 если не найден 
 'для валидации сохраненного ID - проверка что ID есть в БД
 function invChkCompId(byVal id)
-	invChkCompId=getXmlResponseID(getXMLData(inventory_apihost&"/web/api/comps/"&id))
+	invChkCompId=getXmlResponseID(getAuthXMLData(inventory_apihost&"/web/api/comps/"&id, inventory_user, inventory_password))
 	debugMsg "Got CompID="&invChkCompId&" from "&inventory_apihost&"/web/api/comps/"&id
 end function
 
@@ -92,7 +178,7 @@ end function
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' ca9VjuMbCxIq1DJHWlx98XNlbmK/CPLFpRkQSQ37SOCg
+'' SIG '' L3RtpBajnG/b7Bi94RUUYNyu6b4eBYjdZbOUJf4nH8ag
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -143,14 +229,14 @@ end function
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEINLFYLF8CMwP
-'' SIG '' N+TiXyubvJjTlXVJRtaYrHQzf3nxViSxMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAEHpzN18ihk751WSSHTlZbt8EK+rbQkd
-'' SIG '' QL4qhi4/FA/4FBYo7cqkiptoiv7veWXcw3nL5ru5rARp
-'' SIG '' lCOpEMHx7+vq/HyJgL/WS7YN2kkBBtQNI4aZo+x8B5Na
-'' SIG '' QRmv/Aa8GR8fV5jjdECn9+AutUL9CROQPTKO22U4GEXh
-'' SIG '' /DN19L8f9RkikDJN5DfBDo33vcBKNjr6XYCWdk48JzWz
-'' SIG '' rIf8HQFEPV6dyUnQ657QVmMDakMoOk7Q5v0qi450YWek
-'' SIG '' gackDzWDCRK4CbTW23F8+91oCD31PCT/jEK4FZSDtQVh
-'' SIG '' KzNEMfiP/dNJDJdWJ2EGs2fK6yyi1678x2EZrYzSSAvR+MI=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIDdI3t6OpHyZ
+'' SIG '' E7jH326LHx50qOQjt5uGesb9BYTdr3NvMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBAEa5nVEafcPazn+ruB5+5NBiye5TK41h
+'' SIG '' tWxWgaJio9WtpznDzXP7T8Nz5CPAS2ZOqGM6P+X6Jy19
+'' SIG '' oXui0gFUzgXxfnxmggGmI/JBgcIesS8BrHFVPEHlxDq5
+'' SIG '' Gli6JBpnWRT7LpeuQewpJCmHtpa5M+06L2sT63yFyTTW
+'' SIG '' pgvPJdK03+VgukTKyFg/tZmcpvmXmr0Opub11owGE+zG
+'' SIG '' csRfDzbU1jAhnD90tYuQp7uvrRoGfmADkWDyqU+D3SBW
+'' SIG '' x4AZqGokZLa+BdbIsZXDKpdJziIfKBsrMIVf+tvBX9Eh
+'' SIG '' yf/MYFT/wVVVxX4+kHeoPvrb+RoJK6gUE37zEooU9vHRMe0=
 '' SIG '' End signature block
