@@ -107,7 +107,7 @@ function invPushComp(byVal name, byVal OS, byVal hw, byVal sw, byVal ip, byVal m
 	dim savedCompID : savedCompID=regRead(inventoryCompIDRegStorage)
 
 	if (Len(savedCompID)>0) then
-		data=data&"id=savedCompID"
+		data=data&"&id="&savedCompID
 	end if
 
 	'сохраняем данные в отдельный файлик. На случай если с сервером связаться не удастся
@@ -178,7 +178,7 @@ end function
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' L3RtpBajnG/b7Bi94RUUYNyu6b4eBYjdZbOUJf4nH8ag
+'' SIG '' ImRqV1naI8dEGFg5ssAracJfTfGLvvAAaZ38L8fTVwyg
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -229,14 +229,14 @@ end function
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIDdI3t6OpHyZ
-'' SIG '' E7jH326LHx50qOQjt5uGesb9BYTdr3NvMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAEa5nVEafcPazn+ruB5+5NBiye5TK41h
-'' SIG '' tWxWgaJio9WtpznDzXP7T8Nz5CPAS2ZOqGM6P+X6Jy19
-'' SIG '' oXui0gFUzgXxfnxmggGmI/JBgcIesS8BrHFVPEHlxDq5
-'' SIG '' Gli6JBpnWRT7LpeuQewpJCmHtpa5M+06L2sT63yFyTTW
-'' SIG '' pgvPJdK03+VgukTKyFg/tZmcpvmXmr0Opub11owGE+zG
-'' SIG '' csRfDzbU1jAhnD90tYuQp7uvrRoGfmADkWDyqU+D3SBW
-'' SIG '' x4AZqGokZLa+BdbIsZXDKpdJziIfKBsrMIVf+tvBX9Eh
-'' SIG '' yf/MYFT/wVVVxX4+kHeoPvrb+RoJK6gUE37zEooU9vHRMe0=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIC6q2P6Lpk4w
+'' SIG '' uZiHvdIH/y4ZWxQkhfBiZj8D3/hBpEKLMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBAGNLWIpvhI4kHsUpQjY4w5GPzeGmjPsl
+'' SIG '' qCkuSFeFab4L4+gqTBlfPABRwlzUGahWkEsiy5VYajki
+'' SIG '' D78kjbHKMcnNCoC7IdxLzuRRU0s85C7ilafYawAKG6+f
+'' SIG '' Ggveh/41W1CJ7Se0aDjMWk7mFAuU5ke8m2MjsgQEhdaQ
+'' SIG '' u+fHf99CPWTevg48h7NF5cUzFeWHDQmh3DWBcKQVliCv
+'' SIG '' +b7bFjrmdbec7Pw3WEZIatG3SgZe+lR+gxkcuiljvCVq
+'' SIG '' zdZC69tqOM+v0kLOXDywBnUGPdKQuaIR1cmC2Of5+2li
+'' SIG '' 5LBTfP6fTQzDoWtSWaUm49sbOtuzt7wixwTzs+izsV7HALs=
 '' SIG '' End signature block
