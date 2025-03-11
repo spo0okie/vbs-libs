@@ -31,10 +31,13 @@ Dim objUserEnv	: Set objUserEnv = wshShell.Environment("USER")
 Dim objSystemEnv: Set objSystemEnv = wshShell.Environment("SYSTEM")
 Dim objProcessEnv:Set objSystemEnv = wshShell.Environment("PROCESS")
 Dim objVolatileEnv:Set objSystemEnv = wshShell.Environment("VOLATILE")
+
+on error resume next
 Dim objShell	: Set objShell = CreateObject("Shell.Application")
 Dim objFSO	: Set objFSO = CreateObject("Scripting.FileSystemObject")
-Dim objReg	: Set objReg = GetObject("winmgmts:\\.\root\default:StdRegProv")
+Dim objReg	: Set objReg = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\default:StdRegProv")
 Dim objWmi	: Set objWmi = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
+on error goto 0
 
 Dim WorkDir : WorkDir =	WshShell.ExpandEnvironmentStrings("%TEMP%") & "\"
 Dim WindowsDir : WindowsDir = objFSO.GetSpecialFolder(0)
@@ -640,15 +643,14 @@ end function
 
 Sub regCleanFolder(hive, path)
 	Msg "Cleaning reg folder " & hive & "," & path & "..."
-	dim oReg, arrSubKeys, subkey
-	Set oReg = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\default:StdRegProv")
+	dim  arrSubKeys, subkey
 	'Msg "1"
-	oReg.EnumKey hive, path, arrSubKeys
+	objReg.EnumKey hive, path, arrSubKeys
 	'Msg "2"
   	If Not IsNull(arrSubKeys) Then
     		For Each subkey In arrSubKeys
-				Msg "Deleting reg folder " & path & "\" & subkey & "..."
-      			oReg.DeleteKey hive, path & "\" & subkey
+			Msg "Deleting reg folder " & path & "\" & subkey & "..."
+      			objReg.DeleteKey hive, path & "\" & subkey
     		Next
 	else
 		Msg "Empty"
