@@ -26,8 +26,16 @@ Dim strComputerDN : strComputerDN = Replace(objSysInfo.computerName, "/", "\/")
 on error goto 0
 
 ' Bind to the user and computer objects with the LDAP provider.
-Dim objUser : if (Len(strUserDN)) then Set objUser = getADObject (strUserDN)
-Dim objComputer : if (Len(strComputerDN)) then Set objComputer = getADObject (strComputerDN)
+Dim objUser : if (Len(strUserDN)) then 
+	Set objUser = getADObject (strUserDN)
+else 
+	debugMsg "Cant init AD USER object (" & strUserDN & ")"
+end if
+Dim objComputer : if (Len(strComputerDN)) then 
+	Set objComputer = getADObject (strComputerDN)
+else 
+	debugMsg "Cant init AD COMPUTER object (" & strComputerDN & ")"
+end if
 
 'Получаем объект из АД сначала через ГК, если не выщло то через ЛДАП
 Function getADObject(ByVal strObjectDN)
@@ -44,6 +52,7 @@ Function getADObject(ByVal strObjectDN)
 			Msg("Got err accessing GC://" & strObjectDN)
 			Msg("Switchin to LDAP://" & strObjectDN)
 			Set getADObject = GetObject("LDAP://" & strObjectDN)
+			If Err Then Msg("Got err accessing LDAP://" & strObjectDN)
 		End If
 	On Error Goto 0 
 	'Set getADObject = objResult
@@ -65,6 +74,9 @@ Function IsMember(ByVal objADObject, ByVal strGroup)
 		'ставим флажок USERNAME\
 		objGroupList.Add objADObject.sAMAccountName & "\", True
 	End If
+	if (DEBUGMODE>1) then
+		var_dump objGroupList
+	end if
 	'после загрузки словаря просто напросто проверяем, что в словаре есть искомая комбинация
 	'пользователя и пароля USERNANE\groupname
 	IsMember = objGroupList.Exists(objADObject.sAMAccountName & "\" & strGroup)
@@ -127,7 +139,7 @@ End Sub
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' NRLCxSieCoLwZTFZKVoMogRdMBEp41ifrSi4b8uHiEqg
+'' SIG '' 6ShdfWiuFyhCzD5zeS/nyt8PDXCFbAQo14vXqCU2GGug
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -178,14 +190,14 @@ End Sub
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFD3XPzUM4lN
-'' SIG '' Ga3hYzbfipYPH0gQPMb/YQ49xSttFSlcMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBADvJg66sqbekwqieG31ICFpBnijAwRWd
-'' SIG '' Gu3LaHvX8K8ArUZpRe5vlyy4UMIoBi3LPtU24EqvM91G
-'' SIG '' dmwYYi341eDY5Sudcua+2wvdZYjAh/0jgLIaT77aOEJH
-'' SIG '' yuMww+nM9W5zyxwOvYX0A/bcazXYXbgo9uIxsg4WPRb4
-'' SIG '' JrfRaOK1YLyOUhDOM4AhoE08t2qa3XMT0ZRB3L+NPnmG
-'' SIG '' Isg+w405wMjFjMjT1wsg8ZSApTGLjIHrgSttCtd+iX1C
-'' SIG '' JRMXNP+cVO4q45D4pG+pf4IdXSW/Z5tWY1JZx85hauhb
-'' SIG '' uePvK//53i1UV+nuMVKFLYorV8EX/q5Ga7f1LC38cZnY26Q=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEICPYWSU1Unry
+'' SIG '' 7crsd+IpRYn0IgGhTZZiuFPwriKZOYwqMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBAEnYzbQ+61t1wB/+Jq3MoZ2DavKRE/SF
+'' SIG '' ik2UdWk9IKXxTSxpHKbGCDz5x56m5hP7LrIDkmFt64tp
+'' SIG '' CtbOJ1x5yeeLqPRf+GVN2g5v9GkHVIfah1bKLz+P6wHa
+'' SIG '' 1xe1ojedfduTLo2qAuSbwCvgcLlWI7PUUeloyT1H2XIW
+'' SIG '' bRU0a5D9YETa+v6f53IornU5s199AbnDHWO58Y3+TQmB
+'' SIG '' N5ldr1aGK6YzdWjXLgd+Ah6S6ZE6FBgm69O4x9Rj367b
+'' SIG '' apPaaFWeslkny8HD/tBu1NYUHdP0gEzXBrCksvLb3R/z
+'' SIG '' uC0uMP02Xe1PqWA0roAiQeTa61LCXGmpGjwCGJ3KsRy80zM=
 '' SIG '' End signature block

@@ -1,7 +1,8 @@
 'Библиотечка с маленькими полезными функциями, которые обязательно пригодятся
 'без этого ну никак не обойтись
 Option Explicit
-Const coreLibVer="2.14"
+Const coreLibVer="2.15"
+'v2.15 ! ошибка обращения к реестру objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys обернута в on error resume next
 'v2.14 ! launchpad переделан немного. в него теперь передается скрипт с аргументами, а wscript/cscript, а все остальное в аргументы
 'v2.13 + ComputerDomain (читается из реестра также как ComputerName)
 'v2.12 * regDeleteRecursive и другие функции реестра принимают корень и в полном
@@ -77,7 +78,12 @@ Dim SessionName: SessionName = wshShell.ExpandEnvironmentStrings( "%SESSIONNAME%
 if ( SessionName = "%SESSIONNAME%" ) then
 	Dim arrSubkeys
 	Dim counter
+	on error resume next
+	'Ошибка: Сбой загрузки поставщика
+	'Код: 80041013
+	'Источник: SWbemObjectEx
 	objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys
+	on error goto 0
 	If IsArray(arrSubKeys) then
 		if Ubound(arrSubKeys)>0 Then
 			counter=arrSubKeys(0)
@@ -1137,12 +1143,110 @@ function EnvPathCorrect(ByVal testPath)
 
 end function
 
+Function gettype(s)
+
+    Select Case VarType(s)
+    Case 0
+        gettype = "vbEnpty"
+    Case 1
+        gettype = "vbNull"
+    Case 2
+        gettype = "vbInteger"
+    Case 3
+        gettype = "vbLong"
+    Case 4
+        gettype = "vbSingle"
+    Case 5
+        gettype = "vbDouble"
+    Case 6
+        gettype = "vbCurrency"
+    Case 7
+        gettype = "vbDate"
+    Case 8
+        gettype = "vbString"
+    Case 9
+        gettype = "vbObject"
+    Case 10
+        gettype = "vbError"
+    Case 11
+        gettype = "vbBoolean"
+    Case 12
+        gettype = "vbVariant"
+    Case 13
+        gettype = "vbDataObject"
+    Case 17
+        gettype = "vbByte"
+    Case 8192
+        gettype = "vbArray"
+    Case 8204
+        gettype = "vbArray"
+    Case 8209
+        gettype = "vbBinary"
+    End Select
+
+End Function
+
+Sub var_dump(expression)
+    var_dump_helper expression,0
+End Sub
+
+Sub var_dump_helper(expression,tab)
+
+    If VarType(tab) <> 2 Then tab = 0
+
+    Dim strTab : strTab = String(tab,vbTab)
+
+    If IsObject(expression) Then
+        msg_ "Dictionary Object(" & expression.count & ")" & vbCrLf
+    ElseIf IsArray(expression) Then
+        msg_ "Array(" & (uBound(expression)+1) & ")" & vbCrLf
+    End If
+
+	msg_ strTab & "(" & vbCrLf
+
+    Dim a,i
+    i = 0
+    If IsObject(expression) Then
+        For Each a In expression
+            msg_ strTab
+            If IsArray(a) or IsObject(a) Then
+                msg_ vbTab & "[] => "
+                call var_dump_helper(a,tab + 1)
+            ElseIf isArray(expression(a)) or isObject( expression(a) ) Then
+                msg_ vbTab & "[" & a & "] => "
+                call var_dump_helper(expression(a),tab + 1)
+
+            Else
+               msg_ vbTab & "[" & a & "]" & " => " & _
+                              gettype(expression(a)) & "(" & expression(a) & ")" & vbCrLf
+            End If
+        Next
+    ElseIf IsArray(expression) Then
+        For Each a In expression
+            msg_ strTab
+            If IsArray(a) or IsObject(a) Then
+                msg_ vbTab & "[" & i & "] => "
+                call var_dump_helper(a,tab + 1)
+            Else
+                msg_ vbTab & "[" & i & "] => " & _
+                               gettype(a) & "(" & a & ")" & vbCrLf
+            End If
+
+            i =  i+1
+        Next
+    Else
+        msg_ strTab & gettype(expression) & "(" & expression & ")" & vbCrLf
+    End If
+
+    msg_ strTab & ")" & vbCrLf
+
+End Sub
 '' SIG '' Begin signature block
 '' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
 '' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
 '' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
 '' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' knJnudvQyX8DxD2vqLLT7sJ3y78UWzzL/SUy2c1JMA2g
+'' SIG '' RPmVP6Jdfh87/8ig1QdWcgLM3K6K23eB0GyIppdfxfSg
 '' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
 '' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
 '' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
@@ -1193,14 +1297,14 @@ end function
 '' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
 '' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
 '' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIIkwMEOLD0hr
-'' SIG '' Is3amWKfKc41v+mLEAOrbK789m4yqEDuMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBACZRwTjbkYiiEyjVnfiebOLshdmm5vPL
-'' SIG '' P07RMQUMdk1Ooz0fCu2oYBtBog6ucQ8w5ZBo9n2aN+Lo
-'' SIG '' hGeNHWGKtt293/nfPhjTVb6+MBdccCD/DDRxutCI2Utn
-'' SIG '' EQKP75Raf1V5BfNx3zD6dZ0WaTiSCWV0kwDbwqrejZpd
-'' SIG '' T9U1IjtvgfFi8T+ABDmCOkjCjKwVsFOJiaGXPy8ONe3S
-'' SIG '' zk2NWWNjPg9c7+zCjC5HDcZzwbllUUIaXwpxStOR7GNV
-'' SIG '' iske0QwRi0ZTzm5nkQy/a7G/oEyhl2zeentTMdAmZiJa
-'' SIG '' df43TM/VRdQBAfs342IryG+25FMcnwxggkc4reSnbOLfzRY=
+'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEICbWKXgsAbQJ
+'' SIG '' XvjRJ31pKZeLt17E212WL6VtsEtpfZlpMA0GCSqGSIb3
+'' SIG '' DQEBAQUABIIBACfKEM+hKOuMuLea3YbM23Vy7onDPYaS
+'' SIG '' n/++YsxsXI/ShNSvXOgXcmYkrEGbvLueTR6VNWsLbQqr
+'' SIG '' szR3XId6ZEoj5Axtiv5XEV8sIoCyby8xnWd750tNiya8
+'' SIG '' FzvFomDsJWFMi0PlHEf/koCVQ4qI37kl5M1XUN+rBioq
+'' SIG '' VLqUQwSGBuCCzOSodDwEhvBy2dENO58BNvt376qpJqhw
+'' SIG '' uMn+GTseSz/NRdyCP6BwsOcT80+7n1j0Ouw/l0+ZWfcs
+'' SIG '' 8xevOJ4o9bX468G8V3YfW7j4VA7M8IA7aGPmREsLbwIf
+'' SIG '' P4CoZxzHf8DlKbgbfg9CVABpehqVgQ9V4mHwJfvHp/1gdSg=
 '' SIG '' End signature block
