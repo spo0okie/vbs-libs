@@ -1,49 +1,49 @@
-'Библиотечка с маленькими полезными функциями, которые обязательно пригодятся
-'без этого ну никак не обойтись
+'Р‘РёР±Р»РёРѕС‚РµС‡РєР° СЃ РјР°Р»РµРЅСЊРєРёРјРё РїРѕР»РµР·РЅС‹РјРё С„СѓРЅРєС†РёСЏРјРё, РєРѕС‚РѕСЂС‹Рµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РїСЂРёРіРѕРґСЏС‚СЃСЏ
+'Р±РµР· СЌС‚РѕРіРѕ РЅСѓ РЅРёРєР°Рє РЅРµ РѕР±РѕР№С‚РёСЃСЊ
 Option Explicit
 Const coreLibVer="3.0"
-'v3.0  * Код работы с WMI, Переменными окружения, UAC, временем и реестром вынесен в отдельный библиотеки
-'        Добавлены DebugMsgTextIfError, DebugMsgIfError, MsgTextIfError
-'        Добавлена простановка флажка ошибки в случае срабатывания этих функций
-'v2.14 ! launchpad переделан немного. в него теперь передается скрипт с аргументами, а wscript/cscript, а все остальное в аргументы
-'v2.13 + ComputerDomain (читается из реестра также как ComputerName)
-'v2.12 * regDeleteRecursive и другие функции реестра принимают корень и в полном
-'v2.11 * unset_me перенесено в ядро, т.к. теперь используется и для реестра и для INI
-'v2.10   computerName теперь содержит полное имя компьютера
-'        старое усеченное до 15зн NETBIOS имя теперь лежит в compName
-'v2.9    launchPad учитывает исходные аргументы скрипта
-'v2.8    isProcRunning вынесена в lib_procs
-'v2.7  + добавлен объект objWmi
-'v2.6  + добавлена переменные Platform, Systemdrive
-'v2.5  ! скорректирована функция launchpad, которая перепускала скрипт от непревилегированного
-'        пользователя. Была ошибка работы на Win10: теперь имя создаваемой задчи включает %username%,
-'        т.к. есть подозрения, что ошибка была вызвана тем, что созданная задача от одного пользователя
-'        мешала созданию такой же от другого изза совпадения имен и отсутствия доступа.
-'v2.4  * Функция Msg теперь обрабатывает глобальную переменную LogFile и как Обьект и как строку
-'        Если обьявлен объект, то пишем прямо в него, если строка - то открываем файл, пишем и закрываем
-'        Это решает проблему с уже занятым лог файлом, когда происходит перезапуск скрипта через 
-'        launchpad
-'      + Добавлен объект objReg для работы с реестром через WMI (также можно работать ч-з wshShell)
+'v3.0  * РљРѕРґ СЂР°Р±РѕС‚С‹ СЃ WMI, РџРµСЂРµРјРµРЅРЅС‹РјРё РѕРєСЂСѓР¶РµРЅРёСЏ, UAC, РІСЂРµРјРµРЅРµРј Рё СЂРµРµСЃС‚СЂРѕРј РІС‹РЅРµСЃРµРЅ РІ РѕС‚РґРµР»СЊРЅС‹Р№ Р±РёР±Р»РёРѕС‚РµРєРё
+'		Р”РѕР±Р°РІР»РµРЅС‹ DebugMsgTextIfError, DebugMsgIfError, MsgTextIfError
+'		Р”РѕР±Р°РІР»РµРЅР° РїСЂРѕСЃС‚Р°РЅРѕРІРєР° С„Р»Р°Р¶РєР° РѕС€РёР±РєРё РІ СЃР»СѓС‡Р°Рµ СЃСЂР°Р±Р°С‚С‹РІР°РЅРёСЏ СЌС‚РёС… С„СѓРЅРєС†РёР№
+'v2.14 ! launchpad РїРµСЂРµРґРµР»Р°РЅ РЅРµРјРЅРѕРіРѕ. РІ РЅРµРіРѕ С‚РµРїРµСЂСЊ РїРµСЂРµРґР°РµС‚СЃСЏ СЃРєСЂРёРїС‚ СЃ Р°СЂРіСѓРјРµРЅС‚Р°РјРё, Р° wscript/cscript, Р° РІСЃРµ РѕСЃС‚Р°Р»СЊРЅРѕРµ РІ Р°СЂРіСѓРјРµРЅС‚С‹
+'v2.13 + ComputerDomain (С‡РёС‚Р°РµС‚СЃСЏ РёР· СЂРµРµСЃС‚СЂР° С‚Р°РєР¶Рµ РєР°Рє ComputerName)
+'v2.12 * regDeleteRecursive Рё РґСЂСѓРіРёРµ С„СѓРЅРєС†РёРё СЂРµРµСЃС‚СЂР° РїСЂРёРЅРёРјР°СЋС‚ РєРѕСЂРµРЅСЊ Рё РІ РїРѕР»РЅРѕРј
+'v2.11 * unset_me РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СЏРґСЂРѕ, С‚.Рє. С‚РµРїРµСЂСЊ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Рё РґР»СЏ СЂРµРµСЃС‚СЂР° Рё РґР»СЏ INI
+'v2.10   computerName С‚РµРїРµСЂСЊ СЃРѕРґРµСЂР¶РёС‚ РїРѕР»РЅРѕРµ РёРјСЏ РєРѕРјРїСЊСЋС‚РµСЂР°
+'		СЃС‚Р°СЂРѕРµ СѓСЃРµС‡РµРЅРЅРѕРµ РґРѕ 15Р·РЅ NETBIOS РёРјСЏ С‚РµРїРµСЂСЊ Р»РµР¶РёС‚ РІ compName
+'v2.9	launchPad СѓС‡РёС‚С‹РІР°РµС‚ РёСЃС…РѕРґРЅС‹Рµ Р°СЂРіСѓРјРµРЅС‚С‹ СЃРєСЂРёРїС‚Р°
+'v2.8	isProcRunning РІС‹РЅРµСЃРµРЅР° РІ lib_procs
+'v2.7  + РґРѕР±Р°РІР»РµРЅ РѕР±СЉРµРєС‚ objWmi
+'v2.6  + РґРѕР±Р°РІР»РµРЅР° РїРµСЂРµРјРµРЅРЅС‹Рµ Platform, Systemdrive
+'v2.5  ! СЃРєРѕСЂСЂРµРєС‚РёСЂРѕРІР°РЅР° С„СѓРЅРєС†РёСЏ launchpad, РєРѕС‚РѕСЂР°СЏ РїРµСЂРµРїСѓСЃРєР°Р»Р° СЃРєСЂРёРїС‚ РѕС‚ РЅРµРїСЂРµРІРёР»РµРіРёСЂРѕРІР°РЅРЅРѕРіРѕ
+'		РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ. Р‘С‹Р»Р° РѕС€РёР±РєР° СЂР°Р±РѕС‚С‹ РЅР° Win10: С‚РµРїРµСЂСЊ РёРјСЏ СЃРѕР·РґР°РІР°РµРјРѕР№ Р·Р°РґС‡Рё РІРєР»СЋС‡Р°РµС‚ %username%,
+'		С‚.Рє. РµСЃС‚СЊ РїРѕРґРѕР·СЂРµРЅРёСЏ, С‡С‚Рѕ РѕС€РёР±РєР° Р±С‹Р»Р° РІС‹Р·РІР°РЅР° С‚РµРј, С‡С‚Рѕ СЃРѕР·РґР°РЅРЅР°СЏ Р·Р°РґР°С‡Р° РѕС‚ РѕРґРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+'		РјРµС€Р°Р»Р° СЃРѕР·РґР°РЅРёСЋ С‚Р°РєРѕР№ Р¶Рµ РѕС‚ РґСЂСѓРіРѕРіРѕ РёР·Р·Р° СЃРѕРІРїР°РґРµРЅРёСЏ РёРјРµРЅ Рё РѕС‚СЃСѓС‚СЃС‚РІРёСЏ РґРѕСЃС‚СѓРїР°.
+'v2.4  * Р¤СѓРЅРєС†РёСЏ Msg С‚РµРїРµСЂСЊ РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РіР»РѕР±Р°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ LogFile Рё РєР°Рє РћР±СЊРµРєС‚ Рё РєР°Рє СЃС‚СЂРѕРєСѓ
+'		Р•СЃР»Рё РѕР±СЊСЏРІР»РµРЅ РѕР±СЉРµРєС‚, С‚Рѕ РїРёС€РµРј РїСЂСЏРјРѕ РІ РЅРµРіРѕ, РµСЃР»Рё СЃС‚СЂРѕРєР° - С‚Рѕ РѕС‚РєСЂС‹РІР°РµРј С„Р°Р№Р», РїРёС€РµРј Рё Р·Р°РєСЂС‹РІР°РµРј
+'		Р­С‚Рѕ СЂРµС€Р°РµС‚ РїСЂРѕР±Р»РµРјСѓ СЃ СѓР¶Рµ Р·Р°РЅСЏС‚С‹Рј Р»РѕРі С„Р°Р№Р»РѕРј, РєРѕРіРґР° РїСЂРѕРёСЃС…РѕРґРёС‚ РїРµСЂРµР·Р°РїСѓСЃРє СЃРєСЂРёРїС‚Р° С‡РµСЂРµР· 
+'		launchpad
+'	  + Р”РѕР±Р°РІР»РµРЅ РѕР±СЉРµРєС‚ objReg РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ СЂРµРµСЃС‚СЂРѕРј С‡РµСЂРµР· WMI (С‚Р°РєР¶Рµ РјРѕР¶РЅРѕ СЂР°Р±РѕС‚Р°С‚СЊ С‡-Р· wshShell)
 
 on error resume next
-Dim wshShell          : Set wshShell      = WScript.CreateObject("WScript.Shell")
-Dim objShell          : Set objShell      = CreateObject("Shell.Application")
-Dim objFSO            : Set objFSO        = CreateObject("Scripting.FileSystemObject")
+Dim wshShell		  : Set wshShell	  = WScript.CreateObject("WScript.Shell")
+Dim objShell		  : Set objShell	  = CreateObject("Shell.Application")
+Dim objFSO			: Set objFSO		= CreateObject("Scripting.FileSystemObject")
 
-Dim WorkDir    : WorkDir    = WshShell.ExpandEnvironmentStrings("%TEMP%") & "\"
+Dim WorkDir	: WorkDir	= WshShell.ExpandEnvironmentStrings("%TEMP%") & "\"
 Dim WindowsDir : WindowsDir = objFSO.GetSpecialFolder(0)
 
-'Полное имя получить - не такая уже тривиальная задача. в основном все способы возвращают 15значное NETBIOS имя
-Dim Computername    : Computername   = wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\HostName")
+'РџРѕР»РЅРѕРµ РёРјСЏ РїРѕР»СѓС‡РёС‚СЊ - РЅРµ С‚Р°РєР°СЏ СѓР¶Рµ С‚СЂРёРІРёР°Р»СЊРЅР°СЏ Р·Р°РґР°С‡Р°. РІ РѕСЃРЅРѕРІРЅРѕРј РІСЃРµ СЃРїРѕСЃРѕР±С‹ РІРѕР·РІСЂР°С‰Р°СЋС‚ 15Р·РЅР°С‡РЅРѕРµ NETBIOS РёРјСЏ
+Dim Computername	: Computername   = wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\HostName")
 Dim ComputerDomain  : ComputerDomain = wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain")
 
-Dim CompName        : CompName    = wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
-Dim UserName        : UserName    = wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
-Dim UserDomain      : UserDomain  = wshShell.ExpandEnvironmentStrings( "%USERDOMAIN%" )
-Dim UserProfile     : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
-Dim Platform        : Platform    = wshShell.ExpandEnvironmentStrings( "%PROCESSOR_ARCHITECTURE%" )
-Dim SystemDrive     : SystemDrive = wshShell.ExpandEnvironmentStrings( "%SYSTEMDRIVE%" )
-Dim SystemRoot      : SystemRoot  = wshShell.ExpandEnvironmentStrings( "%SYSTEMROOT%" )
+Dim CompName		: CompName	= wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
+Dim UserName		: UserName	= wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
+Dim UserDomain	  : UserDomain  = wshShell.ExpandEnvironmentStrings( "%USERDOMAIN%" )
+Dim UserProfile	 : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
+Dim Platform		: Platform	= wshShell.ExpandEnvironmentStrings( "%PROCESSOR_ARCHITECTURE%" )
+Dim SystemDrive	 : SystemDrive = wshShell.ExpandEnvironmentStrings( "%SYSTEMDRIVE%" )
+Dim SystemRoot	  : SystemRoot  = wshShell.ExpandEnvironmentStrings( "%SYSTEMROOT%" )
 on error goto 0
 
 Dim DEBUGMODE : DEBUGMODE = 0
@@ -54,7 +54,7 @@ Dim CONSOLEMODE
 CONSOLEMODE = false
 If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then CONSOLEMODE = true
 
-'Требует выполнения скрипта через cscript
+'РўСЂРµР±СѓРµС‚ РІС‹РїРѕР»РЅРµРЅРёСЏ СЃРєСЂРёРїС‚Р° С‡РµСЂРµР· cscript
 Sub ForceCScript
 	if CONSOLEMODE then exit sub
 	dim strExecCmdLine
@@ -95,15 +95,15 @@ End function
 
 Dim ErrorsCount : ErrorsCount = 0
 
-'Возвращает развернутое описание ошибки в 3 строки
+'Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РІРµСЂРЅСѓС‚РѕРµ РѕРїРёСЃР°РЅРёРµ РѕС€РёР±РєРё РІ 3 СЃС‚СЂРѕРєРё
 Function getErrorDescr()
 	getErrorDescr="Err code: " & Err.Number & vbCrLf &_ 
 		"Description: " & Err.Description & vbCrLf &_ 
 		"Source: " & Err.Source 
 End Function
 
-'Записывает состояние ошибки в файл-флаг (если его путь определен в виде строки)
-'Увеличивает счетчик ошибок
+'Р—Р°РїРёСЃС‹РІР°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РѕС€РёР±РєРё РІ С„Р°Р№Р»-С„Р»Р°Рі (РµСЃР»Рё РµРіРѕ РїСѓС‚СЊ РѕРїСЂРµРґРµР»РµРЅ РІ РІРёРґРµ СЃС‚СЂРѕРєРё)
+'РЈРІРµР»РёС‡РёРІР°РµС‚ СЃС‡РµС‚С‡РёРє РѕС€РёР±РѕРє
 Sub setErrFlag(ByVal status)
 	if (status>0) then ErrorsCount=ErrorsCount+1
 
@@ -118,7 +118,7 @@ Sub setErrFlag(ByVal status)
 	writeFile errFile, status
 End Sub
 
-'Очищает флаг ошибок если ошибок не было
+'РћС‡РёС‰Р°РµС‚ С„Р»Р°Рі РѕС€РёР±РѕРє РµСЃР»Рё РѕС€РёР±РѕРє РЅРµ Р±С‹Р»Рѕ
 Sub okErrFlag()
 	if ErrorsCount=0 then setErrFlag(0)
 End Sub
@@ -128,7 +128,7 @@ End Sub
 
 ' LOG funcs -------------------------------
 
-'записать сообщение в логфайл, если он определен
+'Р·Р°РїРёСЃР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р»РѕРіС„Р°Р№Р», РµСЃР»Рё РѕРЅ РѕРїСЂРµРґРµР»РµРЅ
 Sub LogMsg(ByVal logtext)
 
 	dim logType
@@ -141,7 +141,7 @@ Sub LogMsg(ByVal logtext)
 		exit sub
 	end if
 	if (isObject(logFile)) then
-		'если есть лог файл - выводим в него
+		'РµСЃР»Рё РµСЃС‚СЊ Р»РѕРі С„Р°Р№Р» - РІС‹РІРѕРґРёРј РІ РЅРµРіРѕ
 		on error resume next
 		logFile.Write(logtext)
 		on error goto 0
@@ -155,16 +155,16 @@ Sub LogMsg(ByVal logtext)
 	end if
 End Sub
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
 Sub Msg(ByVal text)
 	dim logtext
 
-	if (text="") then 'если строка пуста то в лог пишем просто пустую строку без даты/времени
+	if (text="") then 'РµСЃР»Рё СЃС‚СЂРѕРєР° РїСѓСЃС‚Р° С‚Рѕ РІ Р»РѕРі РїРёС€РµРј РїСЂРѕСЃС‚Рѕ РїСѓСЃС‚СѓСЋ СЃС‚СЂРѕРєСѓ Р±РµР· РґР°С‚С‹/РІСЂРµРјРµРЅРё
 		logtext=""
-	elseif (text="-") then 'разделитель (и в консоль и в лог)
+	elseif (text="-") then 'СЂР°Р·РґРµР»РёС‚РµР»СЊ (Рё РІ РєРѕРЅСЃРѕР»СЊ Рё РІ Р»РѕРі)
 		text="-----------------------------------------------------------------------------------"
 		logtext=text
-	else 'по умолчанию в лог добавляем префиксы
+	else 'РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІ Р»РѕРі РґРѕР±Р°РІР»СЏРµРј РїСЂРµС„РёРєСЃС‹
 		logtext=timePrefix & text
 	end if
 
@@ -173,22 +173,22 @@ Sub Msg(ByVal text)
 	LogMsg logtext & vbCrLf
 End Sub
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
-'Без перевода строки
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
+'Р‘РµР· РїРµСЂРµРІРѕРґР° СЃС‚СЂРѕРєРё
 Sub Msg_(ByVal text)
 	If CONSOLEMODE Then wscript.stdout.write(text)
 	LogMsg timePrefix & text
 End Sub
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
-'Без перевода строки и временной отметки в лог
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
+'Р‘РµР· РїРµСЂРµРІРѕРґР° СЃС‚СЂРѕРєРё Рё РІСЂРµРјРµРЅРЅРѕР№ РѕС‚РјРµС‚РєРё РІ Р»РѕРі
 Sub Msg__(ByVal text)
 	If CONSOLEMODE Then wscript.stdout.write(text)
 	LogMsg text
 End Sub
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
-'С переводом строки, но без временной отметки в лог
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
+'РЎ РїРµСЂРµРІРѕРґРѕРј СЃС‚СЂРѕРєРё, РЅРѕ Р±РµР· РІСЂРµРјРµРЅРЅРѕР№ РѕС‚РјРµС‚РєРё РІ Р»РѕРі
 Sub Msg_n(ByVal text)
 	If CONSOLEMODE Then wscript.echo(text)
 	LogMsg text & vbCrLf
@@ -238,7 +238,7 @@ Sub MsgIf_n (ByVal Text, ByVal Condition)
 	Msg_n Text
 End Sub
 
-'Сообщение если ошибка выполнения
+'РЎРѕРѕР±С‰РµРЅРёРµ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub MsgTextIfError(ByVal Text)
 	If Err.Number <> 0 Then 
 		Msg "ERR: " & Text & vbCrLf & getErrorDescr
@@ -246,12 +246,12 @@ Sub MsgTextIfError(ByVal Text)
 	end if
 End Sub
 
-'с текстом по умолчанию
+'СЃ С‚РµРєСЃС‚РѕРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 Sub MsgIfError()
 	MsgTextIfError "Runtime error!"
 End Sub
 
-'Отладочное сообщение если ошибка выполнения
+'РћС‚Р»Р°РґРѕС‡РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub DebugMsgTextIfError(ByVal Text)
 	If Err.Number <> 0 Then 
 		DebugMsg "ERR: " & Text & vbCrLf & getErrorDescr
@@ -259,27 +259,27 @@ Sub DebugMsgTextIfError(ByVal Text)
 	end if
 End Sub
 
-'с текстом по умолчанию
+'СЃ С‚РµРєСЃС‚РѕРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 Sub DebugMsgIfError()
 	DebugMsgTextIfError "Runtime error!"
 End Sub
 
-'Останов программы -----
+'РћСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ -----
 
-'останов программы с ошибкой
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕС€РёР±РєРѕР№
 Sub Halt(ByVal text)
 	Msg("HALT: "&text)
 	WScript.Quit(10)
 End Sub
 
-'останов программы с ошибкой если соблюдено условие
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕС€РёР±РєРѕР№ РµСЃР»Рё СЃРѕР±Р»СЋРґРµРЅРѕ СѓСЃР»РѕРІРёРµ
 Sub HaltIf(ByVal condition,ByVal text)
 	if (condition) then
 		Halt(text)
 	end if
 End Sub
 
-'останов программы с ошибкой если ошибка выполнения
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕС€РёР±РєРѕР№ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub HaltTextIfError(ByVal text)
 	If Err.Number <> 0 Then 
 		setErrFlag 1
@@ -287,13 +287,13 @@ Sub HaltTextIfError(ByVal text)
 	end if
 End Sub
 
-'останов программы если ошибка выполнения
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub HaltIfError()
 	HaltTextIfError "Runtime error!"
 End Sub
 
 
-'номинальный останов программы
+'РЅРѕРјРёРЅР°Р»СЊРЅС‹Р№ РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹
 Sub Done()
 	Msg ("Script complete.")
 	WScript.Quit(0)
@@ -302,7 +302,7 @@ End Sub
 
 ' RUN PROC -------------------
 
-'запуск внешней программы с обработкой кода выхода
+'Р·Р°РїСѓСЃРє РІРЅРµС€РЅРµР№ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕР±СЂР°Р±РѕС‚РєРѕР№ РєРѕРґР° РІС‹С…РѕРґР°
 Sub safeRun(ByVal cmd)
 	msg_ "Running: " & cmd
 	on error resume next
@@ -311,7 +311,7 @@ Sub safeRun(ByVal cmd)
 	on error goto 0
 End sub
 
-'запуск внешней программы с обработкой кода выхода
+'Р·Р°РїСѓСЃРє РІРЅРµС€РЅРµР№ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕР±СЂР°Р±РѕС‚РєРѕР№ РєРѕРґР° РІС‹С…РѕРґР°
 Sub safeRunSilent(ByVal cmd)
 	debugMsg "Running: " & cmd
 	on error resume next
@@ -354,7 +354,7 @@ End function
 
 'CLI ARGUMENTS ROUTINE -------------------------------------------------
 function argName(ByVal argument)
-'возвращает имя аргумента из пары аргумент:значение
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р°СЂРіСѓРјРµРЅС‚Р° РёР· РїР°СЂС‹ Р°СЂРіСѓРјРµРЅС‚:Р·РЅР°С‡РµРЅРёРµ
 	dim tokens
 	tokens=Split(argument,":")
 	argName=LCase(tokens(0))
@@ -363,7 +363,7 @@ end function
 
 
 function argVal(ByVal argument)
-'возвращает имя аргумента из пары аргумент:значение
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р°СЂРіСѓРјРµРЅС‚Р° РёР· РїР°СЂС‹ Р°СЂРіСѓРјРµРЅС‚:Р·РЅР°С‡РµРЅРёРµ
 	dim tokens
 	tokens=Split(argument,":")
 	if (Ubound(tokens)<2) then
@@ -375,10 +375,10 @@ end function
 
 
 function arg(ByVal needle)
-'парсер аргументов
-'если просто находит переменную среди переданных параметров, то возвращает true
-'если у нее есть какоето знчение то возвращает значение
-'иначе false
+'РїР°СЂСЃРµСЂ Р°СЂРіСѓРјРµРЅС‚РѕРІ
+'РµСЃР»Рё РїСЂРѕСЃС‚Рѕ РЅР°С…РѕРґРёС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ СЃСЂРµРґРё РїРµСЂРµРґР°РЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ true
+'РµСЃР»Рё Сѓ РЅРµРµ РµСЃС‚СЊ РєР°РєРѕРµС‚Рѕ Р·РЅС‡РµРЅРёРµ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ
+'РёРЅР°С‡Рµ false
 	arg=false
 	needle=lcase(needle)
 	'msg "Searching " & needle & " ... "
@@ -395,7 +395,7 @@ function arg(ByVal needle)
 	arg=false
 end function
 
-'вывести список аргументов, разделенных строкой glue
+'РІС‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє Р°СЂРіСѓРјРµРЅС‚РѕРІ, СЂР°Р·РґРµР»РµРЅРЅС‹С… СЃС‚СЂРѕРєРѕР№ glue
 function argList(ByVal glue)
 	dim i,list
 	list=""
@@ -410,7 +410,7 @@ function argList(ByVal glue)
 end function
 
 
-'строка аргументов
+'СЃС‚СЂРѕРєР° Р°СЂРіСѓРјРµРЅС‚РѕРІ
 Function getArgsStr()
 	getArgsStr=""
 	if (WScript.Arguments.Count=0) then
@@ -429,14 +429,14 @@ End Function
 
 ' FILE IO ---------------------------
 
-'получить содержимое файла
+'РїРѕР»СѓС‡РёС‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°
 Function GetFile(ByVal FileName)
 	'default
 	GetFile = ""
 	if (objFSO.FileExists(FileName)) then
 		dim f : set f=objFSO.OpenTextFile(FileName,1) '1=ForReading
-		'проверяем что указатель файла не находится в его конце 
-		'иначе при чтении пустого файла будет вылетать ошибка "input past end of file"
+		'РїСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СѓРєР°Р·Р°С‚РµР»СЊ С„Р°Р№Р»Р° РЅРµ РЅР°С…РѕРґРёС‚СЃСЏ РІ РµРіРѕ РєРѕРЅС†Рµ 
+		'РёРЅР°С‡Рµ РїСЂРё С‡С‚РµРЅРёРё РїСѓСЃС‚РѕРіРѕ С„Р°Р№Р»Р° Р±СѓРґРµС‚ РІС‹Р»РµС‚Р°С‚СЊ РѕС€РёР±РєР° "input past end of file"
 		If Not f.AtEndOfStream Then 
 			GetFile = f.ReadAll
 		end if
@@ -444,7 +444,7 @@ Function GetFile(ByVal FileName)
 	end if
 End Function
 
-'переписать содержимое файла
+'РїРµСЂРµРїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°
 Function WriteFile(ByVal FileName, ByVal Contents)
 	On Error Resume Next
  	WriteFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(FileName, 2, True).Write(Contents)
@@ -452,7 +452,7 @@ Function WriteFile(ByVal FileName, ByVal Contents)
 	On Error Goto 0
 End Function
 
-'получить целочисленное содержимое файла
+'РїРѕР»СѓС‡РёС‚СЊ С†РµР»РѕС‡РёСЃР»РµРЅРЅРѕРµ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°
 Function GetIntFile(ByVal FileName)
 	GetIntFile = 0
 	if (objFSO.FileExists(FileName)) then
@@ -473,7 +473,7 @@ Function GetIntFile(ByVal FileName)
 			exit function
 		end if
 		
-	else    
+	else	
 		Msg(FileName & " not found")
 	end if
 End Function
@@ -482,16 +482,16 @@ End Function
 
 ' VAR funcs --------------------------
 
-'удалить переменную
+'СѓРґР°Р»РёС‚СЊ РїРµСЂРµРјРµРЅРЅСѓСЋ
 Function unset(ByRef val)
-    If isObject(val) Then
-        set val = Nothing
-    Else
-        val = null
-    End If
+	If isObject(val) Then
+		set val = Nothing
+	Else
+		val = null
+	End If
 End Function
 
-'проверяет что массив объявлен
+'РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚Рѕ РјР°СЃСЃРёРІ РѕР±СЉСЏРІР»РµРЅ
 Function IsArrayDimmed(arr)
 	IsArrayDimmed = False
 	If IsArray(arr) Then
@@ -511,19 +511,19 @@ end function
 ' MATH funcs -----------------------------
 
 function Max(a,b)
-    Max = a
-    If b > a then Max = b
+	Max = a
+	If b > a then Max = b
 end function
 
 function Min(a,b)
-    Min = a
-    If b < a then Min = b
+	Min = a
+	If b < a then Min = b
 end function
 
 
 ' STRING funcs ---------------------------
 
-'предваряет строку str сиволами symbol до длины maxlen
+'РїСЂРµРґРІР°СЂСЏРµС‚ СЃС‚СЂРѕРєСѓ str СЃРёРІРѕР»Р°РјРё symbol РґРѕ РґР»РёРЅС‹ maxlen
 function stringPrependTo (str,symbol,maxLen)
 	dim testString
 	testString = str
@@ -533,8 +533,99 @@ function stringPrependTo (str,symbol,maxLen)
 	stringPrependTo=testString
 end function
 
+'Р”РѕР±Р°РІР»СЏРµС‚ Рє СЃС‚СЂРѕРєРµ РґСЂСѓРіСѓСЋ СЃС‚СЂРѕРєСѓ, СЂР°Р·РґРµР»СЏСЏ РёС… Р·Р°РїСЏС‚РѕР№, РµСЃР»Рё РѕРЅРё РЅРµ РїСѓСЃС‚С‹
+'РЅСѓР¶РЅРѕ С‡С‚РѕР±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РґРѕРєРёРґС‹РІР°С‚СЊ СЌР»РµРјРµРЅС‚С‹ С‡РµСЂРµР· Р·Р°РїСЏС‚СѓСЋ
+sub stringCommaAdd(byRef str, byVal comma, byVal addition)
+	if Len(str)>0 and Len(addition)>0 then str=str & comma
+	str = str & addition
+end sub
 
-'заключает путь в кавычки если в нем есть пробелы
+Function arrayUniqueStrings(inputArray)
+    ' РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ Dictionary РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СѓРЅРёРєР°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№
+    Dim uniqueDict
+    Set uniqueDict = CreateObject("Scripting.Dictionary")
+
+    ' РџСЂРѕС…РѕРґРёРј РїРѕ РєР°Р¶РґРѕРјСѓ СЌР»РµРјРµРЅС‚Сѓ РІС…РѕРґРЅРѕРіРѕ РјР°СЃСЃРёРІР°
+    Dim item
+    For Each item In inputArray
+        ' Р•СЃР»Рё СЌР»РµРјРµРЅС‚ РµС‰Рµ РЅРµ РґРѕР±Р°РІР»РµРЅ РІ СЃР»РѕРІР°СЂСЊ, РґРѕР±Р°РІР»СЏРµРј РµРіРѕ
+        If Not uniqueDict.Exists(item) Then
+            uniqueDict.Add item, True ' Р—РЅР°С‡РµРЅРёРµ True Р·РґРµСЃСЊ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РєР°Рє РјР°СЂРєРµСЂ
+        End If
+    Next
+
+    ' Р’РѕР·РІСЂР°С‰Р°РµРј РјР°СЃСЃРёРІ СѓРЅРёРєР°Р»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёР№ (РєР»СЋС‡Рё СЃР»РѕРІР°СЂСЏ)
+    arrayUniqueStrings = uniqueDict.Keys
+End Function
+
+Function arrayImplode(arrValues, delimiter)
+	arrayImplode = ""
+	' РџСЂРѕРІРµСЂСЏРµРј, РїРµСЂРµРґР°РЅ Р»Рё РјР°СЃСЃРёРІ
+	If Not IsArray(arrValues) Then Exit Function
+
+	' РџСЂРѕРІРµСЂСЏРµРј, РїСѓСЃС‚РѕР№ Р»Рё РјР°СЃСЃРёРІ
+	If UBound(arrValues) = -1 Then Exit Function
+	
+	' Р•СЃР»Рё СЂР°Р·РґРµР»РёС‚РµР»СЊ РЅРµ РїРµСЂРµРґР°РЅ, РёСЃРїРѕР»СЊР·СѓРµРј РїСѓСЃС‚СѓСЋ СЃС‚СЂРѕРєСѓ
+	If IsEmpty(delimiter) Then
+		delimiter = ""
+	End If
+	
+	' РЎРѕР·РґР°РµРј СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+	arrayImplode = arrValues(0)
+
+	dim i	
+	' Р”РѕР±Р°РІР»СЏРµРј РѕСЃС‚Р°Р»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹ СЃ СЂР°Р·РґРµР»РёС‚РµР»РµРј
+	For i = 1 To UBound(arrValues)
+		arrayImplode = arrayImplode & delimiter & arrValues(i)
+	Next
+End Function
+
+Function stringExplode(inputString, delimiter)
+	' Р•СЃР»Рё СЂР°Р·РґРµР»РёС‚РµР»СЊ РЅРµ СѓРєР°Р·Р°РЅ, РёСЃРїРѕР»СЊР·СѓРµРј РїСЂРѕР±РµР»
+	If IsEmpty(delimiter) Then
+		delimiter = " "
+	End If
+
+	' РЎРѕР·РґР°РµРј РїСѓСЃС‚РѕР№ РјР°СЃСЃРёРІ
+	Dim resultArray()
+	Dim currentString
+	Dim arrayIndex
+	arrayIndex = 0
+
+	' Р•СЃР»Рё РІС…РѕРґРЅР°СЏ СЃС‚СЂРѕРєР° РїСѓСЃС‚Р°СЏ, РІРѕР·РІСЂР°С‰Р°РµРј РїСѓСЃС‚РѕР№ РјР°СЃСЃРёРІ
+	If inputString = "" Then
+		stringExplode = Array()
+		Exit Function
+	End If
+
+	' Р Р°Р·РґРµР»СЏРµРј СЃС‚СЂРѕРєСѓ РїРѕ СЂР°Р·РґРµР»РёС‚РµР»СЋ
+	Do While Len(inputString) > 0
+		' РќР°С…РѕРґРёРј РїРѕР·РёС†РёСЋ СЂР°Р·РґРµР»РёС‚РµР»СЏ
+		Dim delimiterPos
+		delimiterPos = InStr(inputString, delimiter)
+
+		' Р•СЃР»Рё СЂР°Р·РґРµР»РёС‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ, РґРѕР±Р°РІР»СЏРµРј РѕСЃС‚Р°С‚РѕРє СЃС‚СЂРѕРєРё
+		If delimiterPos = 0 Then
+			ReDim Preserve resultArray(arrayIndex)
+			resultArray(arrayIndex) = inputString
+			Exit Do
+		End If
+
+		' Р”РѕР±Р°РІР»СЏРµРј С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё РґРѕ СЂР°Р·РґРµР»РёС‚РµР»СЏ
+		currentString = Mid(inputString, 1, delimiterPos - 1)
+		ReDim Preserve resultArray(arrayIndex)
+		resultArray(arrayIndex) = currentString
+		arrayIndex = arrayIndex + 1
+
+		' РЈР±РёСЂР°РµРј РѕР±СЂР°Р±РѕС‚Р°РЅРЅСѓСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
+		inputString = Mid(inputString, delimiterPos + Len(delimiter))
+	Loop
+
+	stringExplode = resultArray
+End Function
+
+'Р·Р°РєР»СЋС‡Р°РµС‚ РїСѓС‚СЊ РІ РєР°РІС‹С‡РєРё РµСЃР»Рё РІ РЅРµРј РµСЃС‚СЊ РїСЂРѕР±РµР»С‹
 function quotePath(ByVal Path)
 	quotePath=Path
 	if (len(Path)>0 and (not left(Path,1) = """") and (InStr(1, Path, " ", vbTextCompare)>0)) then
@@ -542,7 +633,7 @@ function quotePath(ByVal Path)
 	end if
 end function
 
-'убирает ковычки если они есть
+'СѓР±РёСЂР°РµС‚ РєРѕРІС‹С‡РєРё РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ
 function unquotePath(ByVal Path)
 	unquotePath=Path
 	if (len(Path)>2) and (left(Path,1) = """") and (right(Path,1)="""") then
@@ -550,26 +641,26 @@ function unquotePath(ByVal Path)
 	end if
 end function
 
-'убирает по краям пробелы с табами
+'СѓР±РёСЂР°РµС‚ РїРѕ РєСЂР°СЏРј РїСЂРѕР±РµР»С‹ СЃ С‚Р°Р±Р°РјРё
 Function TrimWithTabs(trimme)
 	dim lead,tail
 	lead=false
 	tail=false
-    Do Until lead
-    	If Left(trimme, 1) = Chr(32) Or Left(trimme, 1) = Chr(9) then
-    		trimme = Right(trimme, Len(trimme) - 1)
-    	Else
-    		lead = true
-    	End If
-    Loop
-    Do Until tail
-    	If Right(trimme, 1) = Chr(32) Or Right(trimme, 1) = Chr(9) then
-    		trimme = Left(trimme, Len(trimme) - 1)
-    	Else
-    		tail = true
-    	End If
-    Loop
-    TrimWithTabs = trimme
+	Do Until lead
+		If Left(trimme, 1) = Chr(32) Or Left(trimme, 1) = Chr(9) then
+			trimme = Right(trimme, Len(trimme) - 1)
+		Else
+			lead = true
+		End If
+	Loop
+	Do Until tail
+		If Right(trimme, 1) = Chr(32) Or Right(trimme, 1) = Chr(9) then
+			trimme = Left(trimme, Len(trimme) - 1)
+		Else
+			tail = true
+		End If
+	Loop
+	TrimWithTabs = trimme
 End Function
 
 
@@ -577,7 +668,7 @@ End Function
 
 ' MISC funcs -----------------------------
 
-'замеряет разницу текущего времени с NTP сервером
+'Р·Р°РјРµСЂСЏРµС‚ СЂР°Р·РЅРёС†Сѓ С‚РµРєСѓС‰РµРіРѕ РІСЂРµРјРµРЅРё СЃ NTP СЃРµСЂРІРµСЂРѕРј
 function GetNtpDiff(server)
 	GetNtpDiff = -1
 	dim objProc : set objProc = WshShell.Exec("%SystemRoot%\System32\w32tm.exe /monitor /nowarn /computers:"&server)
@@ -602,7 +693,7 @@ function GetNtpDiff(server)
 	End If
 end function
 
-'проверяет пингуется ли хост
+'РїСЂРѕРІРµСЂСЏРµС‚ РїРёРЅРіСѓРµС‚СЃСЏ Р»Рё С…РѕСЃС‚
 function HostPings(host)
 	if (WshShell.Run("ping -n 1 " & host, 0, True) = 0) then
 		HostPings = true	

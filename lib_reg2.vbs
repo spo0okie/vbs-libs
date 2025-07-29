@@ -1,9 +1,10 @@
-'Библиотечка с функциями работы с реестром
-'без этого ну никак не обойтись
-Option Explicit
+'Р‘РёР±Р»РёРѕС‚РµС‡РєР° СЃ С„СѓРЅРєС†РёСЏРјРё СЂР°Р±РѕС‚С‹ СЃ СЂРµРµСЃС‚СЂРѕРј
 
-'Ошибки работы с 
-Dim RegErr
+'Р’ РІРёРґСѓ С‚РѕРіРѕ С‡С‚Рѕ РІ lib_core2 РµСЃС‚СЊ wshShell = WScript.CreateObject("WScript.Shell")
+'РґР»СЏ С‡С‚РµРЅРёСЏ, Р·Р°РїРёСЃРё Рё СѓРґР°Р»РµРЅРёСЏ РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РµРіРѕ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ RegDelete RegRead RegWrite
+
+'Р±РµР· СЌС‚РѕРіРѕ РЅСѓ РЅРёРєР°Рє РЅРµ РѕР±РѕР№С‚РёСЃСЊ
+Option Explicit
 
 on error resume next
 Dim objReg	: Set objReg = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\default:StdRegProv")
@@ -33,9 +34,9 @@ if ( SessionName = "%SESSIONNAME%" ) then
 	Dim arrSubkeys
 	Dim counter
 	on error resume next
-	'Ошибка: Сбой загрузки поставщика
-	'Код: 80041013
-	'Источник: SWbemObjectEx
+	'РћС€РёР±РєР°: РЎР±РѕР№ Р·Р°РіСЂСѓР·РєРё РїРѕСЃС‚Р°РІС‰РёРєР°
+	'РљРѕРґ: 80041013
+	'РСЃС‚РѕС‡РЅРёРє: SWbemObjectEx
 	objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys
 	on error goto 0
 	If IsArray(arrSubKeys) then
@@ -53,7 +54,7 @@ End if
 
 
 'REGISTRY ROUTINE ------------------------------------------------------
-'Вытащить куст (HIVE) из строки пути
+'Р’С‹С‚Р°С‰РёС‚СЊ РєСѓСЃС‚ (HIVE) РёР· СЃС‚СЂРѕРєРё РїСѓС‚Рё
 Function getRegHive(RegKey)
 	dim strHive
 	strHive=left(RegKey,instr(RegKey,"\"))
@@ -64,26 +65,26 @@ Function getRegHive(RegKey)
 	if strHive="HKU\"  or strHive="HKEY_USERS\" then getRegHive=HKEY_USERS
 End Function
 
-
+'Р’С‹С‚РІС‰РёС‚СЊ РёР· С‚РѕР№ Р¶Рµ СЃС‚СЂРѕРєРё РїСЂР°РІСѓСЋ С‡Р°СЃС‚СЊ Р±РµР· РёРјРµРЅРё РєСѓСЃС‚Р°
 Function getRegKeyPath(Regkey)
 	getRegKeyPath = right(RegKey,len(RegKey)-instr(RegKey,"\"))
 End Function
 
-'Получить список подключей
+'РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє РїРѕРґРєР»СЋС‡РµР№
 Function RegEnumKeys(RegKey)
 	dim hive, strKeyPath, arrSubKeys
 	hive=getRegHive(RegKey)
 	strKeyPath=getRegKeyPath(RegKey)
 
 	on error resume next
-	objReg.EnumKey Hive, strKeyPath, arrSubKeys
+	objReg.EnumKey hive, strKeyPath, arrSubKeys
 	on error goto 0
 
 	RegEnumKeys=arrSubKeys
 End Function
 
 
-'читает реестр
+'С‡РёС‚Р°РµС‚ СЂРµРµСЃС‚СЂ
 Function regRead(ByVal Path)
 	debugMsg "Reading " & Path & " ... "
 	on error resume next
@@ -95,7 +96,7 @@ Function regRead(ByVal Path)
 	on error goto 0
 End Function
 
-'пишет в реестр
+'РїРёС€РµС‚ РІ СЂРµРµСЃС‚СЂ
 sub regWrite (ByVal Path, ByVal varType, ByVal varVal)
 	debugMsg "Writing " & Path & "=" & varVal & "(" & varType & ") ... "
 	on error resume next
@@ -107,7 +108,7 @@ sub regWrite (ByVal Path, ByVal varType, ByVal varVal)
 	on error goto 0
 End Sub
 
-'удаляет путь в реестре
+'СѓРґР°Р»СЏРµС‚ РїСѓС‚СЊ РІ СЂРµРµСЃС‚СЂРµ
 sub regDelete (ByVal Path)
 	debugMsg "Deleting " & Path & " ... "
 	on error resume next
@@ -122,7 +123,7 @@ sub regDelete (ByVal Path)
 	on error goto 0
 End Sub
 
-'сверяет содержимое с переданными параметрами и корректирует реестр
+'СЃРІРµСЂСЏРµС‚ СЃРѕРґРµСЂР¶РёРјРѕРµ СЃ РїРµСЂРµРґР°РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё Рё РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚ СЂРµРµСЃС‚СЂ
 sub regCheck (ByVal Path, ByVal varType, ByVal varVal)
 	Dim tmp : tmp=regRead(Path)
 	if tmp = varVal Then
@@ -137,29 +138,59 @@ sub regCheck (ByVal Path, ByVal varType, ByVal varVal)
 	end if
 End Sub
 
-'проверяет ветку на наличие значения
-function regExists (ByVal strKey)
-	dim ssig: ssig="Unable to open registry key"
-	debugMsg "Searchin "&strKey
+'РїСЂРѕРІРµСЂСЏРµС‚ РІРµС‚РєСѓ РЅР° РЅР°Р»РёС‡РёРµ
+function regPathExists (ByVal strPath)
+	regPathExists = false
+	debugMsg "Searchin path "&strPath
+	Err.Clear
+	dim arrSubKeys
+	arrSubKeys = RegEnumKeys(strPath)
+	If Err.Number = 0 And IsArray(arrSubKeys) Then
+		regPathExists = true
+	end if
+end function
+
+'РїСЂРѕРІРµСЂСЏРµС‚ РєР»СЋС‡/РІРµС‚РєСѓ РЅР° РЅР°Р»РёС‡РёРµ
+function regValueExists (ByVal strKey)
+	debugMsg "Searchin " & strKey
 	on error resume next
-    	err.clear
+	err.clear
 	dim present: present = WshShell.RegRead(strKey)
 	on error goto 0
 	if err.number<>0 then
-		debugMsg "Got some error on "&strKey
-	    	if right(strKey,1)="\" then    'strKey is a registry key
-        		if instr(1,err.description,ssig,1)<>0 then
-				regExists=true
-        		else
-            			regExists=false
-        		end if
-    		else    'strKey is a registry valuename
-        		regExists=false
-    		end if
-	    	err.clear
+    	regExists=false
 	else
-    		regExists=true
+    	regExists=true
 	end if
+end function
+
+'РїСЂРѕРІРµСЂСЏРµС‚ РєР»СЋС‡/РІРµС‚РєСѓ РЅР° РЅР°Р»РёС‡РёРµ
+'РµСЃР»Рё strKey Р·Р°РєР°РЅС‡РёРІР°РµС‚СЃСЏ СЃРёРјРІРѕР»РѕРј \, С‚Рѕ РёС‰РµС‚СЃСЏ defaultKey
+'РёРЅР°С‡Рµ РѕР±С‹С‡РЅС‹Р№ РєР»СЋС‡
+Function regExists (ByVal strKey)
+	debugMsg "Searchin " & strKey
+	Err.Clear
+	
+	On Error Resume Next
+	Dim present: present = WshShell.RegRead(strKey)
+
+	if Err.Number = 0 Then
+		regExists = True
+	Else
+		regExists = False
+	End If	
+End Function
+
+function regExistsAny (ByVal strKey)
+   	if right(strKey,1)="\" then strKey=Left(strKey,Len(strKey)-1)
+
+
+	if regExists(strkey) or regExists(strkey&"\") then
+		regExistsAny = true
+	else
+		regExistsAny = false
+	end if
+	
 end function
 
 
@@ -171,19 +202,20 @@ Sub regCleanFolder(hive, path)
 	objReg.EnumKey hive, path, arrSubKeys
 	if err.number<>0 then
 		debugMsg "Got some error on getting subkeys on " & hive & "," & path
-  	If Not IsNull(arrSubKeys) Then
+	  	If Not IsNull(arrSubKeys) Then
     		For Each subkey In arrSubKeys
 			Msg "Deleting reg folder " & path & "\" & subkey & "..."
       			objReg.DeleteKey hive, path & "\" & subkey
     		Next
-	else
-		Msg "Empty"
-  	End If
+		else
+			Msg "Empty"
+  		End If
+	end if
 End Sub
 
 
 Sub regDeleteRecursive(RegPath)
-	'удаляем принципиально папки
+	'СѓРґР°Р»СЏРµРј РїСЂРёРЅС†РёРїРёР°Р»СЊРЅРѕ РїР°РїРєРё
 	if not (right(RegPath,1) = "\") then
 		regPath=regPath & "\"
 	end if
@@ -207,3 +239,30 @@ Sub regDeleteRecursive(RegPath)
 End Sub
 
 
+'function to parse the specified hive
+'from the registry functions above
+'to all the other registry functions (regenumkeys, reggetstringvalue, etc...)
+Function SetHive(RegKey)
+	dim strHive
+	strHive=left(RegKey,instr(RegKey,"\"))
+	if strHive="HKCR\" or strHive="HKR\" or strHive="HKEY_CLASSES_ROOT\" then SetHive=HKEY_CLASSES_ROOT
+	if strHive="HKCU\" or strHive="HKEY_CURRENT_USER\" then SetHive=HKEY_CURRENT_USER
+	if strHive="HKCC\" or strHive="HKEY_CURRENT_CONFIG\" then SetHive=HKEY_CURRENT_CONFIG
+	if strHive="HKLM\" or strHive="HKEY_LOCAL_MACHINE\" then SetHive=HKEY_LOCAL_MACHINE
+	if strHive="HKU\"  or strHive="HKEY_USERS\" then SetHive=HKEY_USERS
+End Function
+
+
+'simple function to provide an
+'easier interface to the wmi registry functions
+Function RegGetMultiStringValue(RegKey,RegValueName)
+	dim hive, strKeyPath, RegValue, tmpreturn
+	hive=SetHive(RegKey)
+	strKeyPath = right(RegKey,len(RegKey)-instr(RegKey,"\"))
+	tmpreturn=objReg.GetMultiStringValue(Hive, strKeyPath, RegValueName, RegValue)
+	if tmpreturn=0 then
+		RegGetMultiStringValue=RegValue
+	else
+		RegGetMultiStringValue=false
+	end if
+End Function

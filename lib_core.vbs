@@ -1,30 +1,30 @@
-'Библиотечка с маленькими полезными функциями, которые обязательно пригодятся
-'без этого ну никак не обойтись
+'Р‘РёР±Р»РёРѕС‚РµС‡РєР° СЃ РјР°Р»РµРЅСЊРєРёРјРё РїРѕР»РµР·РЅС‹РјРё С„СѓРЅРєС†РёСЏРјРё, РєРѕС‚РѕСЂС‹Рµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РїСЂРёРіРѕРґСЏС‚СЃСЏ
+'Р±РµР· СЌС‚РѕРіРѕ РЅСѓ РЅРёРєР°Рє РЅРµ РѕР±РѕР№С‚РёСЃСЊ
 Option Explicit
 Const coreLibVer="2.15"
-'v2.15 ! ошибка обращения к реестру objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys обернута в on error resume next
-'v2.14 ! launchpad переделан немного. в него теперь передается скрипт с аргументами, а wscript/cscript, а все остальное в аргументы
-'v2.13 + ComputerDomain (читается из реестра также как ComputerName)
-'v2.12 * regDeleteRecursive и другие функции реестра принимают корень и в полном
-'v2.11 * unset_me перенесено в ядро, т.к. теперь используется и для реестра и для INI
-'v2.10   computerName теперь содержит полное имя компьютера
-'        старое усеченное до 15зн NETBIOS имя теперь лежит в compName
-'v2.9    launchPad учитывает исходные аргументы скрипта
-'v2.8    isProcRunning вынесена в lib_procs
-'v2.7  + добавлен объект objWmi
-'v2.6  + добавлена переменные Platform, Systemdrive
-'v2.5  ! скорректирована функция launchpad, которая перепускала скрипт от непревилегированного
-'        пользователя. Была ошибка работы на Win10: теперь имя создаваемой задчи включает %username%,
-'        т.к. есть подозрения, что ошибка была вызвана тем, что созданная задача от одного пользователя
-'        мешала созданию такой же от другого изза совпадения имен и отсутствия доступа.
-'v2.4  * Функция Msg теперь обрабатывает глобальную переменную LogFile и как Обьект и как строку
-'        Если обьявлен объект, то пишем прямо в него, если строка - то открываем файл, пишем и закрываем
-'        Это решает проблему с уже занятым лог файлом, когда происходит перезапуск скрипта через 
+'v2.15 ! РѕС€РёР±РєР° РѕР±СЂР°С‰РµРЅРёСЏ Рє СЂРµРµСЃС‚СЂСѓ objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys РѕР±РµСЂРЅСѓС‚Р° РІ on error resume next
+'v2.14 ! launchpad РїРµСЂРµРґРµР»Р°РЅ РЅРµРјРЅРѕРіРѕ. РІ РЅРµРіРѕ С‚РµРїРµСЂСЊ РїРµСЂРµРґР°РµС‚СЃСЏ СЃРєСЂРёРїС‚ СЃ Р°СЂРіСѓРјРµРЅС‚Р°РјРё, Р° wscript/cscript, Р° РІСЃРµ РѕСЃС‚Р°Р»СЊРЅРѕРµ РІ Р°СЂРіСѓРјРµРЅС‚С‹
+'v2.13 + ComputerDomain (С‡РёС‚Р°РµС‚СЃСЏ РёР· СЂРµРµСЃС‚СЂР° С‚Р°РєР¶Рµ РєР°Рє ComputerName)
+'v2.12 * regDeleteRecursive Рё РґСЂСѓРіРёРµ С„СѓРЅРєС†РёРё СЂРµРµСЃС‚СЂР° РїСЂРёРЅРёРјР°СЋС‚ РєРѕСЂРµРЅСЊ Рё РІ РїРѕР»РЅРѕРј
+'v2.11 * unset_me РїРµСЂРµРЅРµСЃРµРЅРѕ РІ СЏРґСЂРѕ, С‚.Рє. С‚РµРїРµСЂСЊ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Рё РґР»СЏ СЂРµРµСЃС‚СЂР° Рё РґР»СЏ INI
+'v2.10   computerName С‚РµРїРµСЂСЊ СЃРѕРґРµСЂР¶РёС‚ РїРѕР»РЅРѕРµ РёРјСЏ РєРѕРјРїСЊСЋС‚РµСЂР°
+'        СЃС‚Р°СЂРѕРµ СѓСЃРµС‡РµРЅРЅРѕРµ РґРѕ 15Р·РЅ NETBIOS РёРјСЏ С‚РµРїРµСЂСЊ Р»РµР¶РёС‚ РІ compName
+'v2.9    launchPad СѓС‡РёС‚С‹РІР°РµС‚ РёСЃС…РѕРґРЅС‹Рµ Р°СЂРіСѓРјРµРЅС‚С‹ СЃРєСЂРёРїС‚Р°
+'v2.8    isProcRunning РІС‹РЅРµСЃРµРЅР° РІ lib_procs
+'v2.7  + РґРѕР±Р°РІР»РµРЅ РѕР±СЉРµРєС‚ objWmi
+'v2.6  + РґРѕР±Р°РІР»РµРЅР° РїРµСЂРµРјРµРЅРЅС‹Рµ Platform, Systemdrive
+'v2.5  ! СЃРєРѕСЂСЂРµРєС‚РёСЂРѕРІР°РЅР° С„СѓРЅРєС†РёСЏ launchpad, РєРѕС‚РѕСЂР°СЏ РїРµСЂРµРїСѓСЃРєР°Р»Р° СЃРєСЂРёРїС‚ РѕС‚ РЅРµРїСЂРµРІРёР»РµРіРёСЂРѕРІР°РЅРЅРѕРіРѕ
+'        РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ. Р‘С‹Р»Р° РѕС€РёР±РєР° СЂР°Р±РѕС‚С‹ РЅР° Win10: С‚РµРїРµСЂСЊ РёРјСЏ СЃРѕР·РґР°РІР°РµРјРѕР№ Р·Р°РґС‡Рё РІРєР»СЋС‡Р°РµС‚ %username%,
+'        С‚.Рє. РµСЃС‚СЊ РїРѕРґРѕР·СЂРµРЅРёСЏ, С‡С‚Рѕ РѕС€РёР±РєР° Р±С‹Р»Р° РІС‹Р·РІР°РЅР° С‚РµРј, С‡С‚Рѕ СЃРѕР·РґР°РЅРЅР°СЏ Р·Р°РґР°С‡Р° РѕС‚ РѕРґРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+'        РјРµС€Р°Р»Р° СЃРѕР·РґР°РЅРёСЋ С‚Р°РєРѕР№ Р¶Рµ РѕС‚ РґСЂСѓРіРѕРіРѕ РёР·Р·Р° СЃРѕРІРїР°РґРµРЅРёСЏ РёРјРµРЅ Рё РѕС‚СЃСѓС‚СЃС‚РІРёСЏ РґРѕСЃС‚СѓРїР°.
+'v2.4  * Р¤СѓРЅРєС†РёСЏ Msg С‚РµРїРµСЂСЊ РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РіР»РѕР±Р°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ LogFile Рё РєР°Рє РћР±СЊРµРєС‚ Рё РєР°Рє СЃС‚СЂРѕРєСѓ
+'        Р•СЃР»Рё РѕР±СЊСЏРІР»РµРЅ РѕР±СЉРµРєС‚, С‚Рѕ РїРёС€РµРј РїСЂСЏРјРѕ РІ РЅРµРіРѕ, РµСЃР»Рё СЃС‚СЂРѕРєР° - С‚Рѕ РѕС‚РєСЂС‹РІР°РµРј С„Р°Р№Р», РїРёС€РµРј Рё Р·Р°РєСЂС‹РІР°РµРј
+'        Р­С‚Рѕ СЂРµС€Р°РµС‚ РїСЂРѕР±Р»РµРјСѓ СЃ СѓР¶Рµ Р·Р°РЅСЏС‚С‹Рј Р»РѕРі С„Р°Р№Р»РѕРј, РєРѕРіРґР° РїСЂРѕРёСЃС…РѕРґРёС‚ РїРµСЂРµР·Р°РїСѓСЃРє СЃРєСЂРёРїС‚Р° С‡РµСЂРµР· 
 '        launchpad
-'      + Добавлен объект objReg для работы с реестром через WMI (также можно работать ч-з wshShell)
+'      + Р”РѕР±Р°РІР»РµРЅ РѕР±СЉРµРєС‚ objReg РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ СЂРµРµСЃС‚СЂРѕРј С‡РµСЂРµР· WMI (С‚Р°РєР¶Рµ РјРѕР¶РЅРѕ СЂР°Р±РѕС‚Р°С‚СЊ С‡-Р· wshShell)
 
 
-const unset_me=		"#UNSET_me#" 'это значение ставить в переменные которые надо убрать
+const unset_me=		"#UNSET_me#" 'СЌС‚Рѕ Р·РЅР°С‡РµРЅРёРµ СЃС‚Р°РІРёС‚СЊ РІ РїРµСЂРµРјРµРЅРЅС‹Рµ РєРѕС‚РѕСЂС‹Рµ РЅР°РґРѕ СѓР±СЂР°С‚СЊ
 
 Dim wshShell	: Set wshShell = WScript.CreateObject("WScript.Shell")
 Dim objUserEnv	: Set objUserEnv = wshShell.Environment("USER")
@@ -45,7 +45,7 @@ Dim WindowsDir : WindowsDir = objFSO.GetSpecialFolder(0)
 Dim CompName : ComputerName = wshShell.ExpandEnvironmentStrings( "%COMPUTERNAME%" )
 Dim UserName : UserName = wshShell.ExpandEnvironmentStrings( "%USERNAME%" )
 Dim UserDomain : UserDomain = wshShell.ExpandEnvironmentStrings( "%USERDOMAIN%" )
-'Полное имя получить - не такая уже тривиальная задача. в основном все способы возвращают 15значное NETBIOS имя
+'РџРѕР»РЅРѕРµ РёРјСЏ РїРѕР»СѓС‡РёС‚СЊ - РЅРµ С‚Р°РєР°СЏ СѓР¶Рµ С‚СЂРёРІРёР°Р»СЊРЅР°СЏ Р·Р°РґР°С‡Р°. РІ РѕСЃРЅРѕРІРЅРѕРј РІСЃРµ СЃРїРѕСЃРѕР±С‹ РІРѕР·РІСЂР°С‰Р°СЋС‚ 15Р·РЅР°С‡РЅРѕРµ NETBIOS РёРјСЏ
 Dim Computername : Computername=wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\HostName")
 Dim ComputerDomain : ComputerDomain = wshShell.RegRead ("HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Domain")
 Dim UserProfile : UserProfile = wshShell.ExpandEnvironmentStrings( "%USERPROFILE%" )
@@ -56,7 +56,7 @@ Dim SystemRoot : SystemRoot = wshShell.ExpandEnvironmentStrings( "%SYSTEMROOT%" 
 Dim DEBUGMODE : DEBUGMODE = 0
 
 '
-' Хорошо известные группы:
+' РҐРѕСЂРѕС€Рѕ РёР·РІРµСЃС‚РЅС‹Рµ РіСЂСѓРїРїС‹:
 '
 Const LocalSystemSID	= "S-1-5-18"
 Const LocalAdminsSID	= "S-1-5-32-544"
@@ -82,9 +82,9 @@ if ( SessionName = "%SESSIONNAME%" ) then
 	Dim arrSubkeys
 	Dim counter
 	on error resume next
-	'Ошибка: Сбой загрузки поставщика
-	'Код: 80041013
-	'Источник: SWbemObjectEx
+	'РћС€РёР±РєР°: РЎР±РѕР№ Р·Р°РіСЂСѓР·РєРё РїРѕСЃС‚Р°РІС‰РёРєР°
+	'РљРѕРґ: 80041013
+	'РСЃС‚РѕС‡РЅРёРє: SWbemObjectEx
 	objReg.EnumKey HKEY_CURRENT_USER, "Volatile Environment", arrSubKeys
 	on error goto 0
 	If IsArray(arrSubKeys) then
@@ -120,7 +120,7 @@ Sub LogMsg(ByVal logtext)
 		exit sub
 	end if
 	if (isObject(logFile)) then
-		'если есть лог файл - выводим в него
+		'РµСЃР»Рё РµСЃС‚СЊ Р»РѕРі С„Р°Р№Р» - РІС‹РІРѕРґРёРј РІ РЅРµРіРѕ
 		on error resume next
 		logFile.Write(logtext)
 		on error goto 0
@@ -135,21 +135,21 @@ Sub LogMsg(ByVal logtext)
 End Sub
 
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
 Sub Msg(ByVal text)
 	dim logtext
 
-	if (text="") then 'если строка пуста то в лог пишем просто пустую строку без даты/времени
+	if (text="") then 'РµСЃР»Рё СЃС‚СЂРѕРєР° РїСѓСЃС‚Р° С‚Рѕ РІ Р»РѕРі РїРёС€РµРј РїСЂРѕСЃС‚Рѕ РїСѓСЃС‚СѓСЋ СЃС‚СЂРѕРєСѓ Р±РµР· РґР°С‚С‹/РІСЂРµРјРµРЅРё
 		logtext=""
-	elseif (text="-") then 'разделитель (и в консоль и в лог)
+	elseif (text="-") then 'СЂР°Р·РґРµР»РёС‚РµР»СЊ (Рё РІ РєРѕРЅСЃРѕР»СЊ Рё РІ Р»РѕРі)
 		text="-----------------------------------------------------------------------------------"
 		logtext=text
-	else 'по умолчанию в лог добавляем префиксы
+	else 'РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІ Р»РѕРі РґРѕР±Р°РІР»СЏРµРј РїСЂРµС„РёРєСЃС‹
 		logtext=Date&" "&Time&" "&text
 	end if
 
 	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
-		'если мы работаем в консольном режиме - выводим в консоль
+		'РµСЃР»Рё РјС‹ СЂР°Р±РѕС‚Р°РµРј РІ РєРѕРЅСЃРѕР»СЊРЅРѕРј СЂРµР¶РёРјРµ - РІС‹РІРѕРґРёРј РІ РєРѕРЅСЃРѕР»СЊ
 		wscript.echo(text)
 	End if
 
@@ -157,34 +157,34 @@ Sub Msg(ByVal text)
 End Sub
 
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
-'Без перевода строки
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
+'Р‘РµР· РїРµСЂРµРІРѕРґР° СЃС‚СЂРѕРєРё
 Sub Msg_(ByVal text)
 
 	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
-		'если мы работаем в консольном режиме - выводим в консоль
+		'РµСЃР»Рё РјС‹ СЂР°Р±РѕС‚Р°РµРј РІ РєРѕРЅСЃРѕР»СЊРЅРѕРј СЂРµР¶РёРјРµ - РІС‹РІРѕРґРёРј РІ РєРѕРЅСЃРѕР»СЊ
 		wscript.stdout.write(text)
 	End if
 
 	LogMsg Date&" "&Time&" "&text
 End Sub
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
-'Без перевода строки и временной отметки в лог
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
+'Р‘РµР· РїРµСЂРµРІРѕРґР° СЃС‚СЂРѕРєРё Рё РІСЂРµРјРµРЅРЅРѕР№ РѕС‚РјРµС‚РєРё РІ Р»РѕРі
 Sub Msg__(ByVal text)
 	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
-		'если мы работаем в консольном режиме - выводим в консоль
+		'РµСЃР»Рё РјС‹ СЂР°Р±РѕС‚Р°РµРј РІ РєРѕРЅСЃРѕР»СЊРЅРѕРј СЂРµР¶РёРјРµ - РІС‹РІРѕРґРёРј РІ РєРѕРЅСЃРѕР»СЊ
 		wscript.stdout.write(text)
 	End if
 
 	LogMsg text
 End Sub
 
-'делает вывод в консоль (если мы в консоли) и в логфайл (если он объявлен)
-'С переводом строки, но без временной отметки в лог
+'РґРµР»Р°РµС‚ РІС‹РІРѕРґ РІ РєРѕРЅСЃРѕР»СЊ (РµСЃР»Рё РјС‹ РІ РєРѕРЅСЃРѕР»Рё) Рё РІ Р»РѕРіС„Р°Р№Р» (РµСЃР»Рё РѕРЅ РѕР±СЉСЏРІР»РµРЅ)
+'РЎ РїРµСЂРµРІРѕРґРѕРј СЃС‚СЂРѕРєРё, РЅРѕ Р±РµР· РІСЂРµРјРµРЅРЅРѕР№ РѕС‚РјРµС‚РєРё РІ Р»РѕРі
 Sub Msg_n(ByVal text)
 	If LCase( Right( WScript.FullName, 12 ) ) = "\cscript.exe" Then 
-		'если мы работаем в консольном режиме - выводим в консоль
+		'РµСЃР»Рё РјС‹ СЂР°Р±РѕС‚Р°РµРј РІ РєРѕРЅСЃРѕР»СЊРЅРѕРј СЂРµР¶РёРјРµ - РІС‹РІРѕРґРёРј РІ РєРѕРЅСЃРѕР»СЊ
 		wscript.echo(text)
 	End if
 
@@ -250,7 +250,7 @@ Sub ForceCScript
 End Sub
 
 
-'предваряет строку str сиволами symbol до длины maxlen
+'РїСЂРµРґРІР°СЂСЏРµС‚ СЃС‚СЂРѕРєСѓ str СЃРёРІРѕР»Р°РјРё symbol РґРѕ РґР»РёРЅС‹ maxlen
 function stringPrependTo (str,symbol,maxLen)
 	dim testString
 	testString = str
@@ -274,7 +274,7 @@ Sub enterToExit
 	wscript.Quit
 end Sub
 
-'удалить переменную
+'СѓРґР°Р»РёС‚СЊ РїРµСЂРµРјРµРЅРЅСѓСЋ
 Function unset(ByRef val)
     If isObject(val) Then
         set val = Nothing
@@ -283,13 +283,13 @@ Function unset(ByRef val)
     End If
 End Function
 
-'останов программы с ошибкой
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕС€РёР±РєРѕР№
 Sub Halt(ByVal text)
 	Msg("HALT: "&text)
 	WScript.Quit(10)
 End Sub
 
-'останов программы с ошибкой если соблюдено условие
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕС€РёР±РєРѕР№ РµСЃР»Рё СЃРѕР±Р»СЋРґРµРЅРѕ СѓСЃР»РѕРІРёРµ
 Sub HaltIf(ByVal condition,ByVal text)
 	if (condition) then
 		Halt(text)
@@ -297,7 +297,7 @@ Sub HaltIf(ByVal condition,ByVal text)
 End Sub
 
 
-'останов программы с ошибкой если ошибка выполнения
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕС€РёР±РєРѕР№ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub HaltTextIfError(ByVal text)
 	If Err.Number <> 0 Then 
 		Halt text & vbCrLf &_ 
@@ -307,13 +307,13 @@ Sub HaltTextIfError(ByVal text)
 	end if
 End Sub
 
-'останов программы если ошибка выполнения
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub HaltIfError()
 	HaltTextIfError "Runtime error!"
 End Sub
 
 
-'останов программы если ошибка выполнения
+'РѕСЃС‚Р°РЅРѕРІ РїСЂРѕРіСЂР°РјРјС‹ РµСЃР»Рё РѕС€РёР±РєР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 Sub MsgIfError()
 	If Err.Number <> 0 Then 
 		Msg "ERR: Runtime error!" & vbCrLf &_ 
@@ -336,7 +336,7 @@ function getOsCaption()
 end function
 
 
-'запуск внешней программы с обработкой кода выхода
+'Р·Р°РїСѓСЃРє РІРЅРµС€РЅРµР№ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕР±СЂР°Р±РѕС‚РєРѕР№ РєРѕРґР° РІС‹С…РѕРґР°
 Sub safeRun(ByVal cmd)
 	msg_ "Running: " & cmd
 	on error resume next
@@ -345,7 +345,7 @@ Sub safeRun(ByVal cmd)
 	on error goto 0
 End sub
 
-'запуск внешней программы с обработкой кода выхода
+'Р·Р°РїСѓСЃРє РІРЅРµС€РЅРµР№ РїСЂРѕРіСЂР°РјРјС‹ СЃ РѕР±СЂР°Р±РѕС‚РєРѕР№ РєРѕРґР° РІС‹С…РѕРґР°
 Sub safeRunSilent(ByVal cmd)
 	debugMsg "Running: " & cmd
 	on error resume next
@@ -387,7 +387,7 @@ function execStdout(ByVal cmd)
 End function
 
 
-'заключает путь в кавычки если в нем есть пробелы
+'Р·Р°РєР»СЋС‡Р°РµС‚ РїСѓС‚СЊ РІ РєР°РІС‹С‡РєРё РµСЃР»Рё РІ РЅРµРј РµСЃС‚СЊ РїСЂРѕР±РµР»С‹
 function quotePath(ByVal Path)
 	quotePath=Path
 	if (len(Path)>0 and (not left(Path,1) = """") and (InStr(1, Path, " ", vbTextCompare)>0)) then
@@ -395,7 +395,7 @@ function quotePath(ByVal Path)
 	end if
 end function
 
-'убирает ковычки если они есть
+'СѓР±РёСЂР°РµС‚ РєРѕРІС‹С‡РєРё РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ
 function unquotePath(ByVal Path)
 	unquotePath=Path
 	if (len(Path)>2) and (left(Path,1) = """") and (right(Path,1)="""") then
@@ -403,7 +403,7 @@ function unquotePath(ByVal Path)
 	end if
 end function
 
-'проверяет что массив объявлен
+'РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚Рѕ РјР°СЃСЃРёРІ РѕР±СЉСЏРІР»РµРЅ
 Function IsArrayDimmed(arr)
 	IsArrayDimmed = False
 	If IsArray(arr) Then
@@ -413,7 +413,7 @@ Function IsArrayDimmed(arr)
 	End If
 End Function
 
-'убирает по краям пробелы с табами
+'СѓР±РёСЂР°РµС‚ РїРѕ РєСЂР°СЏРј РїСЂРѕР±РµР»С‹ СЃ С‚Р°Р±Р°РјРё
 Function TrimWithTabs(trimme)
 	dim lead,tail
 	lead=false
@@ -437,7 +437,7 @@ End Function
 
 'CLI ARGUMENTS ROUTINE -------------------------------------------------
 function argName(ByVal argument)
-'возвращает имя аргумента из пары аргумент:значение
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р°СЂРіСѓРјРµРЅС‚Р° РёР· РїР°СЂС‹ Р°СЂРіСѓРјРµРЅС‚:Р·РЅР°С‡РµРЅРёРµ
 	dim tokens
 	tokens=Split(argument,":")
 	argName=LCase(tokens(0))
@@ -446,7 +446,7 @@ end function
 
 
 function argVal(ByVal argument)
-'возвращает имя аргумента из пары аргумент:значение
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р°СЂРіСѓРјРµРЅС‚Р° РёР· РїР°СЂС‹ Р°СЂРіСѓРјРµРЅС‚:Р·РЅР°С‡РµРЅРёРµ
 	dim tokens
 	tokens=Split(argument,":")
 	if (Ubound(tokens)<2) then
@@ -458,10 +458,10 @@ end function
 
 
 function arg(ByVal needle)
-'парсер аргументов
-'если просто находит переменную среди переданных параметров, то возвращает true
-'если у нее есть какоето знчение то возвращает значение
-'иначе false
+'РїР°СЂСЃРµСЂ Р°СЂРіСѓРјРµРЅС‚РѕРІ
+'РµСЃР»Рё РїСЂРѕСЃС‚Рѕ РЅР°С…РѕРґРёС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ СЃСЂРµРґРё РїРµСЂРµРґР°РЅРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ true
+'РµСЃР»Рё Сѓ РЅРµРµ РµСЃС‚СЊ РєР°РєРѕРµС‚Рѕ Р·РЅС‡РµРЅРёРµ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ
+'РёРЅР°С‡Рµ false
 	arg=false
 	needle=lcase(needle)
 	'msg "Searching " & needle & " ... "
@@ -478,7 +478,7 @@ function arg(ByVal needle)
 	arg=false
 end function
 
-'вывести список аргументов, разделенных строкой glue
+'РІС‹РІРµСЃС‚Рё СЃРїРёСЃРѕРє Р°СЂРіСѓРјРµРЅС‚РѕРІ, СЂР°Р·РґРµР»РµРЅРЅС‹С… СЃС‚СЂРѕРєРѕР№ glue
 function argList(ByVal glue)
 	dim i,list
 	list=""
@@ -492,14 +492,14 @@ function argList(ByVal glue)
 	argList=list
 end function
 
-'получить содержимое файла
+'РїРѕР»СѓС‡РёС‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°
 Function GetFile(ByVal FileName)
 	'default
 	GetFile = ""
 	if (objFSO.FileExists(FileName)) then
 		dim f : set f=objFSO.OpenTextFile(FileName,1) '1=ForReading
-		'проверяем что указатель файла не находится в его конце 
-		'иначе при чтении пустого файла будет вылетать ошибка "input past end of file"
+		'РїСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СѓРєР°Р·Р°С‚РµР»СЊ С„Р°Р№Р»Р° РЅРµ РЅР°С…РѕРґРёС‚СЃСЏ РІ РµРіРѕ РєРѕРЅС†Рµ 
+		'РёРЅР°С‡Рµ РїСЂРё С‡С‚РµРЅРёРё РїСѓСЃС‚РѕРіРѕ С„Р°Р№Р»Р° Р±СѓРґРµС‚ РІС‹Р»РµС‚Р°С‚СЊ РѕС€РёР±РєР° "input past end of file"
 		If Not f.AtEndOfStream Then 
 			GetFile = f.ReadAll
 		end if
@@ -507,7 +507,7 @@ Function GetFile(ByVal FileName)
 	end if
 End Function
 
-'переписать содержимое файла
+'РїРµСЂРµРїРёСЃР°С‚СЊ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°
 Function WriteFile(ByVal FileName, ByVal Contents)
 	On Error Resume Next
  	WriteFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(FileName, 2, True).Write(Contents)
@@ -515,7 +515,7 @@ Function WriteFile(ByVal FileName, ByVal Contents)
 	On Error Goto 0
 End Function
 
-'получить целочисленное содержимое файла
+'РїРѕР»СѓС‡РёС‚СЊ С†РµР»РѕС‡РёСЃР»РµРЅРЅРѕРµ СЃРѕРґРµСЂР¶РёРјРѕРµ С„Р°Р№Р»Р°
 Function GetIntFile(ByVal FileName)
 	GetIntFile = 0
 	if (objFSO.FileExists(FileName)) then
@@ -542,7 +542,7 @@ Function GetIntFile(ByVal FileName)
 End Function
 
 
-'строка аргументов
+'СЃС‚СЂРѕРєР° Р°СЂРіСѓРјРµРЅС‚РѕРІ
 Function getArgsStr()
 	getArgsStr=""
 	if (WScript.Arguments.Count=0) then
@@ -562,7 +562,7 @@ End Function
 
 
 'REGISTRY ROUTINE ------------------------------------------------------
-'читает реестр
+'С‡РёС‚Р°РµС‚ СЂРµРµСЃС‚СЂ
 Function regRead(ByVal Path)
 	debugMsg "Reading " & Path & " ... "
 	on error resume next
@@ -574,7 +574,7 @@ Function regRead(ByVal Path)
 	on error goto 0
 End Function
 
-'пишет в реестр
+'РїРёС€РµС‚ РІ СЂРµРµСЃС‚СЂ
 sub regWrite (ByVal Path, ByVal varType, ByVal varVal)
 	debugMsg "Writing " & Path & "=" & varVal & "(" & varType & ") ... "
 	on error resume next
@@ -586,7 +586,7 @@ sub regWrite (ByVal Path, ByVal varType, ByVal varVal)
 	on error goto 0
 End Sub
 
-'удаляет путь в реестре
+'СѓРґР°Р»СЏРµС‚ РїСѓС‚СЊ РІ СЂРµРµСЃС‚СЂРµ
 sub regDelete (ByVal Path)
 	debugMsg "Deleting " & Path & " ... "
 	on error resume next
@@ -601,7 +601,7 @@ sub regDelete (ByVal Path)
 	on error goto 0
 End Sub
 
-'сверяет содержимое с переданными параметрами и корректирует реестр
+'СЃРІРµСЂСЏРµС‚ СЃРѕРґРµСЂР¶РёРјРѕРµ СЃ РїРµСЂРµРґР°РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё Рё РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚ СЂРµРµСЃС‚СЂ
 sub regCheck (ByVal Path, ByVal varType, ByVal varVal)
 	Dim tmp : tmp=regRead(Path)
 	if tmp = varVal Then
@@ -616,7 +616,7 @@ sub regCheck (ByVal Path, ByVal varType, ByVal varVal)
 	end if
 End Sub
 
-'проверяет ветку на наличие значения
+'РїСЂРѕРІРµСЂСЏРµС‚ РІРµС‚РєСѓ РЅР° РЅР°Р»РёС‡РёРµ Р·РЅР°С‡РµРЅРёСЏ
 function regExists (ByVal strKey)
 	dim ssig: ssig="Unable to open registry key"
 	on error resume next
@@ -659,7 +659,7 @@ End Sub
 
 
 Sub regDeleteRecursive(RegPath)
-	'удаляем принципиально папки
+	'СѓРґР°Р»СЏРµРј РїСЂРёРЅС†РёРїРёР°Р»СЊРЅРѕ РїР°РїРєРё
 	if not (right(RegPath,1) = "\") then
 		regPath=regPath & "\"
 	end if
@@ -752,7 +752,7 @@ End Function
 
 'USER RIGHTS ROUTINE -----------------------------------------------------------------
 
-'проверка админских привелегий через whoami
+'РїСЂРѕРІРµСЂРєР° Р°РґРјРёРЅСЃРєРёС… РїСЂРёРІРµР»РµРіРёР№ С‡РµСЂРµР· whoami
 'http://stackoverflow.com/questions/1599567/vbscript-check-if-the-script-has-administrative-permissions
 Function UserPerms (PermissionQuery)
 	UserPerms = False  ' False unless proven otherwise
@@ -780,7 +780,7 @@ Function UserPerms (PermissionQuery)
 	DebugMsg ("Checking " & PermissionQuery & " permissions complete")
 End Function
 
-'проверка включен ли UAC
+'РїСЂРѕРІРµСЂРєР° РІРєР»СЋС‡РµРЅ Р»Рё UAC
 Function UACTurnedOn ()
 	If regExists("HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA") then
 		if WshShell.RegRead("HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA") = 0 Then
@@ -794,8 +794,8 @@ Function UACTurnedOn ()
 	end if
 End Function
 
-'С правами следующая история: от имени SYSTEM дополнительно ELEVATED
-'права не нужны, а от юзера-админа нужны только если включен UAC
+'РЎ РїСЂР°РІР°РјРё СЃР»РµРґСѓСЋС‰Р°СЏ РёСЃС‚РѕСЂРёСЏ: РѕС‚ РёРјРµРЅРё SYSTEM РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ ELEVATED
+'РїСЂР°РІР° РЅРµ РЅСѓР¶РЅС‹, Р° РѕС‚ СЋР·РµСЂР°-Р°РґРјРёРЅР° РЅСѓР¶РЅС‹ С‚РѕР»СЊРєРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅ UAC
 function checkFullAdminRights()
 	Msg "Checking admin permissions ..."
 	If (UserPerms("System")) Then
@@ -818,11 +818,11 @@ function checkFullAdminRights()
 end function
 
 
-'Стандартная функция с сайта майкрософт, для запуска логон скриптов в системах
-'с включенным UAC. Суть в том, что логон скрипт запускается в привелигированном
-'процессе а десктом в обычном, и все примапленные в привелигерованном процессе
-'диски в десктопе потом не видны. Эта функция через шедулер пущает внешнюю программу
-'в непривелигированном процессе
+'РЎС‚Р°РЅРґР°СЂС‚РЅР°СЏ С„СѓРЅРєС†РёСЏ СЃ СЃР°Р№С‚Р° РјР°Р№РєСЂРѕСЃРѕС„С‚, РґР»СЏ Р·Р°РїСѓСЃРєР° Р»РѕРіРѕРЅ СЃРєСЂРёРїС‚РѕРІ РІ СЃРёСЃС‚РµРјР°С…
+'СЃ РІРєР»СЋС‡РµРЅРЅС‹Рј UAC. РЎСѓС‚СЊ РІ С‚РѕРј, С‡С‚Рѕ Р»РѕРіРѕРЅ СЃРєСЂРёРїС‚ Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ РІ РїСЂРёРІРµР»РёРіРёСЂРѕРІР°РЅРЅРѕРј
+'РїСЂРѕС†РµСЃСЃРµ Р° РґРµСЃРєС‚РѕРј РІ РѕР±С‹С‡РЅРѕРј, Рё РІСЃРµ РїСЂРёРјР°РїР»РµРЅРЅС‹Рµ РІ РїСЂРёРІРµР»РёРіРµСЂРѕРІР°РЅРЅРѕРј РїСЂРѕС†РµСЃСЃРµ
+'РґРёСЃРєРё РІ РґРµСЃРєС‚РѕРїРµ РїРѕС‚РѕРј РЅРµ РІРёРґРЅС‹. Р­С‚Р° С„СѓРЅРєС†РёСЏ С‡РµСЂРµР· С€РµРґСѓР»РµСЂ РїСѓС‰Р°РµС‚ РІРЅРµС€РЅСЋСЋ РїСЂРѕРіСЂР°РјРјСѓ
+'РІ РЅРµРїСЂРёРІРµР»РёРіРёСЂРѕРІР°РЅРЅРѕРј РїСЂРѕС†РµСЃСЃРµ
 function launchPad (ByVal strAppPath)
 	const TriggerTypeRegistration = 7
 	const ActionTypeExecutable = 0
@@ -859,11 +859,11 @@ function launchPad (ByVal strAppPath)
 	end if
 end function
 
-'запускает текущий скрипт от непривилегированного пользователя, если текущий процесс не такой
+'Р·Р°РїСѓСЃРєР°РµС‚ С‚РµРєСѓС‰РёР№ СЃРєСЂРёРїС‚ РѕС‚ РЅРµРїСЂРёРІРёР»РµРіРёСЂРѕРІР°РЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РµСЃР»Рё С‚РµРєСѓС‰РёР№ РїСЂРѕС†РµСЃСЃ РЅРµ С‚Р°РєРѕР№
 sub unPrivelegeMe()
 	if UACTurnedOn then
 		if (UserPerms("Elevated")) Then
-			'тут надо обработать NOLAUNCHPAD в параметрах для запрета бесконечной рекурсии
+			'С‚СѓС‚ РЅР°РґРѕ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ NOLAUNCHPAD РІ РїР°СЂР°РјРµС‚СЂР°С… РґР»СЏ Р·Р°РїСЂРµС‚Р° Р±РµСЃРєРѕРЅРµС‡РЅРѕР№ СЂРµРєСѓСЂСЃРёРё
 			launchPad Wscript.ScriptFullName & getArgsStr & " unprivelege_me_forked"
 			Msg Wscript.ScriptFullName
 			Halt ( "Parent process exiting due to priveleged state" )
@@ -875,7 +875,7 @@ sub unPrivelegeMe()
 	end if
 end sub
 
-'запускает текущий скрипт от непривилегированного пользователя, если текущий процесс не такой
+'Р·Р°РїСѓСЃРєР°РµС‚ С‚РµРєСѓС‰РёР№ СЃРєСЂРёРїС‚ РѕС‚ РЅРµРїСЂРёРІРёР»РµРіРёСЂРѕРІР°РЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РµСЃР»Рё С‚РµРєСѓС‰РёР№ РїСЂРѕС†РµСЃСЃ РЅРµ С‚Р°РєРѕР№
 sub forceUnPrivelegeMe()
 	if arg("privelege_me_forked") then
 		Msg "Unpriveleged child process detected"
@@ -886,7 +886,7 @@ sub forceUnPrivelegeMe()
 	End if
 end sub
 
-'запускает текущий скрипт от привилегированного пользователя, если текущий процесс не такой
+'Р·Р°РїСѓСЃРєР°РµС‚ С‚РµРєСѓС‰РёР№ СЃРєСЂРёРїС‚ РѕС‚ РїСЂРёРІРёР»РµРіРёСЂРѕРІР°РЅРЅРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, РµСЃР»Рё С‚РµРєСѓС‰РёР№ РїСЂРѕС†РµСЃСЃ РЅРµ С‚Р°РєРѕР№
 sub privelegeMe()
 	Msg "Running as " & Username
 	if UACTurnedOn then
@@ -914,7 +914,7 @@ sub privelegeMe()
 end sub
 
 
-'замеряет разницу текущего времени с NTP сервером
+'Р·Р°РјРµСЂСЏРµС‚ СЂР°Р·РЅРёС†Сѓ С‚РµРєСѓС‰РµРіРѕ РІСЂРµРјРµРЅРё СЃ NTP СЃРµСЂРІРµСЂРѕРј
 function GetNtpDiff(server)
 	GetNtpDiff = -1
 	dim objProc : set objProc = WshShell.Exec("%SystemRoot%\System32\w32tm.exe /monitor /nowarn /computers:"&server)
@@ -939,7 +939,7 @@ function GetNtpDiff(server)
 	End If
 end function
 
-'проверяет пингуется ли хост
+'РїСЂРѕРІРµСЂСЏРµС‚ РїРёРЅРіСѓРµС‚СЃСЏ Р»Рё С…РѕСЃС‚
 function HostPings(host)
 	if (WshShell.Run("ping -n 1 " & host, 0, True) = 0) then
 		HostPings = true	
@@ -949,7 +949,7 @@ function HostPings(host)
 end function
 
 
-'получить название ОС
+'РїРѕР»СѓС‡РёС‚СЊ РЅР°Р·РІР°РЅРёРµ РћРЎ
 Function GetOS    
     GetOS="UNKNOWN"
     dim objWMI: Set objWMI = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\cimv2")
@@ -993,13 +993,13 @@ function EnvironmentVariableName (ByVal setString)
 	end if
 end function
 
-'проверяет установлена ли переменная в нужном окружении и устанавливает если нужно (или удаляет) 
-'System		– системные переменные_среды, 
-'User		– переменные_среды пользователя
-'Volatile	– временные_переменные (туда пишутся всякая архитектура процессора и прочая шняга)
-'Process	– переменные_среды текущего процесса
+'РїСЂРѕРІРµСЂСЏРµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РїРµСЂРµРјРµРЅРЅР°СЏ РІ РЅСѓР¶РЅРѕРј РѕРєСЂСѓР¶РµРЅРёРё Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РµСЃР»Рё РЅСѓР¶РЅРѕ (РёР»Рё СѓРґР°Р»СЏРµС‚) 
+'System		вЂ“ СЃРёСЃС‚РµРјРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ_СЃСЂРµРґС‹, 
+'User		вЂ“ РїРµСЂРµРјРµРЅРЅС‹Рµ_СЃСЂРµРґС‹ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+'Volatile	вЂ“ РІСЂРµРјРµРЅРЅС‹Рµ_РїРµСЂРµРјРµРЅРЅС‹Рµ (С‚СѓРґР° РїРёС€СѓС‚СЃСЏ РІСЃСЏРєР°СЏ Р°СЂС…РёС‚РµРєС‚СѓСЂР° РїСЂРѕС†РµСЃСЃРѕСЂР° Рё РїСЂРѕС‡Р°СЏ С€РЅСЏРіР°)
+'Process	вЂ“ РїРµСЂРµРјРµРЅРЅС‹Рµ_СЃСЂРµРґС‹ С‚РµРєСѓС‰РµРіРѕ РїСЂРѕС†РµСЃСЃР°
 function EnvironmentVariableCorrect (ByVal Environment, ByVal varName, ByVal varVal)
-	'это несколько устаревший и костыльный способ, более того не учитывает тип окружения, только SYSTEM
+	'СЌС‚Рѕ РЅРµСЃРєРѕР»СЊРєРѕ СѓСЃС‚Р°СЂРµРІС€РёР№ Рё РєРѕСЃС‚С‹Р»СЊРЅС‹Р№ СЃРїРѕСЃРѕР±, Р±РѕР»РµРµ С‚РѕРіРѕ РЅРµ СѓС‡РёС‚С‹РІР°РµС‚ С‚РёРї РѕРєСЂСѓР¶РµРЅРёСЏ, С‚РѕР»СЊРєРѕ SYSTEM
 	'if (varVal<>unset_me) then
 	'	regcheck "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\"&varName,"REG_SZ", varVal
 	'else
@@ -1050,7 +1050,7 @@ function EnvironmentVariableGet (ByVal Environment, ByVal varName)
 	unset(objEnvironment)
 end function
 
-'удаляет определение переменной в каком-либо окружении
+'СѓРґР°Р»СЏРµС‚ РѕРїСЂРµРґРµР»РµРЅРёРµ РїРµСЂРµРјРµРЅРЅРѕР№ РІ РєР°РєРѕРј-Р»РёР±Рѕ РѕРєСЂСѓР¶РµРЅРёРё
 function EnvironmentVariableUnset (ByVal Environment, ByVal varName)
 	Dim objEnvironment,index
 	Set objEnvironment = wshShell.Environment(Environment)
@@ -1110,7 +1110,7 @@ end function
 
 
 function EnvPathCorrect(ByVal testPath)
-'проверяет наличие переданного пути в переменной PATH, добавляет если нет
+'РїСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ РїРµСЂРµРґР°РЅРЅРѕРіРѕ РїСѓС‚Рё РІ РїРµСЂРµРјРµРЅРЅРѕР№ PATH, РґРѕР±Р°РІР»СЏРµС‚ РµСЃР»Рё РЅРµС‚
 	dim dirs,found,i
 
 	Msg "Checking path variable for " & testPath & " presence ... "
@@ -1231,7 +1231,7 @@ Sub var_dump_helper(expression,tab)
                 call var_dump_helper(a,tab + 1)
             Else
                 msg_ vbTab & "[" & i & "] => " & _
-                               gettype(a) & "(" & a & ")" & vbCrLf
+                gettype(a) & "(" & a & ")" & vbCrLf
             End If
 
             i =  i+1
@@ -1243,70 +1243,3 @@ Sub var_dump_helper(expression,tab)
     msg_ strTab & ")" & vbCrLf
 
 End Sub
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' RPmVP6Jdfh87/8ig1QdWcgLM3K6K23eB0GyIppdfxfSg
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEICbWKXgsAbQJ
-'' SIG '' XvjRJ31pKZeLt17E212WL6VtsEtpfZlpMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBACfKEM+hKOuMuLea3YbM23Vy7onDPYaS
-'' SIG '' n/++YsxsXI/ShNSvXOgXcmYkrEGbvLueTR6VNWsLbQqr
-'' SIG '' szR3XId6ZEoj5Axtiv5XEV8sIoCyby8xnWd750tNiya8
-'' SIG '' FzvFomDsJWFMi0PlHEf/koCVQ4qI37kl5M1XUN+rBioq
-'' SIG '' VLqUQwSGBuCCzOSodDwEhvBy2dENO58BNvt376qpJqhw
-'' SIG '' uMn+GTseSz/NRdyCP6BwsOcT80+7n1j0Ouw/l0+ZWfcs
-'' SIG '' 8xevOJ4o9bX468G8V3YfW7j4VA7M8IA7aGPmREsLbwIf
-'' SIG '' P4CoZxzHf8DlKbgbfg9CVABpehqVgQ9V4mHwJfvHp/1gdSg=
-'' SIG '' End signature block

@@ -2,30 +2,30 @@ option Explicit
 '-----------------------------------------------------------------------
 'INI FILES LIBRARY           -------------------------------------------
 '-----------------------------------------------------------------------
-'Мутная библиотека по правке разных текстовых файлов (INIподобных, но не ХМЛ)
-'Переменные принятые для обозначения формата файла
-'eq		: сивол равенства  					= : => := ...
-'secL, secR	: Ограничители объявления секции 	[, ]
-'ComDelims	: с чего начинаются каменты 		# rem :: ' // ...
-'Cst, Cend	: сиволы начала и конца блока каментов /* */ <!-- --!> НЕ ОБРАБАТЫВАЮТСЯ (оставлено на будущее)
-'CaSense	: чувствительность переменных и секций к регистру true\false
-'defCrLf	: Перенос строки по умолчанию (используем его, если не поймем какой в файле уже используется)
-'Section	: C какой секцией хотим работать
-'KeyName	: С какой переменной
-'Value		: Значение (значение по умолчанию при чтении, установить при записи)
+'РњСѓС‚РЅР°СЏ Р±РёР±Р»РёРѕС‚РµРєР° РїРѕ РїСЂР°РІРєРµ СЂР°Р·РЅС‹С… С‚РµРєСЃС‚РѕРІС‹С… С„Р°Р№Р»РѕРІ (INIРїРѕРґРѕР±РЅС‹С…, РЅРѕ РЅРµ РҐРњР›)
+'РџРµСЂРµРјРµРЅРЅС‹Рµ РїСЂРёРЅСЏС‚С‹Рµ РґР»СЏ РѕР±РѕР·РЅР°С‡РµРЅРёСЏ С„РѕСЂРјР°С‚Р° С„Р°Р№Р»Р°
+'eq		: СЃРёРІРѕР» СЂР°РІРµРЅСЃС‚РІР°  					= : => := ...
+'secL, secR	: РћРіСЂР°РЅРёС‡РёС‚РµР»Рё РѕР±СЉСЏРІР»РµРЅРёСЏ СЃРµРєС†РёРё 	[, ]
+'ComDelims	: СЃ С‡РµРіРѕ РЅР°С‡РёРЅР°СЋС‚СЃСЏ РєР°РјРµРЅС‚С‹ 		# rem :: ' // ...
+'Cst, Cend	: СЃРёРІРѕР»С‹ РЅР°С‡Р°Р»Р° Рё РєРѕРЅС†Р° Р±Р»РѕРєР° РєР°РјРµРЅС‚РѕРІ /* */ <!-- --!> РќР• РћР‘Р РђР‘РђРўР«Р’РђР®РўРЎРЇ (РѕСЃС‚Р°РІР»РµРЅРѕ РЅР° Р±СѓРґСѓС‰РµРµ)
+'CaSense	: С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРµСЂРµРјРµРЅРЅС‹С… Рё СЃРµРєС†РёР№ Рє СЂРµРіРёСЃС‚СЂСѓ true\false
+'defCrLf	: РџРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (РёСЃРїРѕР»СЊР·СѓРµРј РµРіРѕ, РµСЃР»Рё РЅРµ РїРѕР№РјРµРј РєР°РєРѕР№ РІ С„Р°Р№Р»Рµ СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
+'Section	: C РєР°РєРѕР№ СЃРµРєС†РёРµР№ С…РѕС‚РёРј СЂР°Р±РѕС‚Р°С‚СЊ
+'KeyName	: РЎ РєР°РєРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№
+'Value		: Р—РЅР°С‡РµРЅРёРµ (Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РїСЂРё С‡С‚РµРЅРёРё, СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРё Р·Р°РїРёСЃРё)
 'req		: read\write
 
-'реальные определения типов файлов для библиотеки находятся в конце файла
+'СЂРµР°Р»СЊРЅС‹Рµ РѕРїСЂРµРґРµР»РµРЅРёСЏ С‚РёРїРѕРІ С„Р°Р№Р»РѕРІ РґР»СЏ Р±РёР±Р»РёРѕС‚РµРєРё РЅР°С…РѕРґСЏС‚СЃСЏ РІ РєРѕРЅС†Рµ С„Р°Р№Р»Р°
 
 
-'возвращает начало камента в строке (ComDelims - массив символов начала камента)
-'или конец строки+1 если нет камента
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РЅР°С‡Р°Р»Рѕ РєР°РјРµРЅС‚Р° РІ СЃС‚СЂРѕРєРµ (ComDelims - РјР°СЃСЃРёРІ СЃРёРјРІРѕР»РѕРІ РЅР°С‡Р°Р»Р° РєР°РјРµРЅС‚Р°)
+'РёР»Рё РєРѕРЅРµС† СЃС‚СЂРѕРєРё+1 РµСЃР»Рё РЅРµС‚ РєР°РјРµРЅС‚Р°
 function CommentAt(byVal INIString, byVal ComDelims, byVal Cst, byVal Cend, byVal CaSense)
 	Dim startPos, testPos, Delim
 	if not CaSense then
 		INIString=UCase(INIString)
 	end if
-	startPos=Len(INIString)+1	'по умолчанию камента нет и он за концом строки
+	startPos=Len(INIString)+1	'РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РєР°РјРµРЅС‚Р° РЅРµС‚ Рё РѕРЅ Р·Р° РєРѕРЅС†РѕРј СЃС‚СЂРѕРєРё
 	for each Delim in ComDelims
 		if not CaSense then
 			Delim=UCase(Delim)
@@ -38,12 +38,12 @@ function CommentAt(byVal INIString, byVal ComDelims, byVal Cst, byVal Cend, byVa
 	CommentAt = startPos
 end function
 
-'возвращает полезную часть строки, без каментов и пустот по краям
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РµР·РЅСѓСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё, Р±РµР· РєР°РјРµРЅС‚РѕРІ Рё РїСѓСЃС‚РѕС‚ РїРѕ РєСЂР°СЏРј
 function GetUsefulPart(INIString, ComDelims, Cst, Cend, CaSense)
 	GetUsefulPart=TrimWithTabs(Left(INIString,CommentAt(INIString, ComDelims, Cst, Cend, CaSense)-1))
 end function
 
-'если строка является объявлением секции, то возвращает ее имя, иначе ""
+'РµСЃР»Рё СЃС‚СЂРѕРєР° СЏРІР»СЏРµС‚СЃСЏ РѕР±СЉСЏРІР»РµРЅРёРµРј СЃРµРєС†РёРё, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РµРµ РёРјСЏ, РёРЅР°С‡Рµ ""
 function GetSectionName(INIString,ldelim,rdelim)
 	If len(ldelim)>0 and len(rdelim)>0 and Left(INIString, len(ldelim)) = ldelim and Right(INIString, len(rdelim)) = rdelim then
 		GetSectionName=TrimWithTabs(Mid(INIString,len(ldelim)+1,Len(INIString)-len(ldelim)-len(rdelim)))
@@ -52,21 +52,21 @@ function GetSectionName(INIString,ldelim,rdelim)
 	end if
 end function
 
-'возвращает строку-объявение секции, если она отличается от текущей
+'РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ-РѕР±СЉСЏРІРµРЅРёРµ СЃРµРєС†РёРё, РµСЃР»Рё РѕРЅР° РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ С‚РµРєСѓС‰РµР№
 function declareSectionName(CurSection,Section,ldelim,rdelim)
 	if Len(Section)>0 and Section<>CurSection and Len(ldelim)>0 and Len(rdelim)>0 then
-		declareSectionName=ldelim&Section&rdelim	'объявление секции
+		declareSectionName=ldelim&Section&rdelim	'РѕР±СЉСЏРІР»РµРЅРёРµ СЃРµРєС†РёРё
 	else
-		declareSectionName=""	'ничего не надо объявлять
+		declareSectionName=""	'РЅРёС‡РµРіРѕ РЅРµ РЅР°РґРѕ РѕР±СЉСЏРІР»СЏС‚СЊ
 	end if
 end function
 
-'возвращает строку-объявение переменной
+'РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ-РѕР±СЉСЏРІРµРЅРёРµ РїРµСЂРµРјРµРЅРЅРѕР№
 function declareVariable(varName,eq,varValue)
 	declareVariable=varName&eq&varValue
 end function
 
-'ищет в строке имя переменной
+'РёС‰РµС‚ РІ СЃС‚СЂРѕРєРµ РёРјСЏ РїРµСЂРµРјРµРЅРЅРѕР№
 function GetVariableName(INIString,eq)
 	dim eqPos
 	eqPos = InStr(1, INIString, eq, vbTextCompare)
@@ -78,7 +78,7 @@ function GetVariableName(INIString,eq)
 	end if
 end function
 
-'возвращает конец строки, если строка не пустая
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕРЅРµС† СЃС‚СЂРѕРєРё, РµСЃР»Рё СЃС‚СЂРѕРєР° РЅРµ РїСѓСЃС‚Р°СЏ
 function optionalCrLf(somedata,CrLf)
 	if Len(somedata)>0 then
 		optionalCrLf=CrLf
@@ -87,7 +87,7 @@ function optionalCrLf(somedata,CrLf)
 	end if
 end function
 
-'возвращает строку-комментарий
+'РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ-РєРѕРјРјРµРЅС‚Р°СЂРёР№
 function commentLine(Comment,ComDelims,CrLf)
 	commentLine=""
 	'wscript.echo "comline: " & UBound(ComDelims) & " " & Len(Comment)
@@ -96,7 +96,7 @@ function commentLine(Comment,ComDelims,CrLf)
 	end if
 end function
 
-'ищет в строке значение переменной
+'РёС‰РµС‚ РІ СЃС‚СЂРѕРєРµ Р·РЅР°С‡РµРЅРёРµ РїРµСЂРµРјРµРЅРЅРѕР№
 function GetVariableVal(INIString,eq)
 	dim eqPos
 	eqPos = InStr(1, INIString, eq, vbTextCompare)
@@ -107,19 +107,19 @@ function GetVariableVal(INIString,eq)
 	end if
 end function
 
-'ищет в файле набор символов обозначающих перенос строки
+'РёС‰РµС‚ РІ С„Р°Р№Р»Рµ РЅР°Р±РѕСЂ СЃРёРјРІРѕР»РѕРІ РѕР±РѕР·РЅР°С‡Р°СЋС‰РёС… РїРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРєРё
 function GetFileCrLf(INIContents,default)
-	'если не передали какой перенос по умолчанию, то вот этот пусть будет
+	'РµСЃР»Рё РЅРµ РїРµСЂРµРґР°Р»Рё РєР°РєРѕР№ РїРµСЂРµРЅРѕСЃ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ, С‚Рѕ РІРѕС‚ СЌС‚РѕС‚ РїСѓСЃС‚СЊ Р±СѓРґРµС‚
 	if Len(default)=0 then
 		default=vbCrLf
 	end if
 
-	'смотрим какой перенос у нас где встречается в файле
+	'СЃРјРѕС‚СЂРёРј РєР°РєРѕР№ РїРµСЂРµРЅРѕСЃ Сѓ РЅР°СЃ РіРґРµ РІСЃС‚СЂРµС‡Р°РµС‚СЃСЏ РІ С„Р°Р№Р»Рµ
 	dim crPos,lfPos
 	crPos = InStr(1, INIContents, vbCr, vbTextCompare)
 	lfPos = InStr(1, INIContents, vbLf, vbTextCompare)
 	If crPos>0 or lfPos>0 Then
-		if (crPos>0) and ((crPos<lfPos) or (lfPos=0)) then 'подозрение на CrLf
+		if (crPos>0) and ((crPos<lfPos) or (lfPos=0)) then 'РїРѕРґРѕР·СЂРµРЅРёРµ РЅР° CrLf
 			if lfPos=crPos+1 then
 				'wscript.echo "GetFileCrLf: dected Windows CRLF at " & crPos
 				GetFileCrLf=vbCr&vbLf 	'Windows
@@ -127,38 +127,38 @@ function GetFileCrLf(INIContents,default)
 				'wscript.echo "GetFileCrLf: dected UNIX CR at " & crPos
 				GetFileCrLf=vbCr		'UNIX
 			end if
-		elseif (lfPos>0) and ((lfPos<crPos) or (crPos=0)) then 'подозрение на LfCr
+		elseif (lfPos>0) and ((lfPos<crPos) or (crPos=0)) then 'РїРѕРґРѕР·СЂРµРЅРёРµ РЅР° LfCr
 			if lfPos=crPos-1 then
 				'wscript.echo "GetFileCrLf: dected LFCR WTF!!!??? " & lfPos
-				GetFileCrLf=vbLf&vbCr'файл может и не текстовый вовсе???
+				GetFileCrLf=vbLf&vbCr'С„Р°Р№Р» РјРѕР¶РµС‚ Рё РЅРµ С‚РµРєСЃС‚РѕРІС‹Р№ РІРѕРІСЃРµ???
 			else
 				'wscript.echo "GetFileCrLf: dected Mac LF at " & lfPos
 				GetFileCrLf=vbLf		'Mac
 			end if
 		else '???WTF???
-			GetFileCrLf=default 'по умолчанию
+			GetFileCrLf=default 'РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 		end if
-	else ' не нашли ни cr ни lf
+	else ' РЅРµ РЅР°С€Р»Рё РЅРё cr РЅРё lf
 		wscript.echo "GetFileCrLf: Newline symbol not detected, using default: "&default
-		GetFileCrLf=default 'по умолчанию
+		GetFileCrLf=default 'РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 	end if
 end function
 
 
-'далее идет пара громоздких, не очень удобных, функций которые используя все что написано выше работают непосредственно с файлами
+'РґР°Р»РµРµ РёРґРµС‚ РїР°СЂР° РіСЂРѕРјРѕР·РґРєРёС…, РЅРµ РѕС‡РµРЅСЊ СѓРґРѕР±РЅС‹С…, С„СѓРЅРєС†РёР№ РєРѕС‚РѕСЂС‹Рµ РёСЃРїРѕР»СЊР·СѓСЏ РІСЃРµ С‡С‚Рѕ РЅР°РїРёСЃР°РЅРѕ РІС‹С€Рµ СЂР°Р±РѕС‚Р°СЋС‚ РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ СЃ С„Р°Р№Р»Р°РјРё
 
 
-'универсальный парсер конфиг файлов (INIподобных, но не ХМЛ) - читает или пишет секция->ключ->значение
-'Читает файл со следующим форматированием:
-'eq			: сивол равенства  					= : => := ...
-'secL, secR	: Ограничители объявления секции 	[, ]
-'ComDelims	: с чего начинаются каменты 		# rem :: ' // ...
-'Cst, Cend	: сиволы начала и конца блока каментов /* */ <!-- --!> НЕ ОБРАБАТЫВАЮТСЯ (оставлено на будущее)
-'CaSense	: чувствительность переменныхи секций к регистру true\false
-'defCrLf	: Перенос строки по умолчанию (используем такой, если не поймем какой в файле уже используется)
-'Section	: C какой секцией хотим работать
-'KeyName	: С какой переменной
-'Value		: Значение (значение по умолчанию при чтении, установить при записи)
+'СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ РїР°СЂСЃРµСЂ РєРѕРЅС„РёРі С„Р°Р№Р»РѕРІ (INIРїРѕРґРѕР±РЅС‹С…, РЅРѕ РЅРµ РҐРњР›) - С‡РёС‚Р°РµС‚ РёР»Рё РїРёС€РµС‚ СЃРµРєС†РёСЏ->РєР»СЋС‡->Р·РЅР°С‡РµРЅРёРµ
+'Р§РёС‚Р°РµС‚ С„Р°Р№Р» СЃРѕ СЃР»РµРґСѓСЋС‰РёРј С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµРј:
+'eq			: СЃРёРІРѕР» СЂР°РІРµРЅСЃС‚РІР°  					= : => := ...
+'secL, secR	: РћРіСЂР°РЅРёС‡РёС‚РµР»Рё РѕР±СЉСЏРІР»РµРЅРёСЏ СЃРµРєС†РёРё 	[, ]
+'ComDelims	: СЃ С‡РµРіРѕ РЅР°С‡РёРЅР°СЋС‚СЃСЏ РєР°РјРµРЅС‚С‹ 		# rem :: ' // ...
+'Cst, Cend	: СЃРёРІРѕР»С‹ РЅР°С‡Р°Р»Р° Рё РєРѕРЅС†Р° Р±Р»РѕРєР° РєР°РјРµРЅС‚РѕРІ /* */ <!-- --!> РќР• РћР‘Р РђР‘РђРўР«Р’РђР®РўРЎРЇ (РѕСЃС‚Р°РІР»РµРЅРѕ РЅР° Р±СѓРґСѓС‰РµРµ)
+'CaSense	: С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРµСЂРµРјРµРЅРЅС‹С…Рё СЃРµРєС†РёР№ Рє СЂРµРіРёСЃС‚СЂСѓ true\false
+'defCrLf	: РџРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (РёСЃРїРѕР»СЊР·СѓРµРј С‚Р°РєРѕР№, РµСЃР»Рё РЅРµ РїРѕР№РјРµРј РєР°РєРѕР№ РІ С„Р°Р№Р»Рµ СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
+'Section	: C РєР°РєРѕР№ СЃРµРєС†РёРµР№ С…РѕС‚РёРј СЂР°Р±РѕС‚Р°С‚СЊ
+'KeyName	: РЎ РєР°РєРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№
+'Value		: Р—РЅР°С‡РµРЅРёРµ (Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РїСЂРё С‡С‚РµРЅРёРё, СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїСЂРё Р·Р°РїРёСЃРё)
 'req		: read\write
 Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense, defCrLf, Section, KeyName, Value, req, Comment)
 	Dim i, INIContents, INIStrings, INIString, UsefulPart, CurSection, CrLf
@@ -171,29 +171,29 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 	INIStrings = Split (INIContents, CrLf)
 	DebugMsg "found lines : "&ubound(INIStrings)&CrLf
 
-	CurSection=""		'на начало файла секции нет (может и не будет до конца файла)
-	jobDone=false		'работа не сделана
-	jobSec = Section	'ищем такую секцию
-	jobVar = KeyName	'и такую переменную
-	if not CaSense then	'если синтаксис не чувствителен к регистру, то приводим все символы к одному регистру
+	CurSection=""		'РЅР° РЅР°С‡Р°Р»Рѕ С„Р°Р№Р»Р° СЃРµРєС†РёРё РЅРµС‚ (РјРѕР¶РµС‚ Рё РЅРµ Р±СѓРґРµС‚ РґРѕ РєРѕРЅС†Р° С„Р°Р№Р»Р°)
+	jobDone=false		'СЂР°Р±РѕС‚Р° РЅРµ СЃРґРµР»Р°РЅР°
+	jobSec = Section	'РёС‰РµРј С‚Р°РєСѓСЋ СЃРµРєС†РёСЋ
+	jobVar = KeyName	'Рё С‚Р°РєСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+	if not CaSense then	'РµСЃР»Рё СЃРёРЅС‚Р°РєСЃРёСЃ РЅРµ С‡СѓРІСЃС‚РІРёС‚РµР»РµРЅ Рє СЂРµРіРёСЃС‚СЂСѓ, С‚Рѕ РїСЂРёРІРѕРґРёРј РІСЃРµ СЃРёРјРІРѕР»С‹ Рє РѕРґРЅРѕРјСѓ СЂРµРіРёСЃС‚СЂСѓ
 		jobSec=UCase(jobSec)
 		jobVar=UCase(jobVar)
 	end if
 
 	for i = 0 to UBound(INIStrings)
 		INIString=INIStrings(i)
-		UsefulPart=GetUsefulPart(INIString, ComDelims, Cst, Cend, CaSense) 'выделяем полезную часть строки
-		testSec=GetSectionName(UsefulPart,secL,secR)	'смотрим есть ли в ней новая секция
-		testVar=GetVariableName(UsefulPart,eq)	'или переменная
-		if not CaSense then	'если синтаксис не чувствителен к регистру, то приводим все символы к одному регистру
+		UsefulPart=GetUsefulPart(INIString, ComDelims, Cst, Cend, CaSense) 'РІС‹РґРµР»СЏРµРј РїРѕР»РµР·РЅСѓСЋ С‡Р°СЃС‚СЊ СЃС‚СЂРѕРєРё
+		testSec=GetSectionName(UsefulPart,secL,secR)	'СЃРјРѕС‚СЂРёРј РµСЃС‚СЊ Р»Рё РІ РЅРµР№ РЅРѕРІР°СЏ СЃРµРєС†РёСЏ
+		testVar=GetVariableName(UsefulPart,eq)	'РёР»Рё РїРµСЂРµРјРµРЅРЅР°СЏ
+		if not CaSense then	'РµСЃР»Рё СЃРёРЅС‚Р°РєСЃРёСЃ РЅРµ С‡СѓРІСЃС‚РІРёС‚РµР»РµРЅ Рє СЂРµРіРёСЃС‚СЂСѓ, С‚Рѕ РїСЂРёРІРѕРґРёРј РІСЃРµ СЃРёРјРІРѕР»С‹ Рє РѕРґРЅРѕРјСѓ СЂРµРіРёСЃС‚СЂСѓ
 			testSec=UCase(testSec)
 			testVar=UCase(testVar)
 		end if
 		if Len(testSec)>0 then
 			DebugMsg "Section detected: " & testSec & " vs " & jobSec
-			if CurSection=jobSec then	'кончилась секция в которой мы искали переменную
-				if req="write" and not jobDone then 'в той секции надо было записать переменную, а ее не было
-					'допишем в конец предыдущей секции
+			if CurSection=jobSec then	'РєРѕРЅС‡РёР»Р°СЃСЊ СЃРµРєС†РёСЏ РІ РєРѕС‚РѕСЂРѕР№ РјС‹ РёСЃРєР°Р»Рё РїРµСЂРµРјРµРЅРЅСѓСЋ
+				if req="write" and not jobDone then 'РІ С‚РѕР№ СЃРµРєС†РёРё РЅР°РґРѕ Р±С‹Р»Рѕ Р·Р°РїРёСЃР°С‚СЊ РїРµСЂРµРјРµРЅРЅСѓСЋ, Р° РµРµ РЅРµ Р±С‹Р»Рѕ
+					'РґРѕРїРёС€РµРј РІ РєРѕРЅРµС† РїСЂРµРґС‹РґСѓС‰РµР№ СЃРµРєС†РёРё
 					DebugMsg "INSERTING BEFORE SECTION :" &i
 					INIStrings(i)=	commentLine(Comment,ComDelims,CrLf)& _
 									declareVariable(KeyName,eq,Value)&_
@@ -206,9 +206,9 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 			testVal=GetVariableVal(UsefulPart,eq)
 			DebugMsg "Variable detected: " & testVar & " => " & testVal
 			if CurSection=jobSec and testVar=jobVar then
-			'мы нашли свою переменную
-				if req="write" then 'запись
-					'рисуем камент об изменении файла 'комментируем текущую линию 'пишем свою
+			'РјС‹ РЅР°С€Р»Рё СЃРІРѕСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
+				if req="write" then 'Р·Р°РїРёСЃСЊ
+					'СЂРёСЃСѓРµРј РєР°РјРµРЅС‚ РѕР± РёР·РјРµРЅРµРЅРёРё С„Р°Р№Р»Р° 'РєРѕРјРјРµРЅС‚РёСЂСѓРµРј С‚РµРєСѓС‰СѓСЋ Р»РёРЅРёСЋ 'РїРёС€РµРј СЃРІРѕСЋ
 					if testVal<>Value then
 						DebugMsg "CHANGING CURRENT :" &i
 						INIStrings(i)=	commentLine(INIStrings(i),ComDelims,CrLf)& _
@@ -216,22 +216,22 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 										declareVariable(KeyName,eq,Value)
 					end if
 					jobDone=true
-				elseif req="delete" then 'удаление значения 'комментируем текущую линию 
+				elseif req="delete" then 'СѓРґР°Р»РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ 'РєРѕРјРјРµРЅС‚РёСЂСѓРµРј С‚РµРєСѓС‰СѓСЋ Р»РёРЅРёСЋ 
 						DebugMsg "CHANGING CURRENT :" &i
 						INIStrings(i)=	commentLine(Comment,ComDelims,CrLf)& _
 										commentLine(INIStrings(i),ComDelims,"")
 				
 					jobDone=true
-				else 'чтение
+				else 'С‡С‚РµРЅРёРµ
 					parseINIString=testVal
 					jobDone=true
 				end if
 			end if
 		end if
 	next
-	if not jobDone then	'переменную не нашли
-		if req="write" then 'запись
-			'добавляем еще одну сроку
+	if not jobDone then	'РїРµСЂРµРјРµРЅРЅСѓСЋ РЅРµ РЅР°С€Р»Рё
+		if req="write" then 'Р·Р°РїРёСЃСЊ
+			'РґРѕР±Р°РІР»СЏРµРј РµС‰Рµ РѕРґРЅСѓ СЃСЂРѕРєСѓ
 			redim preserve INIStrings(UBound(INIStrings)+1)
 			if (UBound(INIStrings) > i+1) then
 				dim j:	for j=UBound(INIStrings) to i+1
@@ -247,11 +247,11 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 							declareVariable(KeyName,eq,Value) '&CrLf
 			DebugMsg INIStrings(i)
 			jobDone=true
-		else 'чтение
+		else 'С‡С‚РµРЅРёРµ
 			parseINIString=Value
 		end if
 	end if
-	if req="write" or req="delete" then 'запись
+	if req="write" or req="delete" then 'Р·Р°РїРёСЃСЊ
 		if jobDone then WriteFile FileName, Join(INIStrings,CrLf)
 		parseINIString=jobDone
 	end if
@@ -259,19 +259,19 @@ Function parseINIString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 End Function
 
 
-'универсальный парсер текстовых файлов, ищет строки, вставляет нужную до или после ключевой
-'Читает файл со следующим форматированием:
-'eq			: сивол равенства  					= : => := ...
-'secL, secR	: Ограничители объявления секции 	[, ]
-'ComDelims	: с чего начинаются каменты 		# rem :: ' // ...
-'Cst, Cend	: сиволы начала и конца блока каментов /* */ <!-- --!> НЕ ОБРАБАТЫВАЮТСЯ (оставлено на будущее)
-'CaSense	: чувствительность переменныхи секций к регистру true\false
-'defCrLf	: Перенос строки по умолчанию (используем такой, если не поймем какой в файле уже используется)
-'Section	: C какой секцией хотим работать
-'Keystring	: Какая строка опорная
-'Addition	: Что добавить
+'СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ РїР°СЂСЃРµСЂ С‚РµРєСЃС‚РѕРІС‹С… С„Р°Р№Р»РѕРІ, РёС‰РµС‚ СЃС‚СЂРѕРєРё, РІСЃС‚Р°РІР»СЏРµС‚ РЅСѓР¶РЅСѓСЋ РґРѕ РёР»Рё РїРѕСЃР»Рµ РєР»СЋС‡РµРІРѕР№
+'Р§РёС‚Р°РµС‚ С„Р°Р№Р» СЃРѕ СЃР»РµРґСѓСЋС‰РёРј С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµРј:
+'eq			: СЃРёРІРѕР» СЂР°РІРµРЅСЃС‚РІР°  					= : => := ...
+'secL, secR	: РћРіСЂР°РЅРёС‡РёС‚РµР»Рё РѕР±СЉСЏРІР»РµРЅРёСЏ СЃРµРєС†РёРё 	[, ]
+'ComDelims	: СЃ С‡РµРіРѕ РЅР°С‡РёРЅР°СЋС‚СЃСЏ РєР°РјРµРЅС‚С‹ 		# rem :: ' // ...
+'Cst, Cend	: СЃРёРІРѕР»С‹ РЅР°С‡Р°Р»Р° Рё РєРѕРЅС†Р° Р±Р»РѕРєР° РєР°РјРµРЅС‚РѕРІ /* */ <!-- --!> РќР• РћР‘Р РђР‘РђРўР«Р’РђР®РўРЎРЇ (РѕСЃС‚Р°РІР»РµРЅРѕ РЅР° Р±СѓРґСѓС‰РµРµ)
+'CaSense	: С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРµСЂРµРјРµРЅРЅС‹С…Рё СЃРµРєС†РёР№ Рє СЂРµРіРёСЃС‚СЂСѓ true\false
+'defCrLf	: РџРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (РёСЃРїРѕР»СЊР·СѓРµРј С‚Р°РєРѕР№, РµСЃР»Рё РЅРµ РїРѕР№РјРµРј РєР°РєРѕР№ РІ С„Р°Р№Р»Рµ СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
+'Section	: C РєР°РєРѕР№ СЃРµРєС†РёРµР№ С…РѕС‚РёРј СЂР°Р±РѕС‚Р°С‚СЊ
+'Keystring	: РљР°РєР°СЏ СЃС‚СЂРѕРєР° РѕРїРѕСЂРЅР°СЏ
+'Addition	: Р§С‚Рѕ РґРѕР±Р°РІРёС‚СЊ
 'Position	: before\after
-'Many		: Единожды или все вхождения
+'Many		: Р•РґРёРЅРѕР¶РґС‹ РёР»Рё РІСЃРµ РІС…РѕР¶РґРµРЅРёСЏ
 Function parseTXTString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense, defCrLf, Section, Keystring, Addition, Position, Many)
 	Dim i, INIContents, INIStrings, INIString, UsefulPart, CurSection, CrLf
 	Dim testSec, jobSec, jobDone
@@ -283,18 +283,18 @@ Function parseTXTString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 	INIStrings = Split (INIContents, CrLf)
 	'wscript.echo "parseTXTString: found " & ubound(INIStrings) & " lines with delim of " & Len(CrLf) &" bytes"
 
-	CurSection=""		'на начало файла секции нет (может и не будет до конца файла)
-	jobDone=false		'работа не сделана
-	jobSec = Section	'ищем такую секцию
-	if not CaSense then	'если синтаксис не чувствителен к регистру, то приводим все символы к одному регистру
+	CurSection=""		'РЅР° РЅР°С‡Р°Р»Рѕ С„Р°Р№Р»Р° СЃРµРєС†РёРё РЅРµС‚ (РјРѕР¶РµС‚ Рё РЅРµ Р±СѓРґРµС‚ РґРѕ РєРѕРЅС†Р° С„Р°Р№Р»Р°)
+	jobDone=false		'СЂР°Р±РѕС‚Р° РЅРµ СЃРґРµР»Р°РЅР°
+	jobSec = Section	'РёС‰РµРј С‚Р°РєСѓСЋ СЃРµРєС†РёСЋ
+	if not CaSense then	'РµСЃР»Рё СЃРёРЅС‚Р°РєСЃРёСЃ РЅРµ С‡СѓРІСЃС‚РІРёС‚РµР»РµРЅ Рє СЂРµРіРёСЃС‚СЂСѓ, С‚Рѕ РїСЂРёРІРѕРґРёРј РІСЃРµ СЃРёРјРІРѕР»С‹ Рє РѕРґРЅРѕРјСѓ СЂРµРіРёСЃС‚СЂСѓ
 		jobSec=UCase(jobSec)
 		'msg ("parseTXTString: case insensetive mode")
 	end if
 	for i = 0 to UBound(INIStrings)
 		INIString=INIStrings(i)
 		'msg("at first it is "&INIString	)
-		testSec=GetSectionName(GetUsefulPart(INIString, ComDelims, Cst, Cend, CaSense),secL,secR)	'смотрим есть ли новая секция
-		if not CaSense then	'если синтаксис не чувствителен к регистру, то приводим все символы к одному регистру
+		testSec=GetSectionName(GetUsefulPart(INIString, ComDelims, Cst, Cend, CaSense),secL,secR)	'СЃРјРѕС‚СЂРёРј РµСЃС‚СЊ Р»Рё РЅРѕРІР°СЏ СЃРµРєС†РёСЏ
+		if not CaSense then	'РµСЃР»Рё СЃРёРЅС‚Р°РєСЃРёСЃ РЅРµ С‡СѓРІСЃС‚РІРёС‚РµР»РµРЅ Рє СЂРµРіРёСЃС‚СЂСѓ, С‚Рѕ РїСЂРёРІРѕРґРёРј РІСЃРµ СЃРёРјРІРѕР»С‹ Рє РѕРґРЅРѕРјСѓ СЂРµРіРёСЃС‚СЂСѓ
 			testSec=UCase(testSec)
 		end if
 		if Len(testSec)>0 then
@@ -320,17 +320,17 @@ Function parseTXTString(FileName, eq, secL, secR, ComDelims, Cst, Cend, CaSense,
 End Function
 
 
-'далее идут уже функции, которые облегчают работу с этими 2мя что выше
+'РґР°Р»РµРµ РёРґСѓС‚ СѓР¶Рµ С„СѓРЅРєС†РёРё, РєРѕС‚РѕСЂС‹Рµ РѕР±Р»РµРіС‡Р°СЋС‚ СЂР°Р±РѕС‚Сѓ СЃ СЌС‚РёРјРё 2РјСЏ С‡С‚Рѕ РІС‹С€Рµ
 
 
-'проверяет что переданная переменная - действительно структура описывающая тип файла
+'РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚Рѕ РїРµСЂРµРґР°РЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ - РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃС‹РІР°СЋС‰Р°СЏ С‚РёРї С„Р°Р№Р»Р°
 Function CheckFileTypeDescr(ByVal FType)
-	'eq			: сивол равенства  					= : => := ...
-	'secL, secR	: Ограничители объявления секции 	[, ]
-	'ComDelims	: с чего начинаются каменты 		# rem :: ' // ...
-	'Cst, Cend	: сиволы начала и конца блока каментов /* */ <!-- --!> НЕ ОБРАБАТЫВАЮТСЯ (оставлено на будущее)
-	'CaSense	: чувствительность переменныхи секций к регистру true\false
-	'defCrLf	: Перенос строки по умолчанию (используем такой, если не поймем какой в файле уже используется)
+	'eq			: СЃРёРІРѕР» СЂР°РІРµРЅСЃС‚РІР°  					= : => := ...
+	'secL, secR	: РћРіСЂР°РЅРёС‡РёС‚РµР»Рё РѕР±СЉСЏРІР»РµРЅРёСЏ СЃРµРєС†РёРё 	[, ]
+	'ComDelims	: СЃ С‡РµРіРѕ РЅР°С‡РёРЅР°СЋС‚СЃСЏ РєР°РјРµРЅС‚С‹ 		# rem :: ' // ...
+	'Cst, Cend	: СЃРёРІРѕР»С‹ РЅР°С‡Р°Р»Р° Рё РєРѕРЅС†Р° Р±Р»РѕРєР° РєР°РјРµРЅС‚РѕРІ /* */ <!-- --!> РќР• РћР‘Р РђР‘РђРўР«Р’РђР®РўРЎРЇ (РѕСЃС‚Р°РІР»РµРЅРѕ РЅР° Р±СѓРґСѓС‰РµРµ)
+	'CaSense	: С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ РїРµСЂРµРјРµРЅРЅС‹С…Рё СЃРµРєС†РёР№ Рє СЂРµРіРёСЃС‚СЂСѓ true\false
+	'defCrLf	: РџРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (РёСЃРїРѕР»СЊР·СѓРµРј С‚Р°РєРѕР№, РµСЃР»Рё РЅРµ РїРѕР№РјРµРј РєР°РєРѕР№ РІ С„Р°Р№Р»Рµ СѓР¶Рµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
 	'Msg typeName (FType)
 	CheckFileTypeDescr=true
 	dim flds,fld
@@ -344,9 +344,9 @@ Function CheckFileTypeDescr(ByVal FType)
 End Function
 
 
-'вот собственно ради этих трех и писалась вся библиотечка
+'РІРѕС‚ СЃРѕР±СЃС‚РІРµРЅРЅРѕ СЂР°РґРё СЌС‚РёС… С‚СЂРµС… Рё РїРёСЃР°Р»Р°СЃСЊ РІСЃСЏ Р±РёР±Р»РёРѕС‚РµС‡РєР°
 
-'получить значение из INI файла
+'РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РёР· INI С„Р°Р№Р»Р°
 Function conffile_get(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Default)
 	if CheckFileTypeDescr(FType) then
 		conffile_get=parseINIString(FPath, FType("eq"), FType("secL"), FType("secR"), FType("ComDelims"), FType("Cst"), FType("Cend"), FType("CaSense"), FType("defCrLf"), Section, Key, Default, "read", "")
@@ -356,7 +356,7 @@ Function conffile_get(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal 
 end Function
 
 
-'записать значение в INI файл
+'Р·Р°РїРёСЃР°С‚СЊ Р·РЅР°С‡РµРЅРёРµ РІ INI С„Р°Р№Р»
 Function conffile_set(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Value, ByVal Comment)
 	dim mode
 	if Value=unset_me then
@@ -372,8 +372,8 @@ Function conffile_set(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal 
 end Function
 
 
-'исправить значение в INI файл
-'возвращает признак произведенных в файле изменений
+'РёСЃРїСЂР°РІРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РІ INI С„Р°Р№Р»
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РїСЂРёР·РЅР°Рє РїСЂРѕРёР·РІРµРґРµРЅРЅС‹С… РІ С„Р°Р№Р»Рµ РёР·РјРµРЅРµРЅРёР№
 Function conffile_fix(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Value, ByVal Comment)
 	if CheckFileTypeDescr(FType) then
 		if (Value=conffile_get(FPath,FType,Section,Key,"value not found marker")) then
@@ -390,10 +390,10 @@ end Function
 
 
 
-'вставляет переменную после нужной строки
+'РІСЃС‚Р°РІР»СЏРµС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ РїРѕСЃР»Рµ РЅСѓР¶РЅРѕР№ СЃС‚СЂРѕРєРё
 Function textfile_set_after(ByVal FPath, ByVal FType, ByVal Section, ByVal Key, ByVal Value, ByVal Comment, ByVal after)
 	if CheckFileTypeDescr(FType) then
-		if not conffile_get(FPath, FType, Section, Key, "un1Que_deFFault") = "un1Que_deFFault" then 'если уже есть какое-то значение - меняем
+		if not conffile_get(FPath, FType, Section, Key, "un1Que_deFFault") = "un1Que_deFFault" then 'РµСЃР»Рё СѓР¶Рµ РµСЃС‚СЊ РєР°РєРѕРµ-С‚Рѕ Р·РЅР°С‡РµРЅРёРµ - РјРµРЅСЏРµРј
 			textfile_set_after=parseINIString(FPath, FType("eq"), FType("secL"), FType("secR"), FType("ComDelims"), FType("Cst"), FType("Cend"), FType("CaSense"), FType("defCrLf"), Section, Key, Value, "write", Comment)
 		else
 			dim CrLf, Addition
@@ -410,8 +410,8 @@ end Function
 
 
 
-'определения типов файлов для библиотеки
-'файл .bat/.cmd
+'РѕРїСЂРµРґРµР»РµРЅРёСЏ С‚РёРїРѕРІ С„Р°Р№Р»РѕРІ РґР»СЏ Р±РёР±Р»РёРѕС‚РµРєРё
+'С„Р°Р№Р» .bat/.cmd
 dim ftype_bat : set ftype_bat = CreateObject("Scripting.Dictionary")
 	ftype_bat.add "eq",		"="
 	ftype_bat.add "secL",	""
@@ -422,7 +422,7 @@ dim ftype_bat : set ftype_bat = CreateObject("Scripting.Dictionary")
 	ftype_bat.add "CaSense",false
 	ftype_bat.add "defCrLf",vbCrLf
 
-'файл .properties от ТС
+'С„Р°Р№Р» .properties РѕС‚ РўРЎ
 dim ftype_tc_conf : set ftype_tc_conf = CreateObject("Scripting.Dictionary")
 	ftype_tc_conf.add "eq",		"="
 	ftype_tc_conf.add "secL",	""
@@ -433,7 +433,7 @@ dim ftype_tc_conf : set ftype_tc_conf = CreateObject("Scripting.Dictionary")
 	ftype_tc_conf.add "CaSense",true
 	ftype_tc_conf.add "defCrLf",vbCrLf
 
-'файл etc\hosts
+'С„Р°Р№Р» etc\hosts
 dim ftype_etc_hosts : set ftype_etc_hosts = CreateObject("Scripting.Dictionary")
 	ftype_etc_hosts.add "eq",		" "
 	ftype_etc_hosts.add "secL",	""
@@ -444,7 +444,7 @@ dim ftype_etc_hosts : set ftype_etc_hosts = CreateObject("Scripting.Dictionary")
 	ftype_etc_hosts.add "CaSense",false
 	ftype_etc_hosts.add "defCrLf",vbCrLf
 
-'файл .ini
+'С„Р°Р№Р» .ini
 dim ftype_tc_ini : set ftype_tc_ini = CreateObject("Scripting.Dictionary")
 	ftype_tc_ini.add "eq",		"="
 	ftype_tc_ini.add "secL",	"["
@@ -455,7 +455,7 @@ dim ftype_tc_ini : set ftype_tc_ini = CreateObject("Scripting.Dictionary")
 	ftype_tc_ini.add "CaSense",true
 	ftype_tc_ini.add "defCrLf",vbCrLf
 
-'файл .ini
+'С„Р°Р№Р» .ini
 dim ftype_ini : set ftype_ini = CreateObject("Scripting.Dictionary")
 	ftype_ini.add "eq",		"="
 	ftype_ini.add "secL",	"["
@@ -466,70 +466,3 @@ dim ftype_ini : set ftype_ini = CreateObject("Scripting.Dictionary")
 	ftype_ini.add "CaSense",true
 	ftype_ini.add "defCrLf",vbCrLf
 
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' RUoK2rWWTbwKmcV+4WXW7mD7H1j6qN3tv/r3iQoAa6eg
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIA+j8d/jVt8y
-'' SIG '' e69yUin0T4fbVYYdMi/JnI+aMq37qI8lMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAGshuRR2FyrAH6J1X5UpkFTJh4XbNGWe
-'' SIG '' VkqhgxRGBdm3h+G90fVg4ux1bAVZ4A9nrVkvqXPOse41
-'' SIG '' sng5Ac8RfsxxkcImfnGGsbNII8JW/9r4zfXclm5WvPEF
-'' SIG '' Yy/skcAPlqeVg9b/92jJlHcAVTBiLA5oMQok5xsrVSq/
-'' SIG '' M9flCL8XUwktLcfHPClrYqZ3MhwsTRJUVQ2UdFPxzrwV
-'' SIG '' jIPIPlzDkkO7EvG7X0KeDvDMkF7HEXpodV0SHRVepLZw
-'' SIG '' 5wb+1n7FjBTMB4wdESZVSvJMlTU4tpuhyAHS5COVt0Y6
-'' SIG '' 9YVoAYagTtuVOhvdjfxSBV9vk39sSlt3OtZJuX3G7R5ZmV4=
-'' SIG '' End signature block

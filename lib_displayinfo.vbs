@@ -1,4 +1,4 @@
-'Библиотека получения информации о мониторах из реестра
+'Р‘РёР±Р»РёРѕС‚РµРєР° РїРѕР»СѓС‡РµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РјРѕРЅРёС‚РѕСЂР°С… РёР· СЂРµРµСЃС‚СЂР°
 Const DISPLAY_REGKEY="HKLM\SYSTEM\CurrentControlSet\Enum\DISPLAY\"
 
 'this function formats the parsed array for display
@@ -33,7 +33,7 @@ Function GetMonitorInfo()
 	arrAllMonitors=GetAllMonitorsFromAllDisplays(arrAllDisplays)
 	'debugMsg "Filtering monitors to active monitors"
 	'arrActiveMonitors=GetActiveMonitorsFromAllMonitors(arrAllMonitors)
-	'у меня на 10ке показывало что нет ни одного активного монитора
+	'Сѓ РјРµРЅСЏ РЅР° 10РєРµ РїРѕРєР°Р·С‹РІР°Р»Рѕ С‡С‚Рѕ РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ Р°РєС‚РёРІРЅРѕРіРѕ РјРѕРЅРёС‚РѕСЂР°
 	arrActiveMonitors=arrAllMonitors
 	if ubound(arrActiveMonitors)=0 and arrActiveMonitors(0)="{ERROR}" then
 		debugMsg "No active monitors found"
@@ -463,73 +463,3 @@ Function GetEDIDVerFromEDID(strEDID)
 	tmpver=chr(48+tmpEDIDMajorVer) & "." & chr(48+tmpEDIDRev)
 	GetEDIDVerFromEDID=tmpver
 End Function
-
-
-
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' erRNYrSZSFOayAfZYJFcFruEkdR6j37IXsKndYLaVeGg
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIO06IS7kurTt
-'' SIG '' bpRUB4cB4QavrFtrxstUp398VEFwxY+7MA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBADJ6QShVlP4y7WxwYzrBfpQHf/jbxvPv
-'' SIG '' veIzn7V0GlgtcCAcFiOZuAFPs0B9CjQRtb0x2GlwYGUR
-'' SIG '' A9ExAYSoa+GvFlHXQr5WzluhobjV5fMWKrrvpjO7ZQL8
-'' SIG '' MOFsCEkpNrkE8w5i/sCDz+e+5r9nrGdWIieDpMbqpCBF
-'' SIG '' wkBcoJVv+xOag3wzTConm9HSN4ioosp4vb/EwA7DOt/w
-'' SIG '' l6JkM2bXdGPutLvUEyz0e2TDTsfb9yW0aG8i7nafJbdr
-'' SIG '' UQFXGSRHDDAJ8h6yhmSndWMb3kNVdl4RAyCg74Xe4lrp
-'' SIG '' IiL+QnMq8hXz4zpDg3zCoP/jeVdQC+9ZV4QHsYlKIvFNB9c=
-'' SIG '' End signature block

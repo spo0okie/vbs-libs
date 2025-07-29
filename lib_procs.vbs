@@ -1,10 +1,10 @@
-'Библиотечка работы с процессами
+'Р‘РёР±Р»РёРѕС‚РµС‡РєР° СЂР°Р±РѕС‚С‹ СЃ РїСЂРѕС†РµСЃСЃР°РјРё
 Option Explicit
 Const procLibVer="1.0"
 'ver 1.0
-' + утащил из ядра функцию isProcRunning, переименовал в isUserProcRunning
+' + СѓС‚Р°С‰РёР» РёР· СЏРґСЂР° С„СѓРЅРєС†РёСЋ isProcRunning, РїРµСЂРµРёРјРµРЅРѕРІР°Р» РІ isUserProcRunning
 
-'Проверяет работает ли процесс под пользователем
+'РџСЂРѕРІРµСЂСЏРµС‚ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РїСЂРѕС†РµСЃСЃ РїРѕРґ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
 Function isUserProcRunning(procName,procUser)
 	dim strNameOfUser
 	dim colProcesses
@@ -30,7 +30,7 @@ Function isUserProcRunning(procName,procUser)
 	on error goto 0
 End Function
 
-'Проверяет работает ли процесс под пользователем
+'РџСЂРѕРІРµСЂСЏРµС‚ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РїСЂРѕС†РµСЃСЃ РїРѕРґ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј
 Function isProcRunning(procName)
 	dim colProcesses
 	dim objProcess
@@ -47,7 +47,7 @@ Function isProcRunning(procName)
 	on error goto 0
 End Function
 
-'Проверяет работает ли процесс с указанным PID
+'РџСЂРѕРІРµСЂСЏРµС‚ СЂР°Р±РѕС‚Р°РµС‚ Р»Рё РїСЂРѕС†РµСЃСЃ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј PID
 Function isPidProcRunning(procName)
 	dim colProcesses
 	dim objProcess
@@ -78,8 +78,8 @@ Function killProc(byVal procName, byVal Timeout)
 		' Get exact case for the actual process name
 		procName  = objProcess.Name
 		' Kill all instances of the process
-		'иногда тут вылетает ошибка SWbemObjectEx not found
-		'так и не понял что это значит. Ниже обсуждение аналогичной ошибки
+		'РёРЅРѕРіРґР° С‚СѓС‚ РІС‹Р»РµС‚Р°РµС‚ РѕС€РёР±РєР° SWbemObjectEx not found
+		'С‚Р°Рє Рё РЅРµ РїРѕРЅСЏР» С‡С‚Рѕ СЌС‚Рѕ Р·РЅР°С‡РёС‚. РќРёР¶Рµ РѕР±СЃСѓР¶РґРµРЅРёРµ Р°РЅР°Р»РѕРіРёС‡РЅРѕР№ РѕС€РёР±РєРё
 		'https://social.technet.microsoft.com/Forums/ie/en-US/57d80534-0777-43e4-bbeb-1b858c79ba16/terminate-process-by-owner-on-local-or-remote-computer?forum=ITCG
 		on error resume next
 			objProcess.Terminate()
@@ -147,20 +147,20 @@ Function GetCurrentProcessID()
     End With
 End Function
 
-'Записывает в файл PID текущего процесса
+'Р—Р°РїРёСЃС‹РІР°РµС‚ РІ С„Р°Р№Р» PID С‚РµРєСѓС‰РµРіРѕ РїСЂРѕС†РµСЃСЃР°
 Function WritePidFile(ByVal FileName)
 	writeFile FileName,GetCurrentProcessID
 End Function
 
-'Очищает PID файл
+'РћС‡РёС‰Р°РµС‚ PID С„Р°Р№Р»
 Function ClearPidFile(ByVal FileName)
 	if objFSO.fileExists(FileName) then
 		objFSO.DeleteFile(FileName)
 	end if
 End Function
 
-'Проверяет наличие PID файла
-'если на месте - проверяет запущенн ли процесс владелец
+'РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ PID С„Р°Р№Р»Р°
+'РµСЃР»Рё РЅР° РјРµСЃС‚Рµ - РїСЂРѕРІРµСЂСЏРµС‚ Р·Р°РїСѓС‰РµРЅРЅ Р»Рё РїСЂРѕС†РµСЃСЃ РІР»Р°РґРµР»РµС†
 Function CheckPidFile(ByVal FileName)
 	dim pid
 	pid=GetIntFile(FileName)
@@ -173,74 +173,8 @@ Function CheckPidFile(ByVal FileName)
 		else
 			Msg_n " - It is dead"
 		end if
+	else
+		Msg_n " - no process"
 	end if
 	CheckPidFile=0	
 End Function
-
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' 3VzY8sLSZ4PdxUq3HmGHhzTPOz1ndCLdH5G0F3R+VdKg
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJsU3X6iRMSG
-'' SIG '' 2d6e7V5nsEvojrZTzBF52ReVloufBvW+MA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAHEe1vtB5eN5J+5jVgj57O0Xc8UzZbYC
-'' SIG '' 2F9EzGWXgBmmDJL3fJEZ333Zz43TgXVrdYp/srP+znxv
-'' SIG '' jB4A2B5xtotmABMxS2NOtjYkfdwtOQtFqO6sQ7xlR8C3
-'' SIG '' bRe+Oqe/Hrcc6pu1CUOHe88/zmd/R50v7RrVaeEnWfeG
-'' SIG '' K7uHT26uOkEOfCAsjHG3p0ByKxpsOyGhjxuoExB15J5o
-'' SIG '' L3+dfP5PtGdMFcaC5yYsOqqSTTaLsdfZ91XP4BgcLfLs
-'' SIG '' 1wBPl7Y4D5ZGTVnyLCnJ+r/SxLZQYxLxgQuGVcYLXxZA
-'' SIG '' OUQzFxoow0Mv7T5yFnH8osLqEH8RFbKyHgCzJfcLVBSPukA=
-'' SIG '' End signature block

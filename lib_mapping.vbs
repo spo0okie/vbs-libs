@@ -1,12 +1,12 @@
-'Библиотека с маппингом принтеров и дисков (уже использовалась в домене RTS-DEVELOP), вроде с правками Комиссарова
-'Путем нудной отладки выяснилось следующее:
-'На Windows XP вызов процедуры objNetwork.AddWindowsPrinterConnection "\\chl-fsrv-open\hpLJm601n"
-'вызывает ошибку "The procedure entry point sprintf_s could not be located in the dynamic link library msvcrt.dll"
-'или по русски "Точка входа в процедуру sprintf_s не найдена в библиотеке DLL msvcrt.dll"
-'путем дебага АПИ вызовов выяснилось что ошибка возникает на самом деле при попытке открыть файлы
+'Р‘РёР±Р»РёРѕС‚РµРєР° СЃ РјР°РїРїРёРЅРіРѕРј РїСЂРёРЅС‚РµСЂРѕРІ Рё РґРёСЃРєРѕРІ (СѓР¶Рµ РёСЃРїРѕР»СЊР·РѕРІР°Р»Р°СЃСЊ РІ РґРѕРјРµРЅРµ RTS-DEVELOP), РІСЂРѕРґРµ СЃ РїСЂР°РІРєР°РјРё РљРѕРјРёСЃСЃР°СЂРѕРІР°
+'РџСѓС‚РµРј РЅСѓРґРЅРѕР№ РѕС‚Р»Р°РґРєРё РІС‹СЏСЃРЅРёР»РѕСЃСЊ СЃР»РµРґСѓСЋС‰РµРµ:
+'РќР° Windows XP РІС‹Р·РѕРІ РїСЂРѕС†РµРґСѓСЂС‹ objNetwork.AddWindowsPrinterConnection "\\chl-fsrv-open\hpLJm601n"
+'РІС‹Р·С‹РІР°РµС‚ РѕС€РёР±РєСѓ "The procedure entry point sprintf_s could not be located in the dynamic link library msvcrt.dll"
+'РёР»Рё РїРѕ СЂСѓСЃСЃРєРё "РўРѕС‡РєР° РІС…РѕРґР° РІ РїСЂРѕС†РµРґСѓСЂСѓ sprintf_s РЅРµ РЅР°Р№РґРµРЅР° РІ Р±РёР±Р»РёРѕС‚РµРєРµ DLL msvcrt.dll"
+'РїСѓС‚РµРј РґРµР±Р°РіР° РђРџР РІС‹Р·РѕРІРѕРІ РІС‹СЏСЃРЅРёР»РѕСЃСЊ С‡С‚Рѕ РѕС€РёР±РєР° РІРѕР·РЅРёРєР°РµС‚ РЅР° СЃР°РјРѕРј РґРµР»Рµ РїСЂРё РїРѕРїС‹С‚РєРµ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»С‹
 'C:\WINDOWS\system32\spool\drivers\w32x86\3\PrintConfig.dll.2.Config
 'C:\WINDOWS\system32\spool\drivers\w32x86\3\PrintConfig.dll.2.Mainfest
-'которых в системе нет. создание пустых файлов по этом пути решило проблему. вероятно нужно избегать добавления принтеров подобным образом в XP
+'РєРѕС‚РѕСЂС‹С… РІ СЃРёСЃС‚РµРјРµ РЅРµС‚. СЃРѕР·РґР°РЅРёРµ РїСѓСЃС‚С‹С… С„Р°Р№Р»РѕРІ РїРѕ СЌС‚РѕРј РїСѓС‚Рё СЂРµС€РёР»Рѕ РїСЂРѕР±Р»РµРјСѓ. РІРµСЂРѕСЏС‚РЅРѕ РЅСѓР¶РЅРѕ РёР·Р±РµРіР°С‚СЊ РґРѕР±Р°РІР»РµРЅРёСЏ РїСЂРёРЅС‚РµСЂРѕРІ РїРѕРґРѕР±РЅС‹Рј РѕР±СЂР°Р·РѕРј РІ XP
 '
 '
 '
@@ -20,12 +20,12 @@ Function MapDrive(ByVal strDrive, ByVal strShare, ByVal strName)
     ' objFSO is the File System Object, with global scope.
     ' objNetwork is the Network Object, with global scope.
     ' Returns True if drive mapped, False otherwise.
-    ' strDrive - буква диска.
-    ' strShare - сетевой путь.
-    ' strName - название диска, отображаемое в проводнике Windows.
-    ' oShell - команда записи короткого имени, отображаемого в проводнике Windows.
-    ' Введена запись ошибок подключения сетевых путей в EventLog.
-    ' По умолчанию диски мапятся с параметром "/PERSISTENT:NO" (bUpdateProfile = false).
+    ' strDrive - Р±СѓРєРІР° РґРёСЃРєР°.
+    ' strShare - СЃРµС‚РµРІРѕР№ РїСѓС‚СЊ.
+    ' strName - РЅР°Р·РІР°РЅРёРµ РґРёСЃРєР°, РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРµ РІ РїСЂРѕРІРѕРґРЅРёРєРµ Windows.
+    ' oShell - РєРѕРјР°РЅРґР° Р·Р°РїРёСЃРё РєРѕСЂРѕС‚РєРѕРіРѕ РёРјРµРЅРё, РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ РІ РїСЂРѕРІРѕРґРЅРёРєРµ Windows.
+    ' Р’РІРµРґРµРЅР° Р·Р°РїРёСЃСЊ РѕС€РёР±РѕРє РїРѕРґРєР»СЋС‡РµРЅРёСЏ СЃРµС‚РµРІС‹С… РїСѓС‚РµР№ РІ EventLog.
+    ' РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґРёСЃРєРё РјР°РїСЏС‚СЃСЏ СЃ РїР°СЂР°РјРµС‚СЂРѕРј "/PERSISTENT:NO" (bUpdateProfile = false).
     Msg "" : Msg " -- Mapping " & strDrive & " <- " & strShare
 
     Dim objDrive
@@ -35,7 +35,7 @@ Function MapDrive(ByVal strDrive, ByVal strShare, ByVal strName)
 
     On Error Resume Next
 
-    CheckDir(strShare) 'создаем сетевой путь, если он отсутствует
+    CheckDir(strShare) 'СЃРѕР·РґР°РµРј СЃРµС‚РµРІРѕР№ РїСѓС‚СЊ, РµСЃР»Рё РѕРЅ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚
 
     MapDrive = True
     If (objFSO.DriveExists(strDrive) = True) Then
@@ -94,7 +94,7 @@ Function MapDrive(ByVal strDrive, ByVal strShare, ByVal strName)
 '    CheckDir(strDrive & "\I_am_test-Remove_me_PLZ")
 	
 '    On Error GoTo 0
-'	отключил дополнительные действия 2016-02-03, поскольку были проблемы с пропаданием дисков уже после подключения 
+'	РѕС‚РєР»СЋС‡РёР» РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РґРµР№СЃС‚РІРёСЏ 2016-02-03, РїРѕСЃРєРѕР»СЊРєСѓ Р±С‹Р»Рё РїСЂРѕР±Р»РµРјС‹ СЃ РїСЂРѕРїР°РґР°РЅРёРµРј РґРёСЃРєРѕРІ СѓР¶Рµ РїРѕСЃР»Рµ РїРѕРґРєР»СЋС‡РµРЅРёСЏ 
 '    Select Case Err.Number
 '        Case 0            ' No error.
 '        Case -2147023694
@@ -119,7 +119,7 @@ Function MapDrive(ByVal strDrive, ByVal strShare, ByVal strName)
 End Function
 
 function MapPrintersByGrp(Dict)
-	Dim i,grpKeys		' переменная для определения "попадания" пользователя хотябы в одну из групп принтеров.
+	Dim i,grpKeys		' РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ "РїРѕРїР°РґР°РЅРёСЏ" РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ С…РѕС‚СЏР±С‹ РІ РѕРґРЅСѓ РёР· РіСЂСѓРїРї РїСЂРёРЅС‚РµСЂРѕРІ.
 	MapPrintersByGrp = False
 
 	msg ("Attaching printers...")
@@ -127,7 +127,7 @@ function MapPrintersByGrp(Dict)
 	For i = 0 To Dict.Count -1 ' Iterate the array.
 		If (IsMember(objUser, grpKeys(i)) = True) Then
 			msg ("Group "& grpKeys(i) & " found > attaching " & Dict(grpKeys(i)) & "...")
-			On Error Resume Next	'нам нужно тут самим обработать возможную ошибку (поскольку вероятность ее велика)
+			On Error Resume Next	'РЅР°Рј РЅСѓР¶РЅРѕ С‚СѓС‚ СЃР°РјРёРј РѕР±СЂР°Р±РѕС‚Р°С‚СЊ РІРѕР·РјРѕР¶РЅСѓСЋ РѕС€РёР±РєСѓ (РїРѕСЃРєРѕР»СЊРєСѓ РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊ РµРµ РІРµР»РёРєР°)
 			Err.Clear      ' Clear any possible Error that previous code raised
 			'objNetwork.AddWindowsPrinterConnection Dict(grpKeys(i))
 			'objNetwork.SetDefaultPrinter Dict(grpKeys(i))
@@ -145,7 +145,7 @@ function MapPrintersByGrp(Dict)
 	Next
 End function
 
-'возвращает флаг того что диск виртуальный, сделанный через комманду subst
+'РІРѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі С‚РѕРіРѕ С‡С‚Рѕ РґРёСЃРє РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№, СЃРґРµР»Р°РЅРЅС‹Р№ С‡РµСЂРµР· РєРѕРјРјР°РЅРґСѓ subst
 function DiskSubstituted(Disk)
 	DiskSubstituted=False
 	Set objExecObject = WshShell.Exec("cmd /c subst")
@@ -160,9 +160,9 @@ function DiskSubstituted(Disk)
 	Loop	
 end function
 
-'возвращает UUID диска. 
-'Использует утилиту mountvol, я проверял, она есть в XP и Server 2012 R2
-'рассчитываю что промежуточные версии тоже ее включают
+'РІРѕР·РІСЂР°С‰Р°РµС‚ UUID РґРёСЃРєР°. 
+'РСЃРїРѕР»СЊР·СѓРµС‚ СѓС‚РёР»РёС‚Сѓ mountvol, СЏ РїСЂРѕРІРµСЂСЏР», РѕРЅР° РµСЃС‚СЊ РІ XP Рё Server 2012 R2
+'СЂР°СЃСЃС‡РёС‚С‹РІР°СЋ С‡С‚Рѕ РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Рµ РІРµСЂСЃРёРё С‚РѕР¶Рµ РµРµ РІРєР»СЋС‡Р°СЋС‚
 function DiskUUID(Disk)
 	DiskUUID=""
 	Set objExecObject = WshShell.Exec("mountvol " & Disk & " /L")
@@ -171,70 +171,3 @@ function DiskUUID(Disk)
         	Exit Do
 	Loop	
 end function
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' jJiETa4bz0dlDGYcJLd8JQNWaTai+/EI3gM7/90l30+g
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFLIjcg1+dpF
-'' SIG '' yM038lVuGV+jBIAZ93HTmFoLDa1iQyb8MA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBACZ35kAVLwUIA7HCsnAyJm0R58FCHxX9
-'' SIG '' K72AnQ4fYEr6X/WIJwhUH0+cTC2/NYMRBr48oucLZ5nw
-'' SIG '' +5I9Yagm6iAh4/Awzwf8PiWDunCQdtuhFI/c4yE9SKvi
-'' SIG '' 5ne4aRBQ4vYnMtFT+ESE+fQR+9ixlOpDFSAdfwwlmBIZ
-'' SIG '' x8nRbys6jPgN98T8IBalGbXo7BgzaK5bhFYAqqdeI/tF
-'' SIG '' iHJ38UIvOuagsowSJxFMD8xWLe8vJghv5oSJK6gCpAPH
-'' SIG '' WDhwP+Sh9uXxtWhxqaI6WClWSEr2Am9LETRemEj8gl9z
-'' SIG '' BI5H5wAik0Kd89CrVlKBJzdjtixeCr48dS3oP3zX84Rwm2s=
-'' SIG '' End signature block

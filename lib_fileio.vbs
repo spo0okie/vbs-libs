@@ -1,28 +1,29 @@
-'хз какие тут версии. Сразу не завел ща уже какой смысл
+'2025-07-29
+'	+ ReadUTF8File, WriteUTF8File
 '2023-04-20
-'	dirMasterSlaveSync + игнор директорий через файл .sync-skip-local-files
-'			   ! фикс с копированием пустых директорий
+'	dirMasterSlaveSync + РёРіРЅРѕСЂ РґРёСЂРµРєС‚РѕСЂРёР№ С‡РµСЂРµР· С„Р°Р№Р» .sync-skip-local-files
+'			   ! С„РёРєСЃ СЃ РєРѕРїРёСЂРѕРІР°РЅРёРµРј РїСѓСЃС‚С‹С… РґРёСЂРµРєС‚РѕСЂРёР№
 'FILE ROUTINE ----------------------------------------------------------
 'option explicit
 
-'Копирование файла
+'РљРѕРїРёСЂРѕРІР°РЅРёРµ С„Р°Р№Р»Р°
 Function xCopyFile(ByVal fromf, ByVal tof)
-	'/C	Игнорирует ошибки.
-	'/f	Отображает имена исходных и целевых файлов при копировании.
-	'/i	Если Source является каталогом или содержит подстановочные знаки, а назначение не существует, команда xcopy предполагает, 
-	'	что в поле назначение указано имя каталога и создается новый каталог. Затем команда xcopy копирует все указанные файлы в новый каталог. 
-	'	По умолчанию команда xcopy предложит указать, является ли назначение файлом или каталогом.
-	'/r	Копирует файлы, которые доступны только для чтения.
-	'/h	Копирует файлы с атрибутами скрытых и системных файлов. По умолчанию команда xcopy не копирует скрытые или системные файлы.
-	'/y	Подавляет запрос на подтверждение перезаписи существующего целевого файла.
-	'/z	Выполняет копирование по сети в перезапускаемом режиме.
+	'/C	РРіРЅРѕСЂРёСЂСѓРµС‚ РѕС€РёР±РєРё.
+	'/f	РћС‚РѕР±СЂР°Р¶Р°РµС‚ РёРјРµРЅР° РёСЃС…РѕРґРЅС‹С… Рё С†РµР»РµРІС‹С… С„Р°Р№Р»РѕРІ РїСЂРё РєРѕРїРёСЂРѕРІР°РЅРёРё.
+	'/i	Р•СЃР»Рё Source СЏРІР»СЏРµС‚СЃСЏ РєР°С‚Р°Р»РѕРіРѕРј РёР»Рё СЃРѕРґРµСЂР¶РёС‚ РїРѕРґСЃС‚Р°РЅРѕРІРѕС‡РЅС‹Рµ Р·РЅР°РєРё, Р° РЅР°Р·РЅР°С‡РµРЅРёРµ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, РєРѕРјР°РЅРґР° xcopy РїСЂРµРґРїРѕР»Р°РіР°РµС‚, 
+	'	С‡С‚Рѕ РІ РїРѕР»Рµ РЅР°Р·РЅР°С‡РµРЅРёРµ СѓРєР°Р·Р°РЅРѕ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Рё СЃРѕР·РґР°РµС‚СЃСЏ РЅРѕРІС‹Р№ РєР°С‚Р°Р»РѕРі. Р—Р°С‚РµРј РєРѕРјР°РЅРґР° xcopy РєРѕРїРёСЂСѓРµС‚ РІСЃРµ СѓРєР°Р·Р°РЅРЅС‹Рµ С„Р°Р№Р»С‹ РІ РЅРѕРІС‹Р№ РєР°С‚Р°Р»РѕРі. 
+	'	РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РєРѕРјР°РЅРґР° xcopy РїСЂРµРґР»РѕР¶РёС‚ СѓРєР°Р·Р°С‚СЊ, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РЅР°Р·РЅР°С‡РµРЅРёРµ С„Р°Р№Р»РѕРј РёР»Рё РєР°С‚Р°Р»РѕРіРѕРј.
+	'/r	РљРѕРїРёСЂСѓРµС‚ С„Р°Р№Р»С‹, РєРѕС‚РѕСЂС‹Рµ РґРѕСЃС‚СѓРїРЅС‹ С‚РѕР»СЊРєРѕ РґР»СЏ С‡С‚РµРЅРёСЏ.
+	'/h	РљРѕРїРёСЂСѓРµС‚ С„Р°Р№Р»С‹ СЃ Р°С‚СЂРёР±СѓС‚Р°РјРё СЃРєСЂС‹С‚С‹С… Рё СЃРёСЃС‚РµРјРЅС‹С… С„Р°Р№Р»РѕРІ. РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РєРѕРјР°РЅРґР° xcopy РЅРµ РєРѕРїРёСЂСѓРµС‚ СЃРєСЂС‹С‚С‹Рµ РёР»Рё СЃРёСЃС‚РµРјРЅС‹Рµ С„Р°Р№Р»С‹.
+	'/y	РџРѕРґР°РІР»СЏРµС‚ Р·Р°РїСЂРѕСЃ РЅР° РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РїРµСЂРµР·Р°РїРёСЃРё СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ С†РµР»РµРІРѕРіРѕ С„Р°Р№Р»Р°.
+	'/z	Р’С‹РїРѕР»РЅСЏРµС‚ РєРѕРїРёСЂРѕРІР°РЅРёРµ РїРѕ СЃРµС‚Рё РІ РїРµСЂРµР·Р°РїСѓСЃРєР°РµРјРѕРј СЂРµР¶РёРјРµ.
 	dim command: command="%windir%\system32\XCOPY.exe /Y /C /F /R /H /I /Z """ & fromf & """ """ & tof & """"
 	debugMsg_ "Running " & command
 	xCopyFile=wshShell.run(command,0,true)
 	debugMsg_n " - complete"
 End Function
 
-'Копирование файла
+'РљРѕРїРёСЂРѕРІР°РЅРёРµ С„Р°Р№Р»Р°
 Sub safeCopy(ByVal fromf, ByVal tof)
 	msg_ "Copying " & fromf & " to " & tof 
 	dim ret : ret=xCopyFile(fromf,tof)
@@ -30,7 +31,7 @@ Sub safeCopy(ByVal fromf, ByVal tof)
 	'safeCopy=ret
 End sub
 
-'Удаление файла, если он есть
+'РЈРґР°Р»РµРЅРёРµ С„Р°Р№Р»Р°, РµСЃР»Рё РѕРЅ РµСЃС‚СЊ
 Sub safeDelete(ByVal FName)
 	msg_ "Deleting " & Fname & " ..."
 	if objFSO.fileExists(Fname) then
@@ -45,12 +46,12 @@ Sub safeDelete(ByVal FName)
 End Sub
 
 
-'возвращает путь к файлу без имени файла
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ Р±РµР· РёРјРµРЅРё С„Р°Р№Р»Р°
 Function GetFilePath(ByVal FileName)
 	GetFilePath=Left(FileName,InStrRev(FileName,"\"))
 End Function
 
-'возвращает некорень пути, который можно пытаться создать через мкдир
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РЅРµРєРѕСЂРµРЅСЊ РїСѓС‚Рё, РєРѕС‚РѕСЂС‹Р№ РјРѕР¶РЅРѕ РїС‹С‚Р°С‚СЊСЃСЏ СЃРѕР·РґР°С‚СЊ С‡РµСЂРµР· РјРєРґРёСЂ
 Function GetPathDirs(ByVal FileName)
 	If InStr(FileName, ":\") = 2 then
 		GetPathDirs=Mid(FileName,4) 'c:\
@@ -67,7 +68,7 @@ Function GetPathDirs(ByVal FileName)
 	End If
 End Function
 
-'возвращает корень пути, который не надо пытаться создать через мкдир
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕСЂРµРЅСЊ РїСѓС‚Рё, РєРѕС‚РѕСЂС‹Р№ РЅРµ РЅР°РґРѕ РїС‹С‚Р°С‚СЊСЃСЏ СЃРѕР·РґР°С‚СЊ С‡РµСЂРµР· РјРєРґРёСЂ
 Function GetPathRoot(ByVal FileName)
 	If InStr(FileName, ":\") = 2 then	'c:\
 		GetPathRoot=left(FileName,3)
@@ -84,7 +85,7 @@ Function GetPathRoot(ByVal FileName)
 	End If
 End Function
 
-'возвращает некорень пути, который можно пытаться создать через мкдир
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РЅРµРєРѕСЂРµРЅСЊ РїСѓС‚Рё, РєРѕС‚РѕСЂС‹Р№ РјРѕР¶РЅРѕ РїС‹С‚Р°С‚СЊСЃСЏ СЃРѕР·РґР°С‚СЊ С‡РµСЂРµР· РјРєРґРёСЂ
 Function GetPathDirs(ByVal FileName)
 	If InStr(FileName, ":\") = 2 then
 		GetPathDirs=Mid(FileName,4) 'c:\
@@ -101,7 +102,7 @@ Function GetPathDirs(ByVal FileName)
 	End If
 End Function
 
-'проверка наличия директории и создание в случае отсутствия
+'РїСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РґРёСЂРµРєС‚РѕСЂРёРё Рё СЃРѕР·РґР°РЅРёРµ РІ СЃР»СѓС‡Р°Рµ РѕС‚СЃСѓС‚СЃС‚РІРёСЏ
 Sub CheckDir(ByVal ckPath)
 	Msg "Checking dir " & ckPath & " ... "
 	If (objFSO.FolderExists(ckPath) = False) Then
@@ -123,14 +124,14 @@ Sub CheckDir(ByVal ckPath)
 End Sub
 
 
-'Ищет позицию иголки в файле
+'РС‰РµС‚ РїРѕР·РёС†РёСЋ РёРіРѕР»РєРё РІ С„Р°Р№Р»Рµ
 function FindInFile(ByVal FileName, ByVal Needle)
 	FindInFile = InStr(1, GetFile(FileName) , Needle, vbTextCompare)
 end function
 
-'То же что и сверху, только ищет конец строки иголки
-'По сути за иголкой ищем CR или LF и ищем где последовательность из
-'CR LF заканчивается
+'РўРѕ Р¶Рµ С‡С‚Рѕ Рё СЃРІРµСЂС…Сѓ, С‚РѕР»СЊРєРѕ РёС‰РµС‚ РєРѕРЅРµС† СЃС‚СЂРѕРєРё РёРіРѕР»РєРё
+'РџРѕ СЃСѓС‚Рё Р·Р° РёРіРѕР»РєРѕР№ РёС‰РµРј CR РёР»Рё LF Рё РёС‰РµРј РіРґРµ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РёР·
+'CR LF Р·Р°РєР°РЅС‡РёРІР°РµС‚СЃСЏ
 function FindStrEndInFile(ByVal FileName, ByVal Needle)
 	msg "Searching " & needle
 	dim contents : contents = GetFile(FileName)
@@ -139,10 +140,10 @@ function FindStrEndInFile(ByVal FileName, ByVal Needle)
 	if strpos>0 then
 		msg "Found at " & strpos
 		strpos=strpos+len(needle)-1
-		'ищем какой конец строки будет первым
+		'РёС‰РµРј РєР°РєРѕР№ РєРѕРЅРµС† СЃС‚СЂРѕРєРё Р±СѓРґРµС‚ РїРµСЂРІС‹Рј
 		crpos=InStr(strpos, contents , vbCr, vbTextCompare)
 		lfpos=InStr(strpos, contents , vbLf, vbTextCompare)
-		'проверяем, вдруг какого-то из них не было
+		'РїСЂРѕРІРµСЂСЏРµРј, РІРґСЂСѓРі РєР°РєРѕРіРѕ-С‚Рѕ РёР· РЅРёС… РЅРµ Р±С‹Р»Рѕ
 		if (crpos=0) then
 			crpos=len(contents)
 		end if
@@ -167,10 +168,10 @@ function FindStrEndInFile(ByVal FileName, ByVal Needle)
 	FindStrEndInFile=strpos
 end function
 
-'вставляет данные в указанную позицию в файле
-'вставка в позицию 6 означает, что данные будут вставлены начиная с
-'6го байта, т.е. исходный файл попилится на части 1-5 байт и 6-до конца
-'между этими частями вставляем новые данные
+'РІСЃС‚Р°РІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РІ СѓРєР°Р·Р°РЅРЅСѓСЋ РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р»Рµ
+'РІСЃС‚Р°РІРєР° РІ РїРѕР·РёС†РёСЋ 6 РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ РґР°РЅРЅС‹Рµ Р±СѓРґСѓС‚ РІСЃС‚Р°РІР»РµРЅС‹ РЅР°С‡РёРЅР°СЏ СЃ
+'6РіРѕ Р±Р°Р№С‚Р°, С‚.Рµ. РёСЃС…РѕРґРЅС‹Р№ С„Р°Р№Р» РїРѕРїРёР»РёС‚СЃСЏ РЅР° С‡Р°СЃС‚Рё 1-5 Р±Р°Р№С‚ Рё 6-РґРѕ РєРѕРЅС†Р°
+'РјРµР¶РґСѓ СЌС‚РёРјРё С‡Р°СЃС‚СЏРјРё РІСЃС‚Р°РІР»СЏРµРј РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ
 function InsertInFile(ByVal FileName, ByVal InsertPos, ByVal InsertData)
 	Dim content,before,after
 	content=GetFile(FileName)
@@ -179,24 +180,24 @@ function InsertInFile(ByVal FileName, ByVal InsertPos, ByVal InsertData)
 	WriteFile FileName, before & InsertData & after
 end function
 
-'заменяет в файле все вхождения needle на Replace
+'Р·Р°РјРµРЅСЏРµС‚ РІ С„Р°Р№Р»Рµ РІСЃРµ РІС…РѕР¶РґРµРЅРёСЏ needle РЅР° Replace
 function ReplaceInFile(ByVal FileName, ByVal Needle, ByVal Replacement)
 	WriteFile FileName, replace(GetFile(FileName),Needle,Replacement)
 end function
 
 
 
-'Процедура множественного поиска в файле
-'Передаются параметры:
-'FileName - итак понятно
-'Dict - Словарь с фразами для поиска
-'Prefix - префикс для индексов искомых слов
-'NeedFound - как нужно искать? findOne/findAll/missOne/missAll
-'если префикс например "findme", то будет искать Dict(findme0),Dict(findme1)...
-'пока в словаре будут находиться слова с нужными индексами
+'РџСЂРѕС†РµРґСѓСЂР° РјРЅРѕР¶РµСЃС‚РІРµРЅРЅРѕРіРѕ РїРѕРёСЃРєР° РІ С„Р°Р№Р»Рµ
+'РџРµСЂРµРґР°СЋС‚СЃСЏ РїР°СЂР°РјРµС‚СЂС‹:
+'FileName - РёС‚Р°Рє РїРѕРЅСЏС‚РЅРѕ
+'Dict - РЎР»РѕРІР°СЂСЊ СЃ С„СЂР°Р·Р°РјРё РґР»СЏ РїРѕРёСЃРєР°
+'Prefix - РїСЂРµС„РёРєСЃ РґР»СЏ РёРЅРґРµРєСЃРѕРІ РёСЃРєРѕРјС‹С… СЃР»РѕРІ
+'NeedFound - РєР°Рє РЅСѓР¶РЅРѕ РёСЃРєР°С‚СЊ? findOne/findAll/missOne/missAll
+'РµСЃР»Рё РїСЂРµС„РёРєСЃ РЅР°РїСЂРёРјРµСЂ "findme", С‚Рѕ Р±СѓРґРµС‚ РёСЃРєР°С‚СЊ Dict(findme0),Dict(findme1)...
+'РїРѕРєР° РІ СЃР»РѕРІР°СЂРµ Р±СѓРґСѓС‚ РЅР°С…РѕРґРёС‚СЊСЃСЏ СЃР»РѕРІР° СЃ РЅСѓР¶РЅС‹РјРё РёРЅРґРµРєСЃР°РјРё
 function MultiFindInFile(ByVal FileName, ByVal Dict, ByVal Prefix, ByVal needFound)
 
-'защита режима поиска от исключений
+'Р·Р°С‰РёС‚Р° СЂРµР¶РёРјР° РїРѕРёСЃРєР° РѕС‚ РёСЃРєР»СЋС‡РµРЅРёР№
 	needFound=lCase(needFound)
 
 	Select Case needFound
@@ -221,19 +222,19 @@ function MultiFindInFile(ByVal FileName, ByVal Dict, ByVal Prefix, ByVal needFou
 		if (FindInFile(FileName, searchin)>0) then
 			msg " - Found"
 			Select Case needFound
-			Case "findone"	'нужно было найти один и мы его нашли
+			Case "findone"	'РЅСѓР¶РЅРѕ Р±С‹Р»Рѕ РЅР°Р№С‚Рё РѕРґРёРЅ Рё РјС‹ РµРіРѕ РЅР°С€Р»Рё
 				MultiFindInFile=true
 				exit function
-			Case "missall"	'нужно было не найти ни ододного а мы его нашли
+			Case "missall"	'РЅСѓР¶РЅРѕ Р±С‹Р»Рѕ РЅРµ РЅР°Р№С‚Рё РЅРё РѕРґРѕРґРЅРѕРіРѕ Р° РјС‹ РµРіРѕ РЅР°С€Р»Рё
 				MultiFindInFile=false
 				exit function
 			End Select
 		else
 			Select Case needFound
-			Case "findall"	'нужно было найти найти все, а одного уже не хватает
+			Case "findall"	'РЅСѓР¶РЅРѕ Р±С‹Р»Рѕ РЅР°Р№С‚Рё РЅР°Р№С‚Рё РІСЃРµ, Р° РѕРґРЅРѕРіРѕ СѓР¶Рµ РЅРµ С…РІР°С‚Р°РµС‚
 				MultiFindInFile=false
 				exit function
-			Case "missone"	'нужно было не найти хотя бы один, и вот как раз такой случай
+			Case "missone"	'РЅСѓР¶РЅРѕ Р±С‹Р»Рѕ РЅРµ РЅР°Р№С‚Рё С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ, Рё РІРѕС‚ РєР°Рє СЂР°Р· С‚Р°РєРѕР№ СЃР»СѓС‡Р°Р№
 				MultiFindInFile=true
 				exit function
 			End Select
@@ -243,16 +244,16 @@ function MultiFindInFile(ByVal FileName, ByVal Dict, ByVal Prefix, ByVal needFou
 		searchin=getDict(Prefix & index,Dict,false)
 	loop
 	Select Case needFound
-	Case "findone"	'нужно было найти один а мы дошли до конца - значит ничего не было
+	Case "findone"	'РЅСѓР¶РЅРѕ Р±С‹Р»Рѕ РЅР°Р№С‚Рё РѕРґРёРЅ Р° РјС‹ РґРѕС€Р»Рё РґРѕ РєРѕРЅС†Р° - Р·РЅР°С‡РёС‚ РЅРёС‡РµРіРѕ РЅРµ Р±С‹Р»Рѕ
 		MultiFindInFile=false
-	Case "missone"	'нужно было не найти хотя бы один, а мы тут, неудача
+	Case "missone"	'РЅСѓР¶РЅРѕ Р±С‹Р»Рѕ РЅРµ РЅР°Р№С‚Рё С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ, Р° РјС‹ С‚СѓС‚, РЅРµСѓРґР°С‡Р°
 		MultiFindInFile=false
-	Case else 'раз дошли до сюда значит или нашли все, или пропустили все, как было задумано
+	Case else 'СЂР°Р· РґРѕС€Р»Рё РґРѕ СЃСЋРґР° Р·РЅР°С‡РёС‚ РёР»Рё РЅР°С€Р»Рё РІСЃРµ, РёР»Рё РїСЂРѕРїСѓСЃС‚РёР»Рё РІСЃРµ, РєР°Рє Р±С‹Р»Рѕ Р·Р°РґСѓРјР°РЅРѕ
 		MultiFindInFile=true
 	End Select
 end function
 
-'проверяет наличие всех файлов из мастер директории в слейв директории (файлы должны быть одинаковые по размеру)
+'РїСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ РІСЃРµС… С„Р°Р№Р»РѕРІ РёР· РјР°СЃС‚РµСЂ РґРёСЂРµРєС‚РѕСЂРёРё РІ СЃР»РµР№РІ РґРёСЂРµРєС‚РѕСЂРёРё (С„Р°Р№Р»С‹ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРґРёРЅР°РєРѕРІС‹Рµ РїРѕ СЂР°Р·РјРµСЂСѓ)
 function masterDirCheck(ByVal MasterDir, ByVal SlaveDir)
 Dim slaveFName,Subfolder,File
 	masterDirCheck=false
@@ -286,7 +287,7 @@ Dim slaveFName,Subfolder,File
 end function
 
 
-'создает ярлычок
+'СЃРѕР·РґР°РµС‚ СЏСЂР»С‹С‡РѕРє
 function createLnk(byVal lnkPath, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr)
 
 	if icon="" Then
@@ -317,19 +318,19 @@ function createLnk(byVal lnkPath, byVal targetFile, byVal args, byval workDir, b
 	Set lnk = Nothing	
 end function
 
-'создает ярлычок на рабочем столе
+'СЃРѕР·РґР°РµС‚ СЏСЂР»С‹С‡РѕРє РЅР° СЂР°Р±РѕС‡РµРј СЃС‚РѕР»Рµ
 function createDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr)
 	lnkPath=WshShell.SpecialFolders("Desktop") & "\" & lnkName & ".lnk"
 	createLnk lnkPath, targetFile, args, workDir, icon, descr
 end function
 
-'создает ярлычок на рабочем столе
+'СЃРѕР·РґР°РµС‚ СЏСЂР»С‹С‡РѕРє РЅР° СЂР°Р±РѕС‡РµРј СЃС‚РѕР»Рµ
 function createAllUsersDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr)
 	lnkPath=WshShell.SpecialFolders("AllUsersDesktop") & "\" & lnkName & ".lnk"
 	createLnk lnkPath, targetFile, args, workDir, icon, descr
 end function
 
-'контролирует наличие ярлычка (если add==true, то добавляет или корректирует, иначе проверяет чтоб такого ярлычка не было)
+'РєРѕРЅС‚СЂРѕР»РёСЂСѓРµС‚ РЅР°Р»РёС‡РёРµ СЏСЂР»С‹С‡РєР° (РµСЃР»Рё add==true, С‚Рѕ РґРѕР±Р°РІР»СЏРµС‚ РёР»Рё РєРѕСЂСЂРµРєС‚РёСЂСѓРµС‚, РёРЅР°С‡Рµ РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚РѕР± С‚Р°РєРѕРіРѕ СЏСЂР»С‹С‡РєР° РЅРµ Р±С‹Р»Рѕ)
 function ctrlDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workDir, byVal icon, byVal descr, byVal add)
 	lnkPath=WshShell.SpecialFolders("Desktop") & "\" & lnkName & ".lnk"
 	if add then
@@ -345,7 +346,7 @@ function ctrlDesktopLnk(byVal lnkName, byVal targetFile, byVal args, byval workD
 end function
 
 
-'сравнивает два файла по размеру и дате
+'СЃСЂР°РІРЅРёРІР°РµС‚ РґРІР° С„Р°Р№Р»Р° РїРѕ СЂР°Р·РјРµСЂСѓ Рё РґР°С‚Рµ
 function compareFilesDateSize(byVal strFile1, byVal strFile2)
 	compareFilesDateSize=false
         if (not objFSO.fileExists(strFile1)) then
@@ -371,7 +372,7 @@ end function
 
 
 
-'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв (сравнение файлов по размеру)
+'СЃСЂР°РІРЅРёРІР°РµС‚ РјР°СЃС‚РµСЂРґРёСЂРµРєС‚РѕСЂРёСЋ СЃРѕ СЃР»РµР№РІ Рё РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚Рѕ РІРµСЃСЊ РјР°СЃС‚РµСЂ РµСЃС‚СЊ РІ СЃР»РµР№РІ (СЃСЂР°РІРЅРµРЅРёРµ С„Р°Р№Р»РѕРІ РїРѕ СЂР°Р·РјРµСЂСѓ)
 function dirMasterSlaveCompare(byVal master, byVal slave)
 	Set objMaster = objFSO.GetFolder(master)
 	Set objSlave = objFSO.GetFolder(slave)
@@ -403,7 +404,7 @@ function dirMasterSlaveCompare(byVal master, byVal slave)
 	dirMasterSlaveCompare=true
 end function
 
-'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв (сравнение файлов по размеру)
+'СЃСЂР°РІРЅРёРІР°РµС‚ РјР°СЃС‚РµСЂРґРёСЂРµРєС‚РѕСЂРёСЋ СЃРѕ СЃР»РµР№РІ Рё РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚Рѕ РІРµСЃСЊ РјР°СЃС‚РµСЂ РµСЃС‚СЊ РІ СЃР»РµР№РІ (СЃСЂР°РІРЅРµРЅРёРµ С„Р°Р№Р»РѕРІ РїРѕ СЂР°Р·РјРµСЂСѓ)
 function dirMasterSlaveCopy(byVal master, byVal slave)
 	If (not objFSO.FolderExists(master)) then
 		dirMasterSlaveCopy=false
@@ -436,7 +437,7 @@ function dirMasterSlaveCopy(byVal master, byVal slave)
 end function
 
 
-'все что есть в мастере - переносит в слейв
+'РІСЃРµ С‡С‚Рѕ РµСЃС‚СЊ РІ РјР°СЃС‚РµСЂРµ - РїРµСЂРµРЅРѕСЃРёС‚ РІ СЃР»РµР№РІ
 function dirMasterSlaveMove(byVal master, byVal slave)
 	Msg "Moving " & master & " -> " & slave
 	If (not objFSO.FolderExists(master)) then
@@ -452,7 +453,7 @@ function dirMasterSlaveMove(byVal master, byVal slave)
 	'Msg ("Moving files in " & master)
 	For Each objFile In objMaster.Files
 		if (xCopyFile(master & "\" & objFile.Name, slave) = 0) then
-			'если копирование прошло успешно - удаляем исходный файл
+			'РµСЃР»Рё РєРѕРїРёСЂРѕРІР°РЅРёРµ РїСЂРѕС€Р»Рѕ СѓСЃРїРµС€РЅРѕ - СѓРґР°Р»СЏРµРј РёСЃС…РѕРґРЅС‹Р№ С„Р°Р№Р»
 			objFSO.DeleteFile(master & "\" & objFile.Name)
 		else
 			msg("Error moving " & master & "\" & objFile.Name & " -> " & slave )
@@ -464,23 +465,23 @@ function dirMasterSlaveMove(byVal master, byVal slave)
 	For Each objDir In objMaster.SubFolders
 		'msg("trying to move " & objDir.Path)
 		if (dirMasterSlaveMove(objDir.Path , slave & "\" & objDir.Name) = false) then
-			'тут я словил удивительнейший глюк, на который потратил несколько часов но так и не победил
-			'обращаться к переменной objDir после рекурсивного вызова функции нельзя - vbScript вылетает с ошибкой "путь не найден"
-			'подозреваю что под путем имеется в виду поля объекта через точку, но это не точно. Для дальнейшего расследования
-			'надо бы написать var_dump и посмотреть что там внутри objDir после выхода.
-			'в общем на текущий момент следующее обращение только после повторной инициализации (следующая итерация цикла)
+			'С‚СѓС‚ СЏ СЃР»РѕРІРёР» СѓРґРёРІРёС‚РµР»СЊРЅРµР№С€РёР№ РіР»СЋРє, РЅР° РєРѕС‚РѕСЂС‹Р№ РїРѕС‚СЂР°С‚РёР» РЅРµСЃРєРѕР»СЊРєРѕ С‡Р°СЃРѕРІ РЅРѕ С‚Р°Рє Рё РЅРµ РїРѕР±РµРґРёР»
+			'РѕР±СЂР°С‰Р°С‚СЊСЃСЏ Рє РїРµСЂРµРјРµРЅРЅРѕР№ objDir РїРѕСЃР»Рµ СЂРµРєСѓСЂСЃРёРІРЅРѕРіРѕ РІС‹Р·РѕРІР° С„СѓРЅРєС†РёРё РЅРµР»СЊР·СЏ - vbScript РІС‹Р»РµС‚Р°РµС‚ СЃ РѕС€РёР±РєРѕР№ "РїСѓС‚СЊ РЅРµ РЅР°Р№РґРµРЅ"
+			'РїРѕРґРѕР·СЂРµРІР°СЋ С‡С‚Рѕ РїРѕРґ РїСѓС‚РµРј РёРјРµРµС‚СЃСЏ РІ РІРёРґСѓ РїРѕР»СЏ РѕР±СЉРµРєС‚Р° С‡РµСЂРµР· С‚РѕС‡РєСѓ, РЅРѕ СЌС‚Рѕ РЅРµ С‚РѕС‡РЅРѕ. Р”Р»СЏ РґР°Р»СЊРЅРµР№С€РµРіРѕ СЂР°СЃСЃР»РµРґРѕРІР°РЅРёСЏ
+			'РЅР°РґРѕ Р±С‹ РЅР°РїРёСЃР°С‚СЊ var_dump Рё РїРѕСЃРјРѕС‚СЂРµС‚СЊ С‡С‚Рѕ С‚Р°Рј РІРЅСѓС‚СЂРё objDir РїРѕСЃР»Рµ РІС‹С…РѕРґР°.
+			'РІ РѕР±С‰РµРј РЅР° С‚РµРєСѓС‰РёР№ РјРѕРјРµРЅС‚ СЃР»РµРґСѓСЋС‰РµРµ РѕР±СЂР°С‰РµРЅРёРµ С‚РѕР»СЊРєРѕ РїРѕСЃР»Рµ РїРѕРІС‚РѕСЂРЅРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё (СЃР»РµРґСѓСЋС‰Р°СЏ РёС‚РµСЂР°С†РёСЏ С†РёРєР»Р°)
 			'msg("wow! " & objDir.Name & " moved")
 			'msg("Error moving " & master & "\" & objDir.Name & "->" & slave & "\" & objDir.Name)
 			dirMasterSlaveMove=false
 		end if
 	Next
 	
-	'если в процессе были ошибки - выходим
+	'РµСЃР»Рё РІ РїСЂРѕС†РµСЃСЃРµ Р±С‹Р»Рё РѕС€РёР±РєРё - РІС‹С…РѕРґРёРј
 	if (not dirMasterSlaveMove) then
 		exit function
 	end if
 
-	'проверяем что все удалено из директории
+	'РїСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ РІСЃРµ СѓРґР°Р»РµРЅРѕ РёР· РґРёСЂРµРєС‚РѕСЂРёРё
 	set objMaster = objFSO.GetFolder(master)
 	For Each objFile In objMaster.Files
 		Msg("Err: file " & objFile.Name & " found in " & master & " after move ")
@@ -493,7 +494,7 @@ function dirMasterSlaveMove(byVal master, byVal slave)
 		exit function
 	Next
 
-	'Если дошли до сюда не вылетев - значит в папке пусто. удаляем ее
+	'Р•СЃР»Рё РґРѕС€Р»Рё РґРѕ СЃСЋРґР° РЅРµ РІС‹Р»РµС‚РµРІ - Р·РЅР°С‡РёС‚ РІ РїР°РїРєРµ РїСѓСЃС‚Рѕ. СѓРґР°Р»СЏРµРј РµРµ
 	objFSO.DeleteFolder(master)
 	'Msg "Moving " & master & " -> " & slave & " done."
 	
@@ -501,10 +502,10 @@ end function
 
 
 
-'сравнивает мастердиректорию со слейв и проверяет что весь мастер есть в слейв 
-'(сравнение файлов по размеру и дате)
-'все лишнее что есть на слейве но нет на мастере - удаляет
-'возвращает признак того, что были сделаны изменения
+'СЃСЂР°РІРЅРёРІР°РµС‚ РјР°СЃС‚РµСЂРґРёСЂРµРєС‚РѕСЂРёСЋ СЃРѕ СЃР»РµР№РІ Рё РїСЂРѕРІРµСЂСЏРµС‚ С‡С‚Рѕ РІРµСЃСЊ РјР°СЃС‚РµСЂ РµСЃС‚СЊ РІ СЃР»РµР№РІ 
+'(СЃСЂР°РІРЅРµРЅРёРµ С„Р°Р№Р»РѕРІ РїРѕ СЂР°Р·РјРµСЂСѓ Рё РґР°С‚Рµ)
+'РІСЃРµ Р»РёС€РЅРµРµ С‡С‚Рѕ РµСЃС‚СЊ РЅР° СЃР»РµР№РІРµ РЅРѕ РЅРµС‚ РЅР° РјР°СЃС‚РµСЂРµ - СѓРґР°Р»СЏРµС‚
+'РІРѕР·РІСЂР°С‰Р°РµС‚ РїСЂРёР·РЅР°Рє С‚РѕРіРѕ, С‡С‚Рѕ Р±С‹Р»Рё СЃРґРµР»Р°РЅС‹ РёР·РјРµРЅРµРЅРёСЏ
 function dirMasterSlaveSync(byVal master, byVal slave)
 	dim objMaster,_
 		objSlave,_
@@ -518,15 +519,15 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 		strDir
 	Set objMaster = objFSO.GetFolder(master)
 	dirMasterSlaveSync=false
-	'удалять файлы на слейве, которых нет на мастере
+	'СѓРґР°Р»СЏС‚СЊ С„Р°Р№Р»С‹ РЅР° СЃР»РµР№РІРµ, РєРѕС‚РѕСЂС‹С… РЅРµС‚ РЅР° РјР°СЃС‚РµСЂРµ
 	keepLocalFiles=false
-	'файлы-флаги, которые не нужные на слейве
+	'С„Р°Р№Р»С‹-С„Р»Р°РіРё, РєРѕС‚РѕСЂС‹Рµ РЅРµ РЅСѓР¶РЅС‹Рµ РЅР° СЃР»РµР№РІРµ
 	Set ignoreLocalFiles = CreateObject("Scripting.Dictionary")
 	ignoreLocalFiles.Add ".sync-skip-dir",true
 	ignoreLocalFiles.Add ".sync-skip-local-files",true
 	ignoreLocalFiles.Add ".sync-keep-slave-files",true
 
-	'проверяем необходимость полностью пропустить синхронизацию папки
+	'РїСЂРѕРІРµСЂСЏРµРј РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ РїРѕР»РЅРѕСЃС‚СЊСЋ РїСЂРѕРїСѓСЃС‚РёС‚СЊ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЋ РїР°РїРєРё
 	DebugMsg "Comparing " & master & " vs " & slave & " ..."
 	if objFSO.fileExists(master & "\.sync-skip-dir") then
 		Msg "Skipping " & slave & " because of flag file in it"
@@ -535,7 +536,7 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 		exit function
 	end if
 
-	'проверяем наличие файла-списка с исключениями вложенных в нее файлов
+	'РїСЂРѕРІРµСЂСЏРµРј РЅР°Р»РёС‡РёРµ С„Р°Р№Р»Р°-СЃРїРёСЃРєР° СЃ РёСЃРєР»СЋС‡РµРЅРёСЏРјРё РІР»РѕР¶РµРЅРЅС‹С… РІ РЅРµРµ С„Р°Р№Р»РѕРІ
 	if objFSO.fileExists(master & "\.sync-skip-local-files") then
 		dim file
 		Set file = objFSO.OpenTextFile (master & "\.sync-skip-local-files", 1)
@@ -554,18 +555,18 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 		end if
 	end if
 
-	'признак того, что файлы в слейве не будут удаляться если их нет на мастере
+	'РїСЂРёР·РЅР°Рє С‚РѕРіРѕ, С‡С‚Рѕ С„Р°Р№Р»С‹ РІ СЃР»РµР№РІРµ РЅРµ Р±СѓРґСѓС‚ СѓРґР°Р»СЏС‚СЊСЃСЏ РµСЃР»Рё РёС… РЅРµС‚ РЅР° РјР°СЃС‚РµСЂРµ
 	keepLocalFiles=objFSO.fileExists(master & "\.sync-keep-slave-files") 
 
 
-	'----- Конец инициализации - работаем
+	'----- РљРѕРЅРµС† РёРЅРёС†РёР°Р»РёР·Р°С†РёРё - СЂР°Р±РѕС‚Р°РµРј
 
-	'проверяем папку
+	'РїСЂРѕРІРµСЂСЏРµРј РїР°РїРєСѓ
 	CheckDir slave
 	Set objSlave = objFSO.GetFolder(slave)
 
 	DebugMsg "dirMasterSlaveSync forward files passage (" & master & ")"
-	'прямая проходка (копирование с мастера на слейв)
+	'РїСЂСЏРјР°СЏ РїСЂРѕС…РѕРґРєР° (РєРѕРїРёСЂРѕРІР°РЅРёРµ СЃ РјР°СЃС‚РµСЂР° РЅР° СЃР»РµР№РІ)
 	For Each objFile In objMaster.Files
 		if (not ignoreLocalFiles.Exists(objFile.Name)) then
 		    	secFileName = slave & "\" & objFile.Name
@@ -586,7 +587,7 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 	Next	
 	
 	DebugMsg "dirMasterSlaveSync backward files passage (" & master & ")"
-	'обратная проходка (удаление на слейве того чего нет на мастере)
+	'РѕР±СЂР°С‚РЅР°СЏ РїСЂРѕС…РѕРґРєР° (СѓРґР°Р»РµРЅРёРµ РЅР° СЃР»РµР№РІРµ С‚РѕРіРѕ С‡РµРіРѕ РЅРµС‚ РЅР° РјР°СЃС‚РµСЂРµ)
 	if not keepLocalFiles then
 		For Each objFile In objSlave.Files
 		    	secFileName = master & "\" & objFile.Name
@@ -599,7 +600,7 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 	end if
 
 	DebugMsg "dirMasterSlaveSync forward dirs passage (" & master & ")"
-	'прямая проходка по подпапкам
+	'РїСЂСЏРјР°СЏ РїСЂРѕС…РѕРґРєР° РїРѕ РїРѕРґРїР°РїРєР°Рј
 	For Each objDir In objMaster.SubFolders
 		DebugMsg "Testing " & objDir.Name
 		if (not ignoreLocalFiles.Exists(objDir.Name)) then
@@ -611,7 +612,7 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 	Next
 
 	DebugMsg "dirMasterSlaveSync backward dirs passage (" & master & ")"
-	'обратная проходка по подпапкам
+	'РѕР±СЂР°С‚РЅР°СЏ РїСЂРѕС…РѕРґРєР° РїРѕ РїРѕРґРїР°РїРєР°Рј
 	if not keepLocalFiles then
 		For Each objDir In objSlave.SubFolders
 			secDirName = master & "\" & objDir.Name
@@ -629,70 +630,32 @@ function dirMasterSlaveSync(byVal master, byVal slave)
 	unset(objDir)
 	unset(objFile)
 end function
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' +BC/CK4A8aEtOCHzo/TqNjZHnvDsWIUcqGqJ6R42CI2g
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIFks8ybDPMhE
-'' SIG '' dL7PHJSCEkga10kaVVMnoPXy+89aalFXMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAJit4SphGtoacyizazzoXrKD60uJ9YdC
-'' SIG '' iYy9h74dHyLERn6RI76Yf3kskbWaim2qnMnS5eJ/92pA
-'' SIG '' XvOLrpWE9P66Vj7Lnt4fPeFyY+3Q8ZehLqmNFpApsMRe
-'' SIG '' VM6bchPm9V0J9wxvwzg0Eyq/piKczsDE6TggcDLnuDkp
-'' SIG '' 7DRkpxfx+CmFXs8ky5YdwU7lLsRMpDM5pUDSpeFBIQcs
-'' SIG '' tQx3da/TzOjOBJVwUY9A76g0hxluN/nenWfikzZHSc1Q
-'' SIG '' 34Hp1U4p0LXkrvqFlGmo63cWSz8rsy0QYqBXYutQD+Ix
-'' SIG '' PPQMqmDiYS1kc3Pmh68WydCz5cRlXvk7/zgCb8tsrDj9mtI=
-'' SIG '' End signature block
+
+
+' Р¤СѓРЅРєС†РёСЏ РґР»СЏ С‡С‚РµРЅРёСЏ С„Р°Р№Р»Р° РІ UTF-8
+Function ReadUTF8File(filePath)
+    Dim stream, content
+    Set stream = CreateObject("ADODB.Stream")
+    stream.Type = 2             ' РўРµРєСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј
+    stream.Charset = "utf-8"    ' РЈРєР°Р·С‹РІР°РµРј РєРѕРґРёСЂРѕРІРєСѓ UTF-8
+    stream.Open
+    stream.LoadFromFile filePath
+    content = stream.ReadText
+    stream.Close
+    Set stream = Nothing
+    ReadUTF8File = content
+End Function
+
+' Р¤СѓРЅРєС†РёСЏ РґР»СЏ Р·Р°РїРёСЃРё С„Р°Р№Р»Р° РІ UTF-8
+Sub WriteUTF8File(filePath, content)
+    Dim stream
+    Set stream = CreateObject("ADODB.Stream")
+    stream.Type = 2             ' РўРµРєСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј
+    stream.Charset = "utf-8"    ' РЈРєР°Р·С‹РІР°РµРј РєРѕРґРёСЂРѕРІРєСѓ UTF-8
+    stream.Open
+    stream.WriteText content
+    stream.SaveToFile filePath, 2  ' РџРµСЂРµР·Р°РїРёСЃР°С‚СЊ С„Р°Р№Р»
+    stream.Close
+    Set stream = Nothing
+End Sub
+

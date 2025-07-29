@@ -1,69 +1,25 @@
-'Время в UTC
-function timeGetUtcNow
-	dim colItems, item
-	Set colItems = getWmiQueryCrit("Select * from Win32_UTCTime")
-	For Each item In colItems
-		If Not IsNull(item) Then
-			timeGetUtcNow = item.Day & "/" & item.Month & "/" & item.Year & " " & item.Hour & ":" & item.Minute & ":" & item.Second
-			exit function
-		End If
-	Next
-end function
-
-'Timestamp (YYYY-MM-DD HH:MM:SS) в UTC
-function timeGetUtcTimstamp
-	dim colItems, item
-	Set colItems = getWmiQueryCrit("Select * from Win32_UTCTime")
-	For Each item In colItems
-		If Not IsNull(item) Then
-			timeGetUtcTimstamp = item.Year & "-" & item.Month & "-" & item.Day & " " & item.Hour & ":" & item.Minute & ":" & item.Second
-			exit function
-		End If
-	Next
-end function
+'СЃРґРІРёРі РІ РјРёРЅСѓС‚Р°С… С‡Р°СЃРѕРІРѕРіРѕ РїРѕСЏСЃР°
+'-300  СѓСЂР°Р»
+'-180  РњРЎРљ
+Function timeZoneOffsetMinutes()
+    Dim offsetMinutes
+    
+    ' РџРѕР»СѓС‡Р°РµРј СЃРјРµС‰РµРЅРёРµ РІ РјРёРЅСѓС‚Р°С… РёР· СЂРµРµСЃС‚СЂР°
+    timeZoneOffsetMinutes = wshShell.RegRead("HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation\ActiveTimeBias")
+End Function
 
 
-'время логона в формате WMI 20191026103227.687031+300
-function timeLogonWmi
-	dim logItems, objItem
-	Set logItems = getWmiQueryCrit ("Select * from Win32_LogonSession")
-	'почемуто вот этот вот запрос отдает мне 2 элемента. по собственно времени логона они практически идентичны
-	'отличаются в микросекундах, но все же отличны. потому будем выбирать тот, что раньше
-	timeLogonWmi=Null
-	For Each objItem in logItems
-	'	Msg "AuthenticationPackage: " & objItem.AuthenticationPackage &VBCR _
-	'	& "Caption: " & objItem.Caption &VBCR _
-	'	& "Description: " & objItem.Description &VBCR _
-	'	& "InstallDate: " & objItem.InstallDate &VBCR _
-	'	& "LogonId: " & objItem.LogonId &VBCR _
-	'	& "Name: " & objItem.Name &VBCR _
-	'	& "LogonType: " & objItem.LogonType &VBCR _
-	'	& "StartTime: " & objItem.StartTime &VBCR _
-	'	& "Status: " & objItem.Status
-		if (objItem.LogonType = 2 ) then 'интерактивный вход
-			if (isnull(timeLogonWmi)) then
-				timeLogonWmi=objItem.startTime
-			elseif (objItem.startTime < timeLogonWmi) then
-				timeLogonWmi=objItem.startTime
-			end if
-		else
-			Msg "Non-interactive logon " & objItem.startTime & " type " & objItem.LogonType 
-		end if
-	Next
-end function
-
-
-'из встроенного формата в строку вида YYYY-MM-DD HH:MM:SS
+'РёР· РІСЃС‚СЂРѕРµРЅРЅРѕРіРѕ С„РѕСЂРјР°С‚Р° РІ СЃС‚СЂРѕРєСѓ РІРёРґР° YYYY-MM-DD HH:MM:SS
 function timeVbsToTimestamp(byVal dTimestamp)
-	'собственно тут у нас дата логона в UTC, осталось только сложить ее в журнал
+	'СЃРѕР±СЃС‚РІРµРЅРЅРѕ С‚СѓС‚ Сѓ РЅР°СЃ РґР°С‚Р° Р»РѕРіРѕРЅР° РІ UTC, РѕСЃС‚Р°Р»РѕСЃСЊ С‚РѕР»СЊРєРѕ СЃР»РѕР¶РёС‚СЊ РµРµ РІ Р¶СѓСЂРЅР°Р»
 	timeVbsToTimestamp = Year(dTimestamp) & "-" & Month(dTimestamp) & "-" & Day(dTimestamp) &_
 	" " &_
 	Hour(dTimestamp) & ":" & Minute(dTimestamp) & ":" & Second(dTimestamp)	
 end function
 
-' дата возвращается в формате 20191026103227.687031+300
-' где цифры до точки - дата в местном часовом поясе, а после плюса (или теоретически минуса - смещение).
-' т.е. распарсиваем строку на предмет даты-времени, потом вычитаем смещение в минутах и получаем дату в UTC
+' РґР°С‚Р° РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РІ С„РѕСЂРјР°С‚Рµ 20191026103227.687031+300
+' РіРґРµ С†РёС„СЂС‹ РґРѕ С‚РѕС‡РєРё - РґР°С‚Р° РІ РјРµСЃС‚РЅРѕРј С‡Р°СЃРѕРІРѕРј РїРѕСЏСЃРµ, Р° РїРѕСЃР»Рµ РїР»СЋСЃР° (РёР»Рё С‚РµРѕСЂРµС‚РёС‡РµСЃРєРё РјРёРЅСѓСЃР° - СЃРјРµС‰РµРЅРёРµ).
+' С‚.Рµ. СЂР°СЃРїР°СЂСЃРёРІР°РµРј СЃС‚СЂРѕРєСѓ РЅР° РїСЂРµРґРјРµС‚ РґР°С‚С‹-РІСЂРµРјРµРЅРё, РїРѕС‚РѕРј РІС‹С‡РёС‚Р°РµРј СЃРјРµС‰РµРЅРёРµ РІ РјРёРЅСѓС‚Р°С… Рё РїРѕР»СѓС‡Р°РµРј РґР°С‚Сѓ РІ UTC
 function timeWmiToVbs(byVal wmiTime)
 	debugMsg "timeWmiToVbs: Parsing " & wmiTime
 	'wscript.echo logonTime
@@ -78,57 +34,46 @@ function timeWmiToVbs(byVal wmiTime)
 
 	sTimestamp = strDay & "/" & strMon & "/" & strYear & " " & strHour & ":" & strMin & ":" & strSec
 
-	'ищем смещение
+	'РёС‰РµРј СЃРјРµС‰РµРЅРёРµ
 	plusPos=instr(15,wmiTime,"+")
 	minusPos=instr(15,wmiTime,"-")
 	shiftPos=max(plusPos,minusPos)
 	'msg shiftPos
-	'переводим в число и меняем знак, т.к нам надо его компенсировать и перейти в UTC
+	'РїРµСЂРµРІРѕРґРёРј РІ С‡РёСЃР»Рѕ Рё РјРµРЅСЏРµРј Р·РЅР°Рє, С‚.Рє РЅР°Рј РЅР°РґРѕ РµРіРѕ РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ Рё РїРµСЂРµР№С‚Рё РІ UTC
 	shift=-1*CLng(mid(wmiTime,shiftPos,Len(wmiTime)-shiftPos+1))
 
 	'wscript.echo sLogonDate & " " & shift
-	'смещаем на нужное количество минут время входа
+	'СЃРјРµС‰Р°РµРј РЅР° РЅСѓР¶РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РјРёРЅСѓС‚ РІСЂРµРјСЏ РІС…РѕРґР°
 	timeWmiToVbs=dateAdd("n",shift,sTimestamp)
 
 end function
 
-'время входа в формате VBS
-function timeLogonVbs
-	timeLogonVbs=timeLogonWmi
-	if (isnull(timeLogonVbs)) then
-		exit function
-	end if
-	timeLogonVbs=timeWmiToVbs(timeLogonVbs)	
+'С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ С„РѕСЂРјР°С‚Рµ VBS РЅРѕ РІ UTC Р° РЅРµ РІ С‚РµРєСѓС‰РµРј С‡Р°СЃРѕРІРѕРј РїРѕСЏСЃРµ
+'РЅСѓР¶РЅРѕ РґР»СЏ СЃСЂР°
+function timeVbsNowUtc()
+	timeVbsNowUtc=DateAdd("s", timeZoneOffsetMinutes()*60, Now())
 end function
 
-
-function timeTzShiftHours
-	timeTzShiftHours = DateDiff("h", Now(), timeGetUtcNow())
-end function
-
-Function timeGetUnixEpoch
-	timeGetUnixEpoch = DateDiff("s", "01/01/1970 00:00:00", DateAdd("h",timeTzShiftHours(),Now()))
-End Function
-
-Function timeGetUnixEpochUtc
-	timeGetUnixEpochUtc = DateDiff("s", "01/01/1970 00:00:00", Now())
-End Function
-
-Function timeGetUnixEpochUt
-	timeGetUnixEpochUtc = DateDiff("s", "01/01/1970 00:00:00", Now())
-End Function
-
-
-function timeUnixToVbs (unixTime)
-	timeUnixToVbs = DateAdd("s", unixTime, "01/01/1970 00:00:00")
-end function
-
+'РєРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ РґР°С‚Сѓ VBS РІ UNIXTIME
 Function timeVbsToUnix (vbsTime)
 	timeVbsToUnix = DateDiff("s", "01/01/1970 00:00:00", vbsTime)
 End Function
 
+'UNIXTIME РІ РґР°С‚Сѓ VBS
+function timeUnixToVbs (unixTime)
+	timeUnixToVbs = DateAdd("s", unixTime, "01/01/1970 00:00:00")
+end function
+
+'С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ UNIXTIME
+Function timeGetUnixEpoch
+	timeGetUnixEpoch = timeVbsToUnix(timeVbsNowUtc())
+End Function
+
+
+
 
 '20.11.2021 20:40:21 -> 20211120204021
+'РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р·Р°РїСЂРѕСЃРѕРІ РІ WMI СЃ СѓРєР°Р·Р°РЅРёРµРј РІСЂРµРјРµРЅРё
 function timeVbsToWmi (vbsTime)
 	dim tokens0,tokens1,tokens2
 	'msg(vbsTime)
@@ -147,4 +92,28 @@ function timeVbsToWmi (vbsTime)
 		stringPrependTo(tokens2(0),"0",2) &_ 
 		stringPrependTo(tokens2(1),"0",2) &_ 
 		stringPrependTo(tokens2(2),"0",2) & ".000000-000"
+end function
+
+function uptimeSeconds()
+	dim colOperatingSystems : colOperatingSystems = getWmiQueryArrayCrit("SELECT LastBootUpTime FROM Win32_OperatingSystem")
+	dim objOS, wmiBootTime, bootTime
+	For Each objOS In colOperatingSystems
+		wmiBootTime = objOS.LastBootUpTime
+		Exit For
+	Next
+	bootTime = timeWmiToVbs(wmiBootTime)
+	uptimeSeconds = DateDiff("s",bootTime,timeVbsNowUtc())
+end function
+
+function uptimeString()
+	Dim days, hours, minutes, seconds, uptime
+	uptime=uptimeSeconds()
+	' Р Р°Р·Р±РёРІР°РµРј РЅР° РґРЅРё, С‡Р°СЃС‹, РјРёРЅСѓС‚С‹, СЃРµРєСѓРЅРґС‹
+	days = Int(uptime / 86400)
+	uptime = uptime Mod 86400
+	hours = Int(uptime / 3600)
+	uptime = uptime Mod 3600
+	minutes = Int(uptime / 60)
+	seconds = uptime Mod 60
+	uptimeString = days & " days " & hours & ":" & minutes & ":" & seconds
 end function

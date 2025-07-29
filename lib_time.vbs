@@ -1,4 +1,4 @@
-'Время в UTC
+'Р’СЂРµРјСЏ РІ UTC
 function timeGetUtcNow
 	dim colItems, item
 	Set colItems = objWmi.ExecQuery("Select * from Win32_UTCTime")
@@ -10,7 +10,7 @@ function timeGetUtcNow
 	Next
 end function
 
-'Timestamp (YYYY-MM-DD HH:MM:SS) в UTC
+'Timestamp (YYYY-MM-DD HH:MM:SS) РІ UTC
 function timeGetUtcTimstamp
 	dim colItems, item
 	Set colItems = objWmi.ExecQuery("Select * from Win32_UTCTime")
@@ -23,12 +23,12 @@ function timeGetUtcTimstamp
 end function
 
 
-'время логона в формате WMI 20191026103227.687031+300
+'РІСЂРµРјСЏ Р»РѕРіРѕРЅР° РІ С„РѕСЂРјР°С‚Рµ WMI 20191026103227.687031+300
 function timeLogonWmi
 	dim logItems, objItem
 	Set logItems = objWMIService.ExecQuery ("Select * from Win32_LogonSession")
-	'почемуто вот этот вот запрос отдает мне 2 элемента. по собственно времени логона они практически идентичны
-	'отличаются в микросекундах, но все же отличны. потому будем выбирать тот, что раньше
+	'РїРѕС‡РµРјСѓС‚Рѕ РІРѕС‚ СЌС‚РѕС‚ РІРѕС‚ Р·Р°РїСЂРѕСЃ РѕС‚РґР°РµС‚ РјРЅРµ 2 СЌР»РµРјРµРЅС‚Р°. РїРѕ СЃРѕР±СЃС‚РІРµРЅРЅРѕ РІСЂРµРјРµРЅРё Р»РѕРіРѕРЅР° РѕРЅРё РїСЂР°РєС‚РёС‡РµСЃРєРё РёРґРµРЅС‚РёС‡РЅС‹
+	'РѕС‚Р»РёС‡Р°СЋС‚СЃСЏ РІ РјРёРєСЂРѕСЃРµРєСѓРЅРґР°С…, РЅРѕ РІСЃРµ Р¶Рµ РѕС‚Р»РёС‡РЅС‹. РїРѕС‚РѕРјСѓ Р±СѓРґРµРј РІС‹Р±РёСЂР°С‚СЊ С‚РѕС‚, С‡С‚Рѕ СЂР°РЅСЊС€Рµ
 	timeLogonWmi=Null
 	For Each objItem in logItems
 	'	Msg "AuthenticationPackage: " & objItem.AuthenticationPackage &VBCR _
@@ -40,7 +40,7 @@ function timeLogonWmi
 	'	& "LogonType: " & objItem.LogonType &VBCR _
 	'	& "StartTime: " & objItem.StartTime &VBCR _
 	'	& "Status: " & objItem.Status
-		if (objItem.LogonType = 2 ) then 'интерактивный вход
+		if (objItem.LogonType = 2 ) then 'РёРЅС‚РµСЂР°РєС‚РёРІРЅС‹Р№ РІС…РѕРґ
 			if (isnull(timeLogonWmi)) then
 				timeLogonWmi=objItem.startTime
 			elseif (objItem.startTime < timeLogonWmi) then
@@ -53,17 +53,17 @@ function timeLogonWmi
 end function
 
 
-'из встроенного формата в строку вида YYYY-MM-DD HH:MM:SS
+'РёР· РІСЃС‚СЂРѕРµРЅРЅРѕРіРѕ С„РѕСЂРјР°С‚Р° РІ СЃС‚СЂРѕРєСѓ РІРёРґР° YYYY-MM-DD HH:MM:SS
 function timeVbsToTimestamp(byVal dTimestamp)
-	'собственно тут у нас дата логона в UTC, осталось только сложить ее в журнал
+	'СЃРѕР±СЃС‚РІРµРЅРЅРѕ С‚СѓС‚ Сѓ РЅР°СЃ РґР°С‚Р° Р»РѕРіРѕРЅР° РІ UTC, РѕСЃС‚Р°Р»РѕСЃСЊ С‚РѕР»СЊРєРѕ СЃР»РѕР¶РёС‚СЊ РµРµ РІ Р¶СѓСЂРЅР°Р»
 	timeVbsToTimestamp = Year(dTimestamp) & "-" & Month(dTimestamp) & "-" & Day(dTimestamp) &_
 	" " &_
 	Hour(dTimestamp) & ":" & Minute(dTimestamp) & ":" & Second(dTimestamp)	
 end function
 
-' дата возвращается в формате 20191026103227.687031+300
-' где цифры до точки - дата в местном часовом поясе, а после плюса (или теоретически минуса - смещение).
-' т.е. распарсиваем строку на предмет даты-времени, потом вычитаем смещение в минутах и получаем дату в UTC
+' РґР°С‚Р° РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ РІ С„РѕСЂРјР°С‚Рµ 20191026103227.687031+300
+' РіРґРµ С†РёС„СЂС‹ РґРѕ С‚РѕС‡РєРё - РґР°С‚Р° РІ РјРµСЃС‚РЅРѕРј С‡Р°СЃРѕРІРѕРј РїРѕСЏСЃРµ, Р° РїРѕСЃР»Рµ РїР»СЋСЃР° (РёР»Рё С‚РµРѕСЂРµС‚РёС‡РµСЃРєРё РјРёРЅСѓСЃР° - СЃРјРµС‰РµРЅРёРµ).
+' С‚.Рµ. СЂР°СЃРїР°СЂСЃРёРІР°РµРј СЃС‚СЂРѕРєСѓ РЅР° РїСЂРµРґРјРµС‚ РґР°С‚С‹-РІСЂРµРјРµРЅРё, РїРѕС‚РѕРј РІС‹С‡РёС‚Р°РµРј СЃРјРµС‰РµРЅРёРµ РІ РјРёРЅСѓС‚Р°С… Рё РїРѕР»СѓС‡Р°РµРј РґР°С‚Сѓ РІ UTC
 function timeWmiToVbs(byVal wmiTime)
 	debugMsg "timeWmiToVbs: Parsing " & wmiTime
 	'wscript.echo logonTime
@@ -78,21 +78,21 @@ function timeWmiToVbs(byVal wmiTime)
 
 	sTimestamp = strDay & "/" & strMon & "/" & strYear & " " & strHour & ":" & strMin & ":" & strSec
 
-	'ищем смещение
+	'РёС‰РµРј СЃРјРµС‰РµРЅРёРµ
 	plusPos=instr(15,wmiTime,"+")
 	minusPos=instr(15,wmiTime,"-")
 	shiftPos=max(plusPos,minusPos)
 	'msg shiftPos
-	'переводим в число и меняем знак, т.к нам надо его компенсировать и перейти в UTC
+	'РїРµСЂРµРІРѕРґРёРј РІ С‡РёСЃР»Рѕ Рё РјРµРЅСЏРµРј Р·РЅР°Рє, С‚.Рє РЅР°Рј РЅР°РґРѕ РµРіРѕ РєРѕРјРїРµРЅСЃРёСЂРѕРІР°С‚СЊ Рё РїРµСЂРµР№С‚Рё РІ UTC
 	shift=-1*CLng(mid(wmiTime,shiftPos,Len(wmiTime)-shiftPos+1))
 
 	'wscript.echo sLogonDate & " " & shift
-	'смещаем на нужное количество минут время входа
+	'СЃРјРµС‰Р°РµРј РЅР° РЅСѓР¶РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РјРёРЅСѓС‚ РІСЂРµРјСЏ РІС…РѕРґР°
 	timeWmiToVbs=dateAdd("n",shift,sTimestamp)
 
 end function
 
-'время входа в формате VBS
+'РІСЂРµРјСЏ РІС…РѕРґР° РІ С„РѕСЂРјР°С‚Рµ VBS
 function timeLogonVbs
 	timeLogonVbs=timeLogonWmi
 	if (isnull(timeLogonVbs)) then
@@ -148,70 +148,3 @@ function timeVbsToWmi (vbsTime)
 		stringPrependTo(tokens2(1),"0",2) &_ 
 		stringPrependTo(tokens2(2),"0",2) & ".000000-000"
 end function
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' 7tQSyXoyefT7vxmghssUeBIzTbLme4bFWzo8pMn1a2Cg
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEIJEt1T2gGR73
-'' SIG '' a8VcSuIJ0BrZWYkvjZojPSXxKpLwe3zBMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAGK8aKBtiUHA5JAho4FG8+hDuLdkek/g
-'' SIG '' x+L7l5Q00ynJgx6soeGdPsBBt5DuP1WmzljRPIB88+wx
-'' SIG '' d8+JMihHlZePkqobfHmXdtnCLDtmGQJ/H1uTdbcEyYey
-'' SIG '' 9kZ1CYeWwZ2PD24Girdd0nvuTVPK0l8ZES2hEr2Ol/36
-'' SIG '' DSoGfkwJ0Di5IbPEoq8x8ZrVSZoWNR3CiG0r0q+S7GhP
-'' SIG '' 1cztjWi2AstYnrRz9aVA2wjk/WExvOJFLuFFSFLtjois
-'' SIG '' Zy7I/BxKh0/7s+29s6Qh5KhFrOVyIYBjZykf5OHm1qj/
-'' SIG '' 5vm+3RoLEX3kJ8+3PRVN0JaxwwfZ/7ELyI3lRoJ8/dG8KlU=
-'' SIG '' End signature block

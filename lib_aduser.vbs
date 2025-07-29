@@ -1,23 +1,23 @@
-'библиотека с функциями определения принадлежности к группе
+'Р±РёР±Р»РёРѕС‚РµРєР° СЃ С„СѓРЅРєС†РёСЏРјРё РѕРїСЂРµРґРµР»РµРЅРёСЏ РїСЂРёРЅР°РґР»РµР¶РЅРѕСЃС‚Рё Рє РіСЂСѓРїРїРµ
 
-'Надо пояснить что собственно тут происходит, т.к. я сначала думал что все понятно, а потом оказалось что не все так очевидно
+'РќР°РґРѕ РїРѕСЏСЃРЅРёС‚СЊ С‡С‚Рѕ СЃРѕР±СЃС‚РІРµРЅРЅРѕ С‚СѓС‚ РїСЂРѕРёСЃС…РѕРґРёС‚, С‚.Рє. СЏ СЃРЅР°С‡Р°Р»Р° РґСѓРјР°Р» С‡С‚Рѕ РІСЃРµ РїРѕРЅСЏС‚РЅРѕ, Р° РїРѕС‚РѕРј РѕРєР°Р·Р°Р»РѕСЃСЊ С‡С‚Рѕ РЅРµ РІСЃРµ С‚Р°Рє РѕС‡РµРІРёРґРЅРѕ
 
-'это глобальная переменная список групп пользователей/компьютеров в формате
+'СЌС‚Рѕ РіР»РѕР±Р°Р»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ СЃРїРёСЃРѕРє РіСЂСѓРїРї РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№/РєРѕРјРїСЊСЋС‚РµСЂРѕРІ РІ С„РѕСЂРјР°С‚Рµ
 'COMP1\group2
 'COMP1\group2
-'COMP1\		- наличие такой записи означает, что для этого объекта все группы уже загружены в словарь
+'COMP1\		- РЅР°Р»РёС‡РёРµ С‚Р°РєРѕР№ Р·Р°РїРёСЃРё РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ РґР»СЏ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІСЃРµ РіСЂСѓРїРїС‹ СѓР¶Рµ Р·Р°РіСЂСѓР¶РµРЅС‹ РІ СЃР»РѕРІР°СЂСЊ
 'USER1\group1
 'USER1\group2
-'USER1\		- наличие такой записи означает, что для этого объекта все группы уже загружены в словарь
-'он нужен для того чтобы сократить количество запросов к ЛДАП, т.к. для полного списка групп приходится долго
-'обходить все дерево вложенных групп. И дапы избежать повторной подобной операции при проверке другой группы
-'у польщзователя - мы сразу все кэшируем
+'USER1\		- РЅР°Р»РёС‡РёРµ С‚Р°РєРѕР№ Р·Р°РїРёСЃРё РѕР·РЅР°С‡Р°РµС‚, С‡С‚Рѕ РґР»СЏ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІСЃРµ РіСЂСѓРїРїС‹ СѓР¶Рµ Р·Р°РіСЂСѓР¶РµРЅС‹ РІ СЃР»РѕРІР°СЂСЊ
+'РѕРЅ РЅСѓР¶РµРЅ РґР»СЏ С‚РѕРіРѕ С‡С‚РѕР±С‹ СЃРѕРєСЂР°С‚РёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РїСЂРѕСЃРѕРІ Рє Р›Р”РђРџ, С‚.Рє. РґР»СЏ РїРѕР»РЅРѕРіРѕ СЃРїРёСЃРєР° РіСЂСѓРїРї РїСЂРёС…РѕРґРёС‚СЃСЏ РґРѕР»РіРѕ
+'РѕР±С…РѕРґРёС‚СЊ РІСЃРµ РґРµСЂРµРІРѕ РІР»РѕР¶РµРЅРЅС‹С… РіСЂСѓРїРї. Р РґР°РїС‹ РёР·Р±РµР¶Р°С‚СЊ РїРѕРІС‚РѕСЂРЅРѕР№ РїРѕРґРѕР±РЅРѕР№ РѕРїРµСЂР°С†РёРё РїСЂРё РїСЂРѕРІРµСЂРєРµ РґСЂСѓРіРѕР№ РіСЂСѓРїРїС‹
+'Сѓ РїРѕР»СЊС‰Р·РѕРІР°С‚РµР»СЏ - РјС‹ СЃСЂР°Р·Сѓ РІСЃРµ РєСЌС€РёСЂСѓРµРј
 Option explicit
 Dim objGroupList: Set objGroupList = CreateObject("Scripting.Dictionary")
-objGroupList.CompareMode = vbTextCompare 'это означает про при поиске в словаре регистр не будет иметь значения
+objGroupList.CompareMode = vbTextCompare 'СЌС‚Рѕ РѕР·РЅР°С‡Р°РµС‚ РїСЂРѕ РїСЂРё РїРѕРёСЃРєРµ РІ СЃР»РѕРІР°СЂРµ СЂРµРіРёСЃС‚СЂ РЅРµ Р±СѓРґРµС‚ РёРјРµС‚СЊ Р·РЅР°С‡РµРЅРёСЏ
 
 Dim objSysInfo : Set objSysInfo = CreateObject("ADSystemInfo")
-'Сразу проинициализируем все переменные, раз либу подключили - значит пригодится
+'РЎСЂР°Р·Сѓ РїСЂРѕРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РІСЃРµ РїРµСЂРµРјРµРЅРЅС‹Рµ, СЂР°Р· Р»РёР±Сѓ РїРѕРґРєР»СЋС‡РёР»Рё - Р·РЅР°С‡РёС‚ РїСЂРёРіРѕРґРёС‚СЃСЏ
 ' Escape any forward slash characters, "/", with the backslash
 ' escape character. All other characters that should be escaped are.
 on error resume next
@@ -37,15 +37,15 @@ else
 	debugMsg "Cant init AD COMPUTER object (" & strComputerDN & ")"
 end if
 
-'Получаем объект из АД сначала через ГК, если не выщло то через ЛДАП
+'РџРѕР»СѓС‡Р°РµРј РѕР±СЉРµРєС‚ РёР· РђР” СЃРЅР°С‡Р°Р»Р° С‡РµСЂРµР· Р“Рљ, РµСЃР»Рё РЅРµ РІС‹С‰Р»Рѕ С‚Рѕ С‡РµСЂРµР· Р›Р”РђРџ
 Function getADObject(ByVal strObjectDN)
 	'MsgBox "GetAdObject: " & strObjectDN
-	'Добавляем обратные слэши для экранирования
+	'Р”РѕР±Р°РІР»СЏРµРј РѕР±СЂР°С‚РЅС‹Рµ СЃР»СЌС€Рё РґР»СЏ СЌРєСЂР°РЅРёСЂРѕРІР°РЅРёСЏ
 	strObjectDN = Replace(strObjectDN, "/", "\/")
-	' Используем пути через GC:// что означает Глобальный Каталог 
-	' (изначально было LDAP:// и жутко тормозило на RODC)
-	' Кое где выскакивали ошибки "К указанному домену невозможно подключиться"
-	' кто бы знал почему, но предположим, что проблема в GC
+	' РСЃРїРѕР»СЊР·СѓРµРј РїСѓС‚Рё С‡РµСЂРµР· GC:// С‡С‚Рѕ РѕР·РЅР°С‡Р°РµС‚ Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ РљР°С‚Р°Р»РѕРі 
+	' (РёР·РЅР°С‡Р°Р»СЊРЅРѕ Р±С‹Р»Рѕ LDAP:// Рё Р¶СѓС‚РєРѕ С‚РѕСЂРјРѕР·РёР»Рѕ РЅР° RODC)
+	' РљРѕРµ РіРґРµ РІС‹СЃРєР°РєРёРІР°Р»Рё РѕС€РёР±РєРё "Рљ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РґРѕРјРµРЅСѓ РЅРµРІРѕР·РјРѕР¶РЅРѕ РїРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ"
+	' РєС‚Рѕ Р±С‹ Р·РЅР°Р» РїРѕС‡РµРјСѓ, РЅРѕ РїСЂРµРґРїРѕР»РѕР¶РёРј, С‡С‚Рѕ РїСЂРѕР±Р»РµРјР° РІ GC
 	On Error Resume Next
 		Set getADObject = GetObject("GC://" & strObjectDN)
 		If Err Then
@@ -60,25 +60,25 @@ End Function
 
 ' Function to test for group membership.
 ' objADObject is a user or computer object.
-' strGroup - группа, принадлежность к которой проверяем.
+' strGroup - РіСЂСѓРїРїР°, РїСЂРёРЅР°РґР»РµР¶РЅРѕСЃС‚СЊ Рє РєРѕС‚РѕСЂРѕР№ РїСЂРѕРІРµСЂСЏРµРј.
 ' Returns True if the user or computer is a member of the group.
 ' Subroutine LoadGroups is called once for each different objADObject.
 Function IsMember(ByVal objADObject, ByVal strGroup)
     
 	DebugMsg "Checking membership of " & objADObject.sAMAccountName & " in " & strGroup
    
-	'Если в словаре нет записи USERNAME\ - значит для него еще не загружали группы
+	'Р•СЃР»Рё РІ СЃР»РѕРІР°СЂРµ РЅРµС‚ Р·Р°РїРёСЃРё USERNAME\ - Р·РЅР°С‡РёС‚ РґР»СЏ РЅРµРіРѕ РµС‰Рµ РЅРµ Р·Р°РіСЂСѓР¶Р°Р»Рё РіСЂСѓРїРїС‹
 	If (objGroupList.Exists(objADObject.sAMAccountName & "\") = False) Then
-		'грузим группы для этого объекта
+		'РіСЂСѓР·РёРј РіСЂСѓРїРїС‹ РґР»СЏ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 		Call LoadGroups(objADObject, objADObject)
-		'ставим флажок USERNAME\
+		'СЃС‚Р°РІРёРј С„Р»Р°Р¶РѕРє USERNAME\
 		objGroupList.Add objADObject.sAMAccountName & "\", True
 	End If
 	if (DEBUGMODE>1) then
 		var_dump objGroupList
 	end if
-	'после загрузки словаря просто напросто проверяем, что в словаре есть искомая комбинация
-	'пользователя и пароля USERNANE\groupname
+	'РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё СЃР»РѕРІР°СЂСЏ РїСЂРѕСЃС‚Рѕ РЅР°РїСЂРѕСЃС‚Рѕ РїСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РІ СЃР»РѕРІР°СЂРµ РµСЃС‚СЊ РёСЃРєРѕРјР°СЏ РєРѕРјР±РёРЅР°С†РёСЏ
+	'РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Рё РїР°СЂРѕР»СЏ USERNANE\groupname
 	IsMember = objGroupList.Exists(objADObject.sAMAccountName & "\" & strGroup)
 End Function
 
@@ -101,18 +101,18 @@ Sub LoadGroups(ByVal objPriADObject, ByVal objSubADObject)
 
 	Dim colstrGroups, objGroup, j
 
-        'группы первого уровня, в которые входит объект (без вложенности)
+        'РіСЂСѓРїРїС‹ РїРµСЂРІРѕРіРѕ СѓСЂРѕРІРЅСЏ, РІ РєРѕС‚РѕСЂС‹Рµ РІС…РѕРґРёС‚ РѕР±СЉРµРєС‚ (Р±РµР· РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё)
 	colstrGroups = objSubADObject.memberOf
-	' если объект никуда не входит то и проверять нечего
+	' РµСЃР»Рё РѕР±СЉРµРєС‚ РЅРёРєСѓРґР° РЅРµ РІС…РѕРґРёС‚ С‚Рѕ Рё РїСЂРѕРІРµСЂСЏС‚СЊ РЅРµС‡РµРіРѕ
 	If (IsEmpty(colstrGroups) = True) Then
 		Exit Sub
 	End If
 	
-	'если нашлась одна (строка)
+	'РµСЃР»Рё РЅР°С€Р»Р°СЃСЊ РѕРґРЅР° (СЃС‚СЂРѕРєР°)
 	If (TypeName(colstrGroups) = "String") Then
 		DebugMsg "Loadgroups:" & colStrGroups
 		Set objGroup = getADObject (colstrGroups)
-		' если мы эту группу еще не загружали в словарь - грузим
+		' РµСЃР»Рё РјС‹ СЌС‚Сѓ РіСЂСѓРїРїСѓ РµС‰Рµ РЅРµ Р·Р°РіСЂСѓР¶Р°Р»Рё РІ СЃР»РѕРІР°СЂСЊ - РіСЂСѓР·РёРј
 		If (objGroupList.Exists(objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName) = False) Then
 			objGroupList.Add objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName, True
 			Call LoadGroups(objPriADObject, objGroup)
@@ -120,84 +120,14 @@ Sub LoadGroups(ByVal objPriADObject, ByVal objSubADObject)
 		Exit Sub
 	End If
 
-	' видимо в любом противном случае получается массив.
+	' РІРёРґРёРјРѕ РІ Р»СЋР±РѕРј РїСЂРѕС‚РёРІРЅРѕРј СЃР»СѓС‡Р°Рµ РїРѕР»СѓС‡Р°РµС‚СЃСЏ РјР°СЃСЃРёРІ.
 	For j = 0 To UBound(colstrGroups)
 		DebugMsg "Loadgroups:" & colStrGroups(j)
 		Set objGroup = getADObject (colstrGroups(j))
-		' если мы эту группу еще не загружали в словарь - грузим
+		' РµСЃР»Рё РјС‹ СЌС‚Сѓ РіСЂСѓРїРїСѓ РµС‰Рµ РЅРµ Р·Р°РіСЂСѓР¶Р°Р»Рё РІ СЃР»РѕРІР°СЂСЊ - РіСЂСѓР·РёРј
 		If (objGroupList.Exists(objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName) = False) Then
 			objGroupList.Add objPriADObject.sAMAccountName & "\" & objGroup.sAMAccountName, True
 			Call LoadGroups(objPriADObject, objGroup)
 		End If
 	Next
 End Sub
-
-
-
-'' SIG '' Begin signature block
-'' SIG '' MIIIXwYJKoZIhvcNAQcCoIIIUDCCCEwCAQExDzANBglg
-'' SIG '' hkgBZQMEAgEFADB3BgorBgEEAYI3AgEEoGkwZzAyBgor
-'' SIG '' BgEEAYI3AgEeMCQCAQEEEE7wKRaZJ7VNj+Ws4Q8X66sC
-'' SIG '' AQACAQACAQACAQACAQAwMTANBglghkgBZQMEAgEFAAQg
-'' SIG '' 6ShdfWiuFyhCzD5zeS/nyt8PDXCFbAQo14vXqCU2GGug
-'' SIG '' ggWcMIIFmDCCA4CgAwIBAgIBAzANBgkqhkiG9w0BAQsF
-'' SIG '' ADBtMQswCQYDVQQGEwJSVTENMAsGA1UECAwEVXJhbDEU
-'' SIG '' MBIGA1UEBwwLQ2hlbHlhYmluc2sxETAPBgNVBAoMCFJl
-'' SIG '' dmlha2luMQswCQYDVQQLDAJJVDEZMBcGA1UEAwwQcmV2
-'' SIG '' aWFraW4tcm9vdC1DQTAeFw0yMzA1MjUxNTM3MDBaFw0y
-'' SIG '' NDA2MDMxNTM3MDBaMGMxCzAJBgNVBAYTAlJVMQ0wCwYD
-'' SIG '' VQQIDARVcmFsMQ0wCwYDVQQHDARDaGVsMREwDwYDVQQK
-'' SIG '' DAhSZXZpYWtpbjELMAkGA1UECwwCSVQxFjAUBgNVBAMM
-'' SIG '' DXJldmlha2luLWNvZGUwggEiMA0GCSqGSIb3DQEBAQUA
-'' SIG '' A4IBDwAwggEKAoIBAQCtsuYd7CVRsLwbN6ybLrnCr72O
-'' SIG '' nqGhfdASM37B9yC8+b5nnbw6EqDEN2IHpy32wOoThAlg
-'' SIG '' zPna/D5/VX/TYuLR/1vjW+vRQPKbJi8m97BMr8PemMWl
-'' SIG '' w6mjl9x4qW0x4irIwXra/Z4R34BgrY8ZACZRah0riiWY
-'' SIG '' GXPvCw3ZjNYMXRJF4rVKJ6c/PNg1bNlML1Q8oHcy3MPC
-'' SIG '' CVCHF/Qf3Bl/l76GKJhylViC5/ZiX34LfzCopdK1xnnY
-'' SIG '' 45cP1c83pQH2IE3ucjGMwzWDYCwTNAeYi69aaK40fGHC
-'' SIG '' Z9EJg6sS1RnEyCpp+Sj23T/GOJyTxM4kaiPmlMDZoCAq
-'' SIG '' UndLk6HVAgMBAAGjggFLMIIBRzAJBgNVHRMEAjAAMBEG
-'' SIG '' CWCGSAGG+EIBAQQEAwIFoDAzBglghkgBhvhCAQ0EJhYk
-'' SIG '' T3BlblNTTCBHZW5lcmF0ZWQgQ2xpZW50IENlcnRpZmlj
-'' SIG '' YXRlMB0GA1UdDgQWBBSXtltT7BkMs4W7USOsFdk+mc0S
-'' SIG '' HjAfBgNVHSMEGDAWgBSNQkTnQD4Z5d3UogsBh0kUyrwl
-'' SIG '' pzAOBgNVHQ8BAf8EBAMCBeAwJwYDVR0lBCAwHgYIKwYB
-'' SIG '' BQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDAzA4BgNVHR8E
-'' SIG '' MTAvMC2gK6AphidodHRwOi8vcGtpLnJldmlha2luLm5l
-'' SIG '' dC9jcmwvcm9vdC1jYS5jcmwwPwYIKwYBBQUHAQEEMzAx
-'' SIG '' MC8GCCsGAQUFBzAChiNodHRwOi8vcGtpLnJldmlha2lu
-'' SIG '' L25ldC9yb290LWNhLmNydDANBgkqhkiG9w0BAQsFAAOC
-'' SIG '' AgEAix6Hc2aULCO6RiT4W5PIiB9zQgA4BGT3W5YdSttn
-'' SIG '' gGhnmWDEfT2bhB/ZnRLkrtZeL/sYDj94FIfKZMvFTsNN
-'' SIG '' CUeDNiV9hQyJrsrI9Gq3nkgcnCOGc/9mqqL7ItS33s1M
-'' SIG '' ltSXVA7sLhoQ65yPrP70kd3681COUsCYOq7hroIR3Th4
-'' SIG '' L8INGLvUR+Xll1sunIHrnuiTD/GZFNemDec0f3n8mNKp
-'' SIG '' 5KiWuYlNYv0Zg//rTvCZfk2Y74Mk/2lCeABVKcQoJai+
-'' SIG '' XiSN0mq1b6RlFmfbiuzU3iudZ3SKHKEd3reGBXZxD7b1
-'' SIG '' QubveA17QKbgzwjT6DX9ISFjbIOuB9HUo3Bl7VLZ4DyH
-'' SIG '' 2mt0z+UC1zpE9DLFzoawf4f5/KN6mixGX9Q7tSQQCOKo
-'' SIG '' Jiyk7Y+0aLXhK7RmJdDK3vIieJkXSx0ip1SXdRYgr0sQ
-'' SIG '' VsNq2D2SYJ0A1r2wWJ4sNuiHnDuxWuxLsAdC0rZTlKis
-'' SIG '' 21i4uOIr3BCj2MFdTTdkeX5xB979r/8MLBdrDlzoVxMz
-'' SIG '' tEWwXdNlqiCQosIMVq44bJF1zjFPD6pYk0JgEF9y8wTd
-'' SIG '' G2LyGFjTqJYyCrKrWFkQa8GX6pazj4EarEpNjdVC6IXJ
-'' SIG '' YRa4vRqUEWfS9WeTGlIR9hJyqtHKAc9N82lwrhTlPhh+
-'' SIG '' lkL15ZPRXnnd5aICNgQpndNfyBIxggIbMIICFwIBATBy
-'' SIG '' MG0xCzAJBgNVBAYTAlJVMQ0wCwYDVQQIDARVcmFsMRQw
-'' SIG '' EgYDVQQHDAtDaGVseWFiaW5zazERMA8GA1UECgwIUmV2
-'' SIG '' aWFraW4xCzAJBgNVBAsMAklUMRkwFwYDVQQDDBByZXZp
-'' SIG '' YWtpbi1yb290LUNBAgEDMA0GCWCGSAFlAwQCAQUAoHww
-'' SIG '' EAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwG
-'' SIG '' CisGAQQBgjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisG
-'' SIG '' AQQBgjcCARUwLwYJKoZIhvcNAQkEMSIEICPYWSU1Unry
-'' SIG '' 7crsd+IpRYn0IgGhTZZiuFPwriKZOYwqMA0GCSqGSIb3
-'' SIG '' DQEBAQUABIIBAEnYzbQ+61t1wB/+Jq3MoZ2DavKRE/SF
-'' SIG '' ik2UdWk9IKXxTSxpHKbGCDz5x56m5hP7LrIDkmFt64tp
-'' SIG '' CtbOJ1x5yeeLqPRf+GVN2g5v9GkHVIfah1bKLz+P6wHa
-'' SIG '' 1xe1ojedfduTLo2qAuSbwCvgcLlWI7PUUeloyT1H2XIW
-'' SIG '' bRU0a5D9YETa+v6f53IornU5s199AbnDHWO58Y3+TQmB
-'' SIG '' N5ldr1aGK6YzdWjXLgd+Ah6S6ZE6FBgm69O4x9Rj367b
-'' SIG '' apPaaFWeslkny8HD/tBu1NYUHdP0gEzXBrCksvLb3R/z
-'' SIG '' uC0uMP02Xe1PqWA0roAiQeTa61LCXGmpGjwCGJ3KsRy80zM=
-'' SIG '' End signature block
