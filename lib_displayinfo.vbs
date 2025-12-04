@@ -1,4 +1,4 @@
-'Библиотека получения информации о мониторах из реестра
+Option Explicit
 Const DISPLAY_REGKEY="HKLM\SYSTEM\CurrentControlSet\Enum\DISPLAY\"
 
 'this function formats the parsed array for display
@@ -6,9 +6,10 @@ Const DISPLAY_REGKEY="HKLM\SYSTEM\CurrentControlSet\Enum\DISPLAY\"
 'it is the one you will most likely want to
 'customize to suit your needs
 Function GetFormattedMonitorInfo(arrParsedMonitorInfo)
+	Dim tmpctr, tmpResult, tmpOutput
 	for tmpctr=0 to ubound(arrParsedMonitorInfo)
 		tmpResult=split(arrParsedMonitorInfo(tmpctr),"|||")
-		if not (tmpResult(1) = "Bad EDID") then 
+		if not (tmpResult(1) = "Bad EDID") then
 			if (Len(tmpOutput)>0) then tmpOutput=tmpOutput & ","
 			tmpOutput=tmpOutput & "{""Monitor"":{" 
 			'tmpOutput=tmpOutput & "EDID_VESAManufacturerID=" & tmpResult(1) & vbcrlf
@@ -27,13 +28,14 @@ End Function
 'This is the main function. It calls everything else
 'in the correct order.
 Function GetMonitorInfo()
+	Dim arrAllDisplays, arrAllMonitors, arrActiveMonitors, arrActiveEDID, arrParsedMonitorInfo, strFormattedMonitorInfo
 	debugMsg "Getting all display devices"
 	arrAllDisplays=GetAllDisplayDevicesInReg()
 	debugMsg "Filtering display devices to monitors"
 	arrAllMonitors=GetAllMonitorsFromAllDisplays(arrAllDisplays)
 	'debugMsg "Filtering monitors to active monitors"
 	'arrActiveMonitors=GetActiveMonitorsFromAllMonitors(arrAllMonitors)
-	'у меня на 10ке показывало что нет ни одного активного монитора
+	'Сѓ РјРµРЅСЏ РЅР° 10РєРµ РїРѕРєР°Р·С‹РІР°Р»Рѕ С‡С‚Рѕ РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ Р°РєС‚РёРІРЅРѕРіРѕ РјРѕРЅРёС‚РѕСЂР°
 	arrActiveMonitors=arrAllMonitors
 	if ubound(arrActiveMonitors)=0 and arrActiveMonitors(0)="{ERROR}" then
 		debugMsg "No active monitors found"
@@ -51,18 +53,11 @@ Function GetMonitorInfo()
 	GetMonitorInfo=strFormattedMonitorInfo
 end function
 
-
-
-
-
-
-
-
-'This function returns an array of all subkeys of the 
+'This function returns an array of all subkeys of the
 'regkey defined by DISPLAY_REGKEY
 '(typically this should be "HKLM\SYSTEM\CurrentControlSet\Enum\DISPLAY")
 Function GetAllDisplayDevicesInReg()
-	dim arrResult()
+	Dim arrResult(), intArrResultIndex, arrtmpkeys, tmpctr, tmpctr2, arrtmpkeys2
 	redim arrResult(0)
 	intArrResultIndex=-1
 	arrtmpkeys=RegEnumKeys(DISPLAY_REGKEY)
@@ -79,21 +74,17 @@ Function GetAllDisplayDevicesInReg()
 				redim preserve arrResult(intArrResultIndex)
 				arrResult(intArrResultIndex)=DISPLAY_REGKEY & arrtmpkeys(tmpctr) & "\" & arrtmpkeys2(tmpctr2)
 				debugMsg "Display=" & arrResult(intArrResultIndex)
-			next 
+			next
 		next
 	end if
 	GetAllDisplayDevicesInReg=arrResult
 End Function
 
-
-
-
-
 'This function is passed an array of regkeys as strings
 'and returns an array containing only those that have a
 'hardware id value appropriate to a monitor.
 Function GetAllMonitorsFromAllDisplays(arrRegKeys)
-	dim arrResult()
+	Dim arrResult(), intArrResultIndex, tmpctr
 	redim arrResult(0)
 	intArrResultIndex=-1
 	for tmpctr=0 to ubound(arrRegKeys)
@@ -111,20 +102,18 @@ Function GetAllMonitorsFromAllDisplays(arrRegKeys)
 	GetAllMonitorsFromAllDisplays=arrResult
 End Function
 
-
 'this function is passed a regsubkey as a string
 'and determines if it is a monitor
 'returns boolean
 Function IsDisplayDeviceAMonitor(strDisplayRegKey)
-	'DEBUGMODE = 1
-	dim arrtmpResult, strtmpResult
+	Dim arrtmpResult, strtmpResult
 	arrtmpResult=RegGetMultiStringValue(strDisplayRegKey,"HardwareID")
 	if (isarray(arrtmpResult)) then
 		strtmpResult="|||" & join(arrtmpResult,"|||") & "|||"
 	else
 		strtmpResult=arrtmpResult
 	end if
-	
+
 	if instr(lcase(strtmpResult),"|||monitor\")=0 then
 		debugMsg "MonitorCheck='" & strDisplayRegKey & "'|||is not a monitor"
 		IsDisplayDeviceAMonitor=false
@@ -134,12 +123,11 @@ Function IsDisplayDeviceAMonitor(strDisplayRegKey)
 	end if
 End Function
 
-
 'This function is passed an array of regkeys as strings
 'and returns an array containing only those that have a
 'subkey named "Control"...establishing that they are current.
 Function GetActiveMonitorsFromAllMonitors(arrRegKeys)
-	dim arrResult()
+	Dim arrResult(), intArrResultIndex, tmpctr
 	redim arrResult(0)
 	intArrResultIndex=-1
 	for tmpctr=0 to ubound(arrRegKeys)
@@ -161,6 +149,7 @@ End Function
 'and determines if it is an active monitor
 'returns boolean
 Function IsMonitorActive(strMonitorRegKey)
+	Dim arrtmpResult, strtmpResult
 	arrtmpResult=RegEnumKeys(strMonitorRegKey)
 	strtmpResult="|||" & join(arrtmpResult,"|||") & "|||"
 	if instr(lcase(strtmpResult),"|||control|||")=0 then
@@ -174,16 +163,16 @@ End Function
 
 'This function is passed an array of regkeys as strings
 'and returns an array containing the corresponding contents
-'of the EDID value (in string format) for the "Device Parameters" 
+'of the EDID value (in string format) for the "Device Parameters"
 'subkey of the specified key
 Function GetEDIDFromActiveMonitors(arrRegKeys)
-	dim arrResult()
+	Dim arrResult(), intArrResultIndex, tmpctr, strtmpResult
 	redim arrResult(0)
 	intArrResultIndex=-1
 	for tmpctr=0 to ubound(arrRegKeys)
 		strtmpResult=GetEDIDForMonitor(arrRegKeys(tmpctr))
 		intArrResultIndex=intArrResultIndex+1
-	redim preserve arrResult(intArrResultIndex)
+		redim preserve arrResult(intArrResultIndex)
 		arrResult(intArrResultIndex)=strtmpResult
 		debugMsg "GETEDID=" & arrRegKeys(tmpctr) & "|||EDID,Yes"
 	next
@@ -198,6 +187,8 @@ End Function
 'this function returns the EDID info
 'in string format
 Function GetEDIDForMonitor(strMonitorRegKey)
+	Dim arrtmpResult, strtmpResult, bytevalue
+	strtmpResult = ""
 	arrtmpResult=RegGetBinaryValue(strMonitorRegKey & "\Device Parameters","EDID")
 	if vartype(arrtmpResult) <> 8204 then
 		debugMsg "GetEDID=No EDID Found|||" & strMonitorRegKey
@@ -212,10 +203,12 @@ Function GetEDIDForMonitor(strMonitorRegKey)
 	end if
 End Function
 
-'passed a given string this function 
-'returns comma seperated hex values 
+'passed a given string this function
+'returns comma seperated hex values
 'for each byte
 Function GetHexFromString(strText)
+	Dim tmpctr, tmpresult
+	tmpresult = ""
 	for tmpctr=1 to len(strText)
 		tmpresult=tmpresult & right( "0" & hex(asc(mid(strText,tmpctr,1))),2) & ","
 	next
@@ -229,7 +222,7 @@ End Function
 'Why not use a 2D array or a dictionary object?.
 'I guess I'm just lazy
 Function GetParsedMonitorInfo(arrActiveEDID,arrActiveMonitors)
-	dim arrResult()
+	Dim arrResult(), tmpctr, strSerial, strMfg, strMfgDate, strDev, strModel, strEDIDVer, strWinVesaID, strWinPNPID
 	for tmpctr=0 to ubound(arrActiveEDID)
 		strSerial=GetSerialFromEDID(arrActiveEDID(tmpctr))
 		strMfg=GetMfgFromEDID(arrActiveEDID(tmpctr))
@@ -240,6 +233,7 @@ Function GetParsedMonitorInfo(arrActiveEDID,arrActiveMonitors)
 		strWinVesaID=GetWinVESAIDFromRegKey(arrActiveMonitors(tmpctr))
 		strWinPNPID=GetWinPNPFromRegKey(arrActiveMonitors(tmpctr))
 		redim preserve arrResult(tmpctr)
+		arrResult(tmpctr) = ""
 		arrResult(tmpctr)=arrResult(tmpctr) & strSerial & "|||"
 		arrResult(tmpctr)=arrResult(tmpctr) & strMfg & "|||"
 		arrResult(tmpctr)=arrResult(tmpctr) & strMfgDate & "|||"
@@ -256,22 +250,24 @@ End Function
 'this is a simple string function to break the VESA monitor ID
 'from the registry key
 Function GetWinVESAIDFromRegKey(strRegKey)
+	Dim strtmpResult
 	if strRegKey="{ERROR}" then
 		GetWinVESAIDFromRegKey="Bad Registry Info"
 		exit function
 	end if
 	strtmpResult=right(strRegKey,len(strRegkey)-len(DISPLAY_REGKEY))
-	strtmpResult=left(strtmpResult,instr(strtmpResult,"\")-1) 
+	strtmpResult=left(strtmpResult,instr(strtmpResult,"\")-1)
 	GetWinVESAIDFromRegKey=strtmpResult
 End Function
 
 'this is a simple string function to break windows PNP device id
 'from the registry key
 Function GetWinPNPFromRegKey(strRegKey)
+	Dim strtmpResult
 	if strRegKey="{ERROR}" then
 		GetWinPNPFromRegKey="Bad Registry Info"
 		exit function
-	end if 
+	end if
 	strtmpResult=right(strRegKey,len(strRegkey)-len(DISPLAY_REGKEY))
 	strtmpResult=right(strtmpResult,len(strtmpResult)-instr(strtmpResult,"\"))
 	GetWinPNPFromRegKey=strtmpResult
@@ -281,6 +277,7 @@ End Function
 'to retrieve the serial number block
 'from the EDID data
 Function GetSerialFromEDID(strEDID)
+	Dim strTag
 	'a serial number descriptor will start with &H00 00 00 ff
 	strTag=chr(&H00) & chr(&H00) & chr(&H00) & chr(&Hff)
 	GetSerialFromEDID=GetDescriptorBlockFromEDID(strEDID,strTag)
@@ -290,6 +287,7 @@ End Function
 'to retrieve the model description block
 'from the EDID data
 Function GetModelFromEDID(strEDID)
+	Dim strTag
 	'a model number descriptor will start with &H00 00 00 fc
 	strTag=chr(&H00) & chr(&H00) & chr(&H00) & chr(&Hfc)
 	GetModelFromEDID=GetDescriptorBlockFromEDID(strEDID,strTag)
@@ -305,6 +303,7 @@ End Function
 'trimmed of its prefix tag and also trimmed of
 'leading NULLs (chr(0)) and trailing linefeeds (chr(10))
 Function GetDescriptorBlockFromEDID(strEDID,strTag)
+	Dim strFoundBlock, strResult
 	if strEDID="{ERROR}" then
 		GetDescriptorBlockFromEDID="Bad EDID"
 		exit function
@@ -316,7 +315,7 @@ Function GetDescriptorBlockFromEDID(strEDID,strTag)
 	'the model and serial numbers are stored in the vesa descriptor
 	'blocks in the edid.
 	'*********************************************************************
-	dim arrDescriptorBlock(3)
+	Dim arrDescriptorBlock(3)
 	arrDescriptorBlock(0)=mid(strEDID,&H36+1,18)
 	arrDescriptorBlock(1)=mid(strEDID,&H48+1,18)
 	arrDescriptorBlock(2)=mid(strEDID,&H5a+1,18)
@@ -336,7 +335,7 @@ Function GetDescriptorBlockFromEDID(strEDID,strTag)
 	end if
 
 	strResult=right(strFoundBlock,14)
-	'the data in the descriptor block will either fill the 
+	'the data in the descriptor block will either fill the
 	'block completely or be terminated with a linefeed (&h0a)
 	if instr(strResult,chr(&H0a))>0 then
 		strResult=trim(left(strResult,instr(strResult,chr(&H0a))-1))
@@ -359,6 +358,7 @@ End Function
 'I guess that means you're not allowed to make an EDID
 'compliant monitor unless you belong to VESA.
 Function GetMfgFromEDID(strEDID)
+	Dim tmpEDIDMfg, Char1, Char2, Char3, Byte1, Byte2, tmpmfg
 	if strEDID="{ERROR}" then
 		GetMfgFromEDID="Bad EDID"
 		exit function
@@ -367,37 +367,37 @@ Function GetMfgFromEDID(strEDID)
 	'the mfg id is 2 bytes starting at EDID offset &H08
 	'the id is three characters long. using 5 bits to represent
 	'each character. the bits are used so that 1=A 2=B etc..
-	'
+
 	'get the data
-	tmpEDIDMfg=mid(strEDID,&H08+1,2) 
-	Char1=0 : Char2=0 : Char3=0 
-	Byte1=asc(left(tmpEDIDMfg,1)) 'get the first half of the string 
+	tmpEDIDMfg=mid(strEDID,&H08+1,2)
+	Char1=0 : Char2=0 : Char3=0
+	Byte1=asc(left(tmpEDIDMfg,1)) 'get the first half of the string
 	Byte2=asc(right(tmpEDIDMfg,1)) 'get the first half of the string
 	'now shift the bits
 	'shift the 64 bit to the 16 bit
-	if (Byte1 and 64) > 0 then Char1=Char1+16 
+	if (Byte1 and 64) > 0 then Char1=Char1+16
 	'shift the 32 bit to the 8 bit
-	if (Byte1 and 32) > 0 then Char1=Char1+8 
+	if (Byte1 and 32) > 0 then Char1=Char1+8
 	'etc....
-	if (Byte1 and 16) > 0 then Char1=Char1+4 
-	if (Byte1 and 8) > 0 then Char1=Char1+2 
-	if (Byte1 and 4) > 0 then Char1=Char1+1 
+	if (Byte1 and 16) > 0 then Char1=Char1+4
+	if (Byte1 and 8) > 0 then Char1=Char1+2
+	if (Byte1 and 4) > 0 then Char1=Char1+1
 
 	'the 2nd character uses the 2 bit and the 1 bit of the 1st byte
-	if (Byte1 and 2) > 0 then Char2=Char2+16 
-	if (Byte1 and 1) > 0 then Char2=Char2+8 
+	if (Byte1 and 2) > 0 then Char2=Char2+16
+	if (Byte1 and 1) > 0 then Char2=Char2+8
 	'and the 128,64 and 32 bits of the 2nd byte
-	if (Byte2 and 128) > 0 then Char2=Char2+4 
-	if (Byte2 and 64) > 0 then Char2=Char2+2 
-	if (Byte2 and 32) > 0 then Char2=Char2+1 
+	if (Byte2 and 128) > 0 then Char2=Char2+4
+	if (Byte2 and 64) > 0 then Char2=Char2+2
+	if (Byte2 and 32) > 0 then Char2=Char2+1
 
 	'the bits for the 3rd character don't need shifting
 	'we can use them as they are
-	Char3=Char3+(Byte2 and 16) 
-	Char3=Char3+(Byte2 and 8) 
-	Char3=Char3+(Byte2 and 4) 
-	Char3=Char3+(Byte2 and 2) 
-	Char3=Char3+(Byte2 and 1) 
+	Char3=Char3+(Byte2 and 16)
+	Char3=Char3+(Byte2 and 8)
+	Char3=Char3+(Byte2 and 4)
+	Char3=Char3+(Byte2 and 2)
+	Char3=Char3+(Byte2 and 1)
 	tmpmfg=chr(Char1+64) & chr(Char2+64) & chr(Char3+64)
 	GetMfgFromEDID=tmpmfg
 End Function
@@ -405,6 +405,7 @@ End Function
 'This function parses a string containing EDID data
 'and returns the manufacture date in mm/yyyy format
 Function GetMfgDateFromEDID(strEDID)
+	Dim tmpmfgweek, tmpmfgyear, tmpmdt
 	if strEDID="{ERROR}" then
 		GetMfgDateFromEDID="Bad EDID"
 		exit function
@@ -417,7 +418,7 @@ Function GetMfgDateFromEDID(strEDID)
 	'and is the current year -1990
 	tmpmfgyear=(asc(mid(strEDID,&H11+1,1)))+1990
 
-	'store it in month/year format 
+	'store it in month/year format
 	tmpmdt=month(dateadd("ww",tmpmfgweek,datevalue("1/1/" & tmpmfgyear))) & "/" & tmpmfgyear
 	GetMfgDateFromEDID=tmpmdt
 End Function
@@ -425,6 +426,7 @@ End Function
 'This function parses a string containing EDID data
 'and returns the device ID as a string
 Function GetDevFromEDID(strEDID)
+	Dim tmpEDIDDev1, tmpEDIDDev2, tmpdev
 	if strEDID="{ERROR}" then
 		GetDevFromEDID="Bad EDID"
 		exit function
@@ -449,6 +451,7 @@ End Function
 'won't do for backward compatability reasons thus negating my need to check and
 'making this comment somewhat redundant)
 Function GetEDIDVerFromEDID(strEDID)
+	Dim tmpEDIDMajorVer, tmpEDIDRev, tmpver
 	if strEDID="{ERROR}" then
 		GetEDIDVerFromEDID="Bad EDID"
 		exit function
