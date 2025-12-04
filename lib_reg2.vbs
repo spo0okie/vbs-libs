@@ -266,3 +266,17 @@ Function RegGetMultiStringValue(RegKey,RegValueName)
 		RegGetMultiStringValue=false
 	end if
 End Function
+
+'simple function to provide an
+'easier interface to the wmi registry functions
+Function RegGetBinaryValue(RegKey,RegValueName)
+	dim hive, strKeyPath, RegValue, tmpreturn
+	hive=SetHive(RegKey)
+	strKeyPath = right(RegKey,len(RegKey)-instr(RegKey,"\"))
+	tmpreturn=objReg.GetBinaryValue(Hive, strKeyPath, RegValueName, RegValue)
+	if tmpreturn=0 then
+		RegGetBinaryValue=RegValue
+	else
+		RegGetBinaryValue="~{{<ERROR>}}~"
+	end if
+End Function
